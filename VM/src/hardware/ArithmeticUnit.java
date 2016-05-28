@@ -1,0 +1,220 @@
+package hardware;
+
+public class ArithmeticUnit {
+	private ConditionCodeRegister ccr;
+
+	public ArithmeticUnit(ConditionCodeRegister ccr) {
+		this.ccr = ccr;
+	}// Constructor - AritmeticUnit
+
+	/*
+	 * Addition : operand1 + operand2 = result
+	 */
+	public byte add(byte operand1, byte operand2) {
+		byte result = (byte) add((int) operand1, (int) operand2, Byte.SIZE);
+		ccr.setZSP(result);
+		return result;
+	}// add(byte operand1, byte operand2)
+
+	public int add(int operand1, int operand2) { // add words
+		return add(operand1, operand2, 16);
+		// set Carry , but does not set Sign, Zero or Parity
+	}// add(short operand1, short operand2)
+
+	public byte addWithCarry(byte operand1, byte operand2) {
+		// refactored - confirm new logic vs Pass2
+		boolean carryFlagIn = ccr.isCarryFlagSet();
+		boolean carryFromIncrement = false;
+		if (carryFlagIn) {
+			operand2 = (byte) this.add(operand2, 1, Byte.SIZE);
+			carryFromIncrement = ccr.isCarryFlagSet(); // carry flag from increment
+		}// if carryFlagIn
+
+		byte result = (byte) add((int) operand1, (int) operand2, Byte.SIZE);
+		boolean carryFlagOut = ccr.isCarryFlagSet() | carryFromIncrement;// carry is true if either flag is set
+		ccr.setCarryFlag(carryFlagOut);
+		ccr.setZSP(result);
+		return result;
+	}// add(byte operand1, byte operand2)
+
+	private int add(int operand1, int operand2, int wordSize) {
+		int fullMask;
+		if (wordSize == Byte.SIZE) {// need to handle Auxilary Carry
+			boolean auxilaryCarryFlag = carryOut(operand1, operand2, 0X000F);
+			ccr.setAuxilaryCarryFlag(auxilaryCarryFlag);
+			fullMask = 0X00FF; // two nibbles
+		} else {
+			fullMask = 0XFFFF; // two bytes
+		}//
+		boolean carryFlag = carryOut(operand1, operand2, fullMask);
+		ccr.setCarryFlag(carryFlag);
+
+		return operand1 + operand2;
+	}// add
+
+	/*
+	 * support method for addition mask: Auxilary Carry = 0X0F; Carrry for Byte = 0XFF, Carrry for dWORD = 0XFFFF
+	 */
+	private boolean carryOut(int operand1, int operand2, int mask) {
+		int result = (operand1 & mask) + (operand2 & mask);
+		return (result > mask) ? true : false;
+	}// carryOut
+
+	/*
+	 * subtraction : minuend - subtrahend = difference
+	 */
+	private int subtract(int minuend, int subtrahend, int wordSize) {
+		boolean carryFromAddingOne;
+		int takeAway = add(~subtrahend, 1, wordSize);
+		carryFromAddingOne = ccr.isCarryFlagSet();
+
+		int result = add(minuend, takeAway, wordSize);
+		ccr.setCarryFlag(!ccr.isCarryFlagSet() & !carryFromAddingOne); // only set if both are not set
+		return result;
+	}// subtract(int minuend, int subtrahend, int wordSize)
+
+	public byte subtract(byte minuend, byte subtrahend) {
+		byte result = (byte) subtract((int) minuend, (int) subtrahend, Byte.SIZE);
+		ccr.setZSP(result);
+		return result;
+	}// subtract(byte minuend,byte subtrahend)
+
+	public short subtract(short minuend, short subtrahand) {
+		return (short) subtract((int) minuend, (int) subtrahand, Short.SIZE);
+	}// subtract(short minuend,short subtrahand)
+
+	public byte subtractWithBorrow(byte minuend, byte subtrahand) {
+		int carryValue = ccr.isCarryFlagSet() ? 1 : 0; // get carry value
+		subtrahand = (byte) this.add(subtrahand, carryValue, Byte.SIZE);// add to subtrahend
+		return subtract(minuend, subtrahand);
+	}// subtractWithBorrow
+
+	/*
+	 * Increment values
+	 */
+	public byte increment(byte value) {
+		boolean priorCarry = ccr.isCarryFlagSet();
+		byte result = (byte) add((int) value, 1, Byte.SIZE);
+		ccr.setCarryFlag(priorCarry);
+		ccr.setZSP(result);
+		return result;
+	}// increment(byte value)
+
+	public short increment(short value) {
+		return (short) add((int) value, 1, Short.SIZE);
+	}// increment(byte value)
+
+	/*
+	 * Deccremet values
+	 */
+	public byte decrement(byte value) {
+		boolean priorCarry = ccr.isCarryFlagSet();
+		byte result = (byte) subtract((int) value, 1, Byte.SIZE);
+		ccr.setCarryFlag(priorCarry);
+		ccr.setZSP(result);
+		return result;
+	}// increment(byte value)
+
+	public short decrement(short value) {
+		return (short) subtract((int) value, 1, Short.SIZE);
+	}// dencrement(byte value)
+
+	// Shift Operations ////////////////////////////////
+
+	/*
+	 * Rotate left - thruCarry = true for RAL, false for RLC
+	 */
+
+	public byte rotateLeft(byte source, boolean thruCarry) {
+		boolean oldFlag = ccr.isCarryFlagSet();
+		boolean originalBit7Set = ((source & 0X80) != 0) ? true : false;
+
+		int s = (int) source << 1;
+		ccr.setCarryFlag(originalBit7Set);
+		if (thruCarry) { // rotate thru carry
+			s = oldFlag ? (s | 0X01) : s & 0XFE;
+		} else {
+			s = originalBit7Set ? (s | 0X01) : s & 0XFE;
+		}// if for Bit0
+
+		return (byte) (s & (byte) 0XFF);
+	};// rotateLeft
+
+	/*
+	 * Rotate right - thruCarry = true for RAL, false for RLC
+	 */
+
+	public byte rotateRight(byte source, boolean thruCarry) {
+		boolean oldFlag = ccr.isCarryFlagSet();
+		boolean originalBit0Set = ((source & 0X01) != 0) ? true : false;
+
+		ccr.setCarryFlag(originalBit0Set); // Set CY = original LSB
+		int s = (source >> 1) & 0X7F; // shift value 1 position to the right
+		if (thruCarry) { // rotate thru carry
+			s = oldFlag ? (s | 0X80) : s & 0X7F;
+		} else {// not rotate thru carry
+			s = originalBit0Set ? (s | 0X80) : s & 0X7F;
+		}
+		return (byte) (s & (byte) 0XFF);
+	};// rotateRight
+
+	// Logical operations //////////////////////////
+
+	/*
+	 * complements ( one's complement) value
+	 */
+	public byte complement(byte value) {
+		return (byte) ~value;
+	}// complement
+
+	/*
+	 * Logical AND : ANA & ANI
+	 */
+	public byte logicalAnd(byte operand1, byte operand2) {
+		byte result = (byte) (operand1 & operand2);
+		ccr.setZSPclearCYandAUX(result);
+		return result;
+	}// logicalAnd
+
+	/*
+	 * Logical XOR : ANA & ANI
+	 */
+	public byte logicalXor(byte operand1, byte operand2) {
+		byte result = (byte) (operand1 ^ operand2);
+		ccr.setZSPclearCYandAUX(result);
+		return result;
+	}// logicalAnd
+
+	/*
+	 * Logical OR : ORA & ORI
+	 */
+	public byte logicalOr(byte operand1, byte operand2) {
+		byte result = (byte) (operand1 | operand2);
+		ccr.setZSPclearCYandAUX(result);
+		return result;
+	}// logicalAnd
+
+	public byte decimalAdjustByte(byte value) {
+		byte loNibble = (byte) (value & 0X0F);
+		byte ans = value;
+
+		// save both Cy and Aux state on entry
+		boolean auxCarryTemp = ccr.isAuxilaryCarryFlagSet();
+		boolean carryTemp = ccr.isCarryFlagSet();
+
+		if ((loNibble > 9) || auxCarryTemp) {
+			ans = this.add(value, (byte) 0X06);
+			auxCarryTemp = ccr.isAuxilaryCarryFlagSet(); // remember the Aux flag for exit
+
+		}// if
+
+		byte hiNibble = (byte) ((ans & 0XF0) >> 4);
+		if ((hiNibble > 9) || carryTemp) {// carry when we entered the operation
+			ans = this.add(ans, (byte) 0X60);
+		}
+		ccr.setAuxilaryCarryFlag(auxCarryTemp);
+		ccr.setZSP(ans);
+		return ans;
+	}//
+
+}// class ArithmeticUnit
