@@ -1,5 +1,0 @@
-package hardware;
-
-public enum Reg{
-	A,B,C,D,E,H,L,BC,DE,HL,M,SP,AF,PC
-}//enum

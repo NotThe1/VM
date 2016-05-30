@@ -1,91 +1,174 @@
 package memory;
 
+import java.awt.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.swing.JOptionPane;
 
+/**
+ * 
+ * @author Frank Martyn
+ * @version 1.0
+ * 
+ *          Core is the class that acts as the physical memory.
+ * 
+ * @throws MemoryTrapEvent. Trap
+ *             is fired if: 1) writing to a Disk Control Byte 2) writing to a debug marked location
+ * 
+ * @throws MemoryAccessErrorEvent. Trap
+ *             is fired if: 1) attempt is made to address location not in memory
+ *
+ */
 
-public class Core  {
-	
-
+public class Core {
 	private byte[] storage;
-	private int maximumAddress; // maximum address
-	private boolean debugTrapEnabled;
-	public boolean isDebugLocation; // set when reading a debug tagged location
-	private HashMap<Integer, TRAP> trapLocations; // locations that can be trapped duh!
+	private int maxAddress;
 
-	// private byte writeValue; // used for IO trap
+	private boolean isDebug = false;
+	private boolean isDebugEnabled = false;
 
+	public enum Trap {
+		IO, DEBUG
+	}
 
-	public Core(Integer size) {
-		this.debugTrapEnabled = false;
-		this.isDebugLocation = false;
-		trapLocations = new HashMap<Integer, TRAP>();
+	private HashMap<Integer, Trap> traps;
 
-		if (size <= 0) {
-			System.err.printf("Memory size %d not valid%n", size);
-			System.exit(-1);
+	/**
+	 * Constructor
+	 * 
+	 * @param size
+	 *            Is the size of Memory
+	 */
+	public Core(int size) {
+		if ((size < MINIMUM_MEMORY) | size > MAXIMUM_MEMORY) {
+			String msg = String.format("%1$d [0X%1$X] bad size for memory,%2$d used instead", size, DEFAULT_MEMORY);
+			JOptionPane.showMessageDialog(null, msg, "Core",
+					JOptionPane.ERROR_MESSAGE);
+			size = DEFAULT_MEMORY;
 		}// if
-
+		traps = new HashMap<Integer, Trap>();
 		storage = new byte[size];
-		maximumAddress = storage.length - 1;
+		maxAddress = size - 1;
+	}
 
-
-	}// Constructor
-
+	/**
+	 * Constructor uses Default size for memory
+	 */
 	public Core() {
-		this(MAXIMUM_MEMORY);
-	}// Constructor
+		this(DEFAULT_MEMORY);
+	}
 
+	/**
+	 * write -  put value into memory and check for IO trap 
+	 * 
+	 * @param location
+	 *            where to put the value in memory
+	 * @param value
+	 *            what to put into memory
+	 */
 	public synchronized void write(int location, byte value) {
-		// writeValue = value; // save for IO trap
-		if (checkAddressAndTraps(location, value) == true) {
-			storage[location] = value;
+		if (!isValidAddress(location)) {
+			return; // bad address;
 		}// if
-	}// setContent- for MM
 
+		storage[location] = value;
+
+		if (isDiskTrapLocation(location, value)) {
+			fireMemoryTrap(location, Trap.IO);
+		}// if
+	}// write
+
+	/**
+	 * writeForIO - write to a  location. Bypasses the memory trap apparatus
+	 * 
+	 * @param location
+	 *            where to put the value
+	 * @param value
+	 *            what to put into specified location
+	 */
 	public synchronized void writeForIO(int location, byte value) {
 		// writeValue = value; // save for IO trap
-		if (checkAddress(location) == true) {
+		if (isValidAddress(location) == true) {
 			storage[location] = value;
 		}// if
-	}// setContent- for IO devices
-
+	}// writeForIO
+	/**
+	 * writeDMA - write consecutive locations. Bypasses the memory trap apparatus
+	 * 
+	 * @param location starting address for write
+	 * @param values actual values to be written
+	 */
 	public synchronized void writeDMA(int location, byte[] values) {
 		int numberOfBytes = values.length;
-		if (checkAddressDMA(location, numberOfBytes) == true) {
+		if (isValidAddressDMA(location, numberOfBytes) == true) {
 			for (int i = 0; i < numberOfBytes; i++) {
 				storage[location + i] = values[i];
 			}// for
 		}// if
 	}// writeDMA
+/**
+ * writeWord - write a word (16) bits to memory	
+ * @param location starting place in memory for the write
+ * @param hiByte - first byte to write, at location
+ * @param loByte - second byte to write,  at location + 1
+ */
+	public void writeWord(int location, byte hiByte, byte loByte) {
+		this.write(location, hiByte);
+		this.write(location + 1, loByte);
 
+	}// putWord	
+
+	/**
+	 * read - returns the value found at the specified location
+	 * 
+	 * @param location
+	 *            where to get the value from
+	 * @return value found at the location, or a HLT command if this is the first access to a debug marked location
+	 */
 	public synchronized byte read(int location) {
-		if (checkAddressAndTraps(location) == true) { // send dummy argument
-			isDebugLocation = false;
-			return storage[location];
+		if (!isValidAddress(location)) {
+			return 00; // bad address;
 		}// if
 
-		if (isDebugLocation) {
-			return 0X30; // Return a fake Halt instruction
+		if (!isDebugEnabled) {
+			return storage[location];
+		}
+
+		if (isDebugLocation(location)) {
+			// may want to fire trap - fireMemoryTrap(location, Trap.DEBUG);
+			return 0X76; // Return a fake Halt instruction
 		} else {
-			return 00;
-		}//
-
-	}// getContent- for MM
-
-	public synchronized byte readForIO(int location) {
-		if (checkAddress(location) == true) { // send dummy argument
 			return storage[location];
-		}// if
-		return 00;
-	}// getContent - for IO devices
+		}
+	}// read
 
+	/**
+	 * readForIO - read from a  location. Bypasses the memory trap apparatus
+	 * 
+	 * @param location
+	 *            where to get the returned value
+	 * @return value at specified location
+	 */
+	public synchronized byte readForIO(int location) {
+		byte readForIO = 00;
+		if (isValidAddress(location) == true) {
+			readForIO = storage[location];
+		}// if
+		return readForIO;
+	}// readForIO
+	/**
+	 * readDMA - read consecutive locations. Bypasses the memory trap apparatus
+	 * 
+	 * @param location where to start reading
+	 * @param length how many locations to return
+	 * @return the values read
+	 */
 	public synchronized byte[] readDMA(int location, int length) {
 		byte[] readDMA = new byte[length];
-		if (checkAddressDMA(location, length) == true) {
+		if (isValidAddressDMA(location, length) == true) {
 			for (int i = 0; i < length; i++) {
 				readDMA[i] = storage[location + i];
 			}// for
@@ -94,147 +177,235 @@ public class Core  {
 		}
 		return readDMA;
 	}// readDMA
+/**
+ * readWord return a word value (16 bits)
+ * @param location where to read from
+ * @return word value
+ */
+	public int readWord(int location) {
 
-	public int getSize() {
-		return storage.length;
-	}// getSize
-	
-	public int getSizeInK() {
-		return storage.length/K;
-	}// getSizeInBytes
+		int hiByte = (this.read(location) << 8) & 0XFF00;
+		int loByte = this.read(location +1) & 0X00FF;
+		return 0XFFFF & (hiByte + loByte);
+	}// getWord
 
+	/**
+	 * isValidAddress - confirms the location is in addressable memory.
+	 * <p>
+	 * Will fire an MemoryAccessError if out of addressable memory
+	 * 
+	 * @param location
+	 *            - address to be checked
+	 * @return true if address is valid
+	 * 
+	 */
 
-	public void setDebugTrapEnabled(boolean state) {
-		this.debugTrapEnabled = state;
-	}// enableTrap
-
-	public boolean isDebugTrapEnabled() {
-		return this.debugTrapEnabled;
-	}
-
-	// public boolean
-
-	public void addTrapLocation(int location, TRAP trap) {
-		if (!trapLocations.containsKey(location)) { // Not trapped yet
-			if (checkAddress(location) == false) {
-				return; // bad address - get out of here
-			} // inner if
-		}// if
-		trapLocations.put(location, trap); // may be different trap type
-	}// addTrapLocation
-
-	public ArrayList<Integer> getTrapLocations() {
-		return getTrapLocations(TRAP.DEBUG);
-	}// getTrapLocations - DEBUG
-
-	public ArrayList<Integer> getTrapLocations(TRAP trap) {
-		ArrayList<Integer> getTrapLocations = new ArrayList<Integer>();
-		Set<Integer> locations = trapLocations.keySet();
-		for (Integer location : locations) {
-			if (trapLocations.get(location).equals(trap)) {
-				getTrapLocations.add(location);
-			}// inner if
-		}// for e
-		return getTrapLocations;
-	}// getTrapLocations
-
-	public void removeTrapLocation(int location, TRAP trap) {
-		// only remove if the trap is the same type
-		trapLocations.remove(location, trap);
-
-	}// removeTrapLocation
-
-	private boolean checkAddress(int location) {// just check its in readable memory
+	private boolean isValidAddress(int location) {
 		boolean checkAddress = true;
 		if (location < 0) {
-			//negative location
+			// negative location
 			checkAddress = false;
-			fireAccessError(location, "Attempt to access bad location" );
-		} else if (location > maximumAddress) {
+			fireAccessError(location, "Attempt to access bad location");
+		} else if (location > maxAddress) {
 			// out of bounds error
 			checkAddress = false;
 			fireAccessError(location, "Attempt to access bad location");
 		}// if
 		return checkAddress;
-	}// checkAddress
-
-	private boolean checkAddressAndTraps(int location) {
-		// send a dummy value for reads
-		return checkAddressAndTraps(location, (byte) 00);
-	}
-
-	private boolean checkAddressAndTraps(int location, byte value) {
-		boolean checkAddressAndTraps = checkAddress(location);
-		
-		if (trapLocations.containsKey(location)) {
-			TRAP thisTrap = trapLocations.get(location);
-
-			if (thisTrap.equals(TRAP.IO)) {
-				storage[location] = value; // write so DCU has access to it
-				fireMemoryTrap(location, Core.TRAP.IO);
-			} else if (thisTrap.equals(TRAP.DEBUG) & debugTrapEnabled) {
-				if (!isDebugLocation) { // Is this the first encounter?
-					isDebugLocation = true; // set the flag
-					//checkAddressAndTraps = false; // force return value
-					return false;
-				} // inner if
-			}// outer if
-		}// if
-		return checkAddressAndTraps;
-	}//checkAddressAndTraps
-
-	private boolean checkAddressDMA(int location, int length) {
+	}// isValidAddress
+/**
+ * 	
+ * @param location - starting address to be checked
+ * @param length - for how many locations
+ * @return true if address range is valis
+ */
+	private boolean isValidAddressDMA(int location, int length) {
 		boolean checkAddressDMA = true;
-		if ((location < 0) | ((location + (length - 1)) > maximumAddress)) {
+		if ((location < 0) | ((location + (length - 1)) > maxAddress)) {
 			checkAddressDMA = false;
 			fireAccessError(location, "Invalid DMA memory location");
 		}// if
 		return checkAddressDMA;
+	}//checkAddressDMA
+
+
+	/**
+	 * isDiskTrapLocation - let the write know it needs to fire the MemoryTrap Event
+	 * 
+	 * @param location
+	 * @param value
+	 * @return
+	 */
+	private boolean isDiskTrapLocation(int location, byte value) {
+		if (traps.containsKey(location)) {
+			Trap thisTrap = traps.get(location);
+			return thisTrap.equals(Trap.IO) ? true : false;
+		} else {
+			return false;
+		}//
 	}
 
-	@SuppressWarnings("unchecked")
-	private void fireAccessError(int location, String errorType) {
-		Vector<MemoryAccessErrorListener> mael;
-		synchronized (this) {
-			mael = (Vector<MemoryAccessErrorListener>) memoryAccessErrorListeners.clone();
-		}// sync
-		int size = mael.size();
-		if (0 == size) {
-			return; // no listeners
+	/**
+	 * isDebugLocation
+	 * <p>
+	 * Checks to see if this location is marked for debugging.
+	 * <p>
+	 * we only want to stop the machine on the first encounter, the second time will be the resumption of execution
+	 * 
+	 * @param location
+	 *            location to check
+	 * @return true if the program is to halt
+	 */
+	private boolean isDebugLocation(int location) {
+		boolean isDebugLocation = false;
+		if (!traps.containsKey(location)) {
+			isDebugLocation = false;
+		} else {
+			Trap thisTrap = traps.get(location);
+			if (thisTrap.equals(Trap.DEBUG)) {
+				if (!isDebug) {// is this the first encounter ?
+					isDebug = true; // then set the flag
+					isDebugLocation = true;
+				} else {
+					isDebug = false; // else reset set the flag
+					isDebugLocation = false;
+				}// inner if
+			}// else
+		}// outer if
+		return isDebugLocation;
+	}
+
+	/**
+	 * addTrap add a location to the trap list and identifies it type
+	 * 
+	 * @param location
+	 *            where to set the trap
+	 * @param trap
+	 *            what kind of trap - IO or Debug
+	 */
+	public void addTrap(int location, Trap trap) {
+		if (!traps.containsKey(location)) { // Not trapped yet
+			if (isValidAddress(location) == false) {
+				return; // bad address - get out of here
+			} // inner if
 		}// if
-		MemoryAccessErrorEvent memoryAccessErrorEvent = new MemoryAccessErrorEvent(
-				this, location, errorType);
-		for (int i = 0; i < size; i++) {
-			MemoryAccessErrorListener listener = (MemoryAccessErrorListener) mael
-					.elementAt(i);
-			listener.memoryAccessError(memoryAccessErrorEvent);
-		}// for
-	}// fireProtectedMemoryAccess
+		traps.put(location, trap); // may be different trap type
+	}// addTrapLocation
 
-	public void resetListeners() {
-		memoryAccessErrorListeners = null;
-		memoryAccessErrorListeners = new Vector<MemoryAccessErrorListener>();
-		memoryTrapListeners = null;
-		memoryTrapListeners = new Vector<MemoryTrapListener>();
-	}// resetListeners
+	/**
+	 * removeTrap removes a specific trap at one location
+	 * 
+	 * @param location
+	 *            remove entry from trap list
+	 * @param trap
+	 *            the kind of trap to remove - IO or Debug
+	 */
+	public void removeTrap(int location, Trap trap) {
+		traps.remove(location, trap);
+	}// removeTrapLocation
 
-	private Vector<MemoryAccessErrorListener> memoryAccessErrorListeners = new Vector<MemoryAccessErrorListener>();
+	/**
+	 * removeTraps removes all traps of a specified type from trap list
+	 * 
+	 * @param trap
+	 *            Type of trap to remove - IO or Debug
+	 */
+	public void removeTraps(Trap trap) {
 
-	public synchronized void addMemoryAccessErrorListener(
-			MemoryAccessErrorListener mael) {
-		if (memoryAccessErrorListeners.contains(mael)) {
+		Set<Integer> locations = traps.keySet();
+		ArrayList<Integer> locs = new ArrayList<Integer>();
+		for (Integer location : locations) {
+			if (traps.get(location).equals(trap)) {
+				locs.add(location);
+			}// inner if
+		}// for location
+		locations = null;
+
+		for (Integer loc : locs) {
+			traps.remove(loc);
+		}// for location
+
+	}// removeTraps
+
+	/**
+	 * getTraps returns an array of all debug trap locations
+	 * 
+	 * @return array of debug locations
+	 */
+	public ArrayList<Integer> getTraps() {
+		return getTraps(Trap.DEBUG);
+	}// getTrapLocations - DEBUG
+
+	/**
+	 * getTraps returns an array of all traps of a specified type
+	 * 
+	 * @param trap
+	 *            type of trap - IO or Debug
+	 * @return ArrayList of traps specified by type
+	 */
+	public ArrayList<Integer> getTraps(Trap trap) {
+		ArrayList<Integer> getTrapLocations = new ArrayList<Integer>();
+		Set<Integer> locations = traps.keySet();
+		for (Integer location : locations) {
+			if (traps.get(location).equals(trap)) {
+				getTrapLocations.add(location);
+			}// inner if
+		}// for location
+		return getTrapLocations;
+	}// getTrapLocations
+
+	/**
+	 * getSize() gets memory size
+	 * 
+	 * @return the size of the memory in bytes
+	 */
+	public int getSize() {
+		return storage.length;
+	}// getSize
+
+	/**
+	 * getSizeInK() gets memory size in K
+	 * 
+	 * @return the size of the memory in K (1024)
+	 */
+	public int getSizeInK() {
+		return storage.length / K;
+	}// getSizeInBytes
+
+	// ///////////////////////////////
+	/**
+	 * setDebugTrapEnabled alows the debugging trapping to occur
+	 * 
+	 * @param state
+	 *            true to enable debugging
+	 */
+	public void setDebugTrapEnabled(boolean state) {
+		this.isDebugEnabled = state;
+	}// enableTrap
+
+	/**
+	 * isDebugTrapEnabled identifies if the debug trap is enabled
+	 * 
+	 * @return state of debug enable flag
+	 */
+	public boolean isDebugTrapEnabled() {
+		return isDebugEnabled;
+	}// isDebugTrapEnabled
+
+	private Vector<MemoryTrapListener> memoryTrapListeners = new Vector<MemoryTrapListener>();
+
+	public synchronized void addMemoryTrapListener(MemoryTrapListener mtl) {
+		if (memoryTrapListeners.contains(mtl)) {
 			return; // Already here
 		}// if
-		memoryAccessErrorListeners.addElement(mael);
+		memoryTrapListeners.addElement(mtl);
 	}// addMemoryListener
 
-	public synchronized void removeMemoryAccessErrorListener(
-			MemoryAccessErrorListener mael) {
-		memoryAccessErrorListeners.remove(mael);
+	public synchronized void removeMemoryTrapListener(MemoryTrapListener mtl) {
+		memoryTrapListeners.remove(mtl);
 	}// removeMemoryListener
 
-	@SuppressWarnings("unchecked")
-	private void fireMemoryTrap(int location, TRAP trap) {
+	private void fireMemoryTrap(int location, Trap trap) {
 		Vector<MemoryTrapListener> mtl;
 		synchronized (this) {
 			mtl = (Vector<MemoryTrapListener>) memoryTrapListeners.clone();
@@ -252,30 +423,44 @@ public class Core  {
 		}// sync
 	}// fireProtectedMemoryAccess
 
-	private Vector<MemoryTrapListener> memoryTrapListeners = new Vector<MemoryTrapListener>();
+	private Vector<MemoryAccessErrorListener> memoryAccessErrorListeners = new Vector<MemoryAccessErrorListener>();
 
-	public synchronized void addMemoryTrapListener(MemoryTrapListener mtl) {
-		if (memoryTrapListeners.contains(mtl)) {
+	public synchronized void addMemoryAccessErrorListener(
+			MemoryAccessErrorListener mael) {
+		if (memoryAccessErrorListeners.contains(mael)) {
 			return; // Already here
 		}// if
-		memoryTrapListeners.addElement(mtl);
+		memoryAccessErrorListeners.addElement(mael);
 	}// addMemoryListener
 
-	public synchronized void removeMemoryTrapListener(MemoryTrapListener mtl) {
-		memoryTrapListeners.remove(mtl);
+	public synchronized void removeMemoryAccessErrorListener(
+			MemoryAccessErrorListener mael) {
+		memoryAccessErrorListeners.remove(mael);
 	}// removeMemoryListener
 
-	public enum TRAP {
-		IO, DEBUG
-	}
+	private void fireAccessError(int location, String errorType) {
+		Vector<MemoryAccessErrorListener> mael;
+		synchronized (this) {
+			mael = (Vector<MemoryAccessErrorListener>) memoryAccessErrorListeners.clone();
+		}// sync
+		int size = mael.size();
+		if (0 == size) {
+			return; // no listeners
+		}// if
+		MemoryAccessErrorEvent memoryAccessErrorEvent = new MemoryAccessErrorEvent(
+				this, location, errorType);
+		for (int i = 0; i < size; i++) {
+			MemoryAccessErrorListener listener = (MemoryAccessErrorListener) mael
+					.elementAt(i);
+			listener.memoryAccessError(memoryAccessErrorEvent);
+		}// for
+	}// fireProtectedMemoryAccess
+		// //////////////////////////////////////////////////
 
 	static int K = 1024;
 	static int PROTECTED_MEMORY = 0; // 100;
-	static int MINIMUM_MEMORY = 8 * K;
+	static int MINIMUM_MEMORY = 16 * K;
 	static int MAXIMUM_MEMORY = 64 * K;
-	static int DEFAULT_MEMORY = 16 * K;
+	static int DEFAULT_MEMORY = 64 * K;
 
-	static Integer DISK_CONTROL_BYTE_40 = 0X0040;
-	static Integer DISK_CONTROL_BYTE_45 = 0X0045;
-
-}// class Mem
+}// class Core
