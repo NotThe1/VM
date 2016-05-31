@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
@@ -28,6 +27,7 @@ import javax.swing.JOptionPane;
  *          3) readDMA & writeDMA are for burst mode reading and writing.
  *              They also do not engage the Trap system.
  *              
+ *          Changed from using traps to Observer/Observable for IO/DEBUG?INVALID notification
  *          Traps for IO are triggered by the writes.
  *          Debug traps are triggered by the reads in conjunction with the isDebugEnabled flag
  *               
