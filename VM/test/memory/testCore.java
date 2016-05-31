@@ -172,21 +172,20 @@ public class testCore {
 		int maxMemory = core.getSize();
 		int location = 0;
 		core.writeDMA(location, values1);
-		assertThat("Good DMA read and write",values1,equalTo(core.readDMA(0, numberOfBytes)));
+		assertThat("Good DMA read and write", values1, equalTo(core.readDMA(0, numberOfBytes)));
 
 		accessErrorLocation = 0;
 		core.addMemoryAccessErrorListener(new MemoryAccessErrorListener() {
 			@Override
 			public void memoryAccessError(MemoryAccessErrorEvent me) {
 				accessErrorLocation = me.getLocation();
-				System.out.println("testReadAndWriteDMA \n" + me.getMessage() +"\n");
+				System.out.println("testReadAndWriteDMA \n" + me.getMessage() + "\n");
 			}
 		});// addMemoryAccessErrorListener
 		int badLocation = maxMemory - numberOfBytes + 10;
-		core.writeDMA(badLocation , values1);
+		core.writeDMA(badLocation, values1);
 		assertThat("write to a bad location ", badLocation, equalTo(accessErrorLocation));
-		
-		
+
 		core = null;
 	}
 
@@ -199,7 +198,7 @@ public class testCore {
 			@Override
 			public void memoryAccessError(MemoryAccessErrorEvent me) {
 				accessErrorLocation = me.getLocation();
-				System.out.println("testEvents 1\n" + me.getMessage() +"\n");
+				System.out.println("testEvents 1\n" + me.getMessage() + "\n");
 			}
 		});// addMemoryAccessErrorListener
 		int badLocation = 65 * K;
@@ -213,7 +212,7 @@ public class testCore {
 			@Override
 			public void memoryTrap(MemoryTrapEvent mte) {
 				trapLocation = mte.getLocation();
-				System.out.println("testEvents 2\n" + mte.getMessage() +"\n");
+				System.out.println("testEvents 2\n" + mte.getMessage() + "\n");
 			}
 		});// addMemoryTrapListener
 		trapLocation = 00;
@@ -251,7 +250,65 @@ public class testCore {
 		core = null;
 	}
 
-	// @Test
+	@Test
+	public void testReadAndWriteEord() {
+		Core core = new Core(24 * K);
+		int location = 0X0100;
+		final byte value55 = (byte) 0X055;
+		final byte valueAA = (byte) 0X0AA;
+		final byte valueC3 = (byte) 0X0C3;
+		final byte value3C = (byte) 0X03C;
+		final byte valueFF = (byte) 0X0FF;
+
+		// fill memory
+		for (int index = 0; index < 16; index++) {
+			core.write(location + index, valueFF);
+		}// for
+		for (int index = 0; index < 16; index++) {
+			assertThat("Confirm memory setup", valueFF, equalTo(core.read(location + index)));
+		}// for
+
+		core.writeWord(location, valueAA, value55);
+		int ans = ((valueAA << 8) + (value55 & 0X0FF)) & 0XFFFF;
+		assertThat("Word read", ans, equalTo(core.readWord(location)));
+
+		ans = ((value55 << 8) + (valueAA & 0X0FF)) & 0XFFFF;
+		assertThat("Word read reverse", ans, equalTo(core.readWordReversed(location)));
+
+		core.writeWord(location, valueC3, value3C);
+		ans = ((valueC3 << 8) + (value3C & 0X0FF)) & 0XFFFF;
+		assertThat("Word read", ans, equalTo(core.readWord(location)));
+
+		ans = ((value3C << 8) + (valueC3 & 0X0FF)) & 0XFFFF;
+		assertThat("Word read reversed", ans, equalTo(core.readWordReversed(location)));
+
+		core = null;
+	}
+
+	@Test
+	public void testPushPop() {
+		Core core = new Core(24 * K);
+		int location = 0X0100;
+		final byte valueFF = (byte) 0X0FF;
+
+		// fill memory
+		for (int index = 0; index < 16; index++) {
+			core.write(location + index, valueFF);
+		}// for
+		for (int index = 0; index < 16; index++) {
+			assertThat("Confirm memory setup", valueFF, equalTo(core.read(location + index)));
+		}// for
+		byte hiByte = (byte) 0X55;
+		byte loByte = (byte) 0XAA;
+		
+		int ans = ((hiByte << 8) | (loByte & 0X00FF)) & 0XFFFF;
+		core.pushWord(location, hiByte, loByte);
+		assertThat("Pus and Pop",ans,equalTo(core.popWord(location-2)));
+
+		core = null;
+	}
+
+	// } // @Test
 	// public void test() {
 	// Core core = new Core(24 * K);
 	//

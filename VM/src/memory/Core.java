@@ -1,6 +1,6 @@
 package memory;
 
-import java.awt.List;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -14,6 +14,20 @@ import javax.swing.JOptionPane;
  * @version 1.0
  * 
  *          Core is the class that acts as the physical memory.
+ *          <p> Core is a base level object. It represents the memory in a virtual machine.
+ *          
+ *           The access to the data is handled by 3 sets of read and write operations:
+ *          
+ *          1) read, write, readWord, writeWord, popWord & pushWord all participate in the monitoring of the locations
+ *              read for Debug Trap and written for IO trap.
+ *          2) readForIO & writeForIO are to be used for byte memory access by devices.
+ *              They do not engage the Trap system.
+ *          3) readDMA & writeDMA are for burst mode reading and writing.
+ *              They also do not engage the Trap system.
+ *              
+ *          Traps for IO are triggered by the writes.
+ *          Debug traps are triggered by the reads in conjunction with the isDebugEnabled flag
+ *               
  * 
  * @throws MemoryTrapEvent. Trap
  *             is fired if: 1) writing to a Disk Control Byte 2) writing to a debug marked location
@@ -62,7 +76,7 @@ public class Core {
 	}
 
 	/**
-	 * write -  put value into memory and check for IO trap 
+	 * write - put value into memory and check for IO trap
 	 * 
 	 * @param location
 	 *            where to put the value in memory
@@ -82,7 +96,7 @@ public class Core {
 	}// write
 
 	/**
-	 * writeForIO - write to a  location. Bypasses the memory trap apparatus
+	 * writeForIO - write to a location. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            where to put the value
@@ -95,11 +109,14 @@ public class Core {
 			storage[location] = value;
 		}// if
 	}// writeForIO
+
 	/**
 	 * writeDMA - write consecutive locations. Bypasses the memory trap apparatus
 	 * 
-	 * @param location starting address for write
-	 * @param values actual values to be written
+	 * @param location
+	 *            starting address for write
+	 * @param values
+	 *            actual values to be written
 	 */
 	public synchronized void writeDMA(int location, byte[] values) {
 		int numberOfBytes = values.length;
@@ -109,17 +126,37 @@ public class Core {
 			}// for
 		}// if
 	}// writeDMA
-/**
- * writeWord - write a word (16) bits to memory	
- * @param location starting place in memory for the write
- * @param hiByte - first byte to write, at location
- * @param loByte - second byte to write,  at location + 1
- */
+
+	/**
+	 * writeWord - write a word (16) bits to memory
+	 * 
+	 * @param location
+	 *            starting place in memory for the write
+	 * @param hiByte
+	 *            - first byte to write, at location
+	 * @param loByte
+	 *            - second byte to write, at location + 1
+	 */
 	public void writeWord(int location, byte hiByte, byte loByte) {
 		this.write(location, hiByte);
 		this.write(location + 1, loByte);
 
-	}// putWord	
+	}// putWord
+
+	/**
+	 * pushWord writes bytes in location -1 and location-2. Primarily used for stack work.
+	 * 
+	 * @param location
+	 *            1 higher than actual memory address that will be written
+	 * @param hiByte
+	 *            - goes into location -1
+	 * @param loByte
+	 *            - goes into location -2
+	 */
+	public void pushWord(int location, byte hiByte, byte loByte) {
+		this.write(location - 1, hiByte);
+		this.write(location - 2, loByte);
+	}// pushWord used for stack work
 
 	/**
 	 * read - returns the value found at the specified location
@@ -146,7 +183,7 @@ public class Core {
 	}// read
 
 	/**
-	 * readForIO - read from a  location. Bypasses the memory trap apparatus
+	 * readForIO - read from a location. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            where to get the returned value
@@ -159,11 +196,14 @@ public class Core {
 		}// if
 		return readForIO;
 	}// readForIO
+
 	/**
 	 * readDMA - read consecutive locations. Bypasses the memory trap apparatus
 	 * 
-	 * @param location where to start reading
-	 * @param length how many locations to return
+	 * @param location
+	 *            where to start reading
+	 * @param length
+	 *            how many locations to return
 	 * @return the values read
 	 */
 	public synchronized byte[] readDMA(int location, int length) {
@@ -177,17 +217,48 @@ public class Core {
 		}
 		return readDMA;
 	}// readDMA
-/**
- * readWord return a word value (16 bits)
- * @param location where to read from
- * @return word value
- */
+
+	/**
+	 * readWord - returns a word value (16 bits)
+	 * 
+	 * @param location
+	 *            - location contains hi byte, location + 1 contains lo byte
+	 * @return word - 16 bit value
+	 */
 	public int readWord(int location) {
 
 		int hiByte = (this.read(location) << 8) & 0XFF00;
-		int loByte = this.read(location +1) & 0X00FF;
+		int loByte = this.read(location + 1) & 0X00FF;
 		return 0XFFFF & (hiByte + loByte);
 	}// getWord
+
+	/**
+	 * readWordReversed - reverses the order of the immediate word byte 2 is lo byte byte 3 is hi byte
+	 * 
+	 * @param location
+	 * @return
+	 */
+	public int readWordReversed(int location) {
+
+		int loByte = (this.read(location + 1) << 8) & 0XFF00;
+		int hiByte = this.read(location) & 0X00FF;
+		return 0XFFFF & (hiByte + loByte);
+
+	}// readWordReversed
+
+	/**
+	 * popWord reads bytes from location and location +1. Primarily used for stack work.Reads the locations opposite to
+	 * the way readWord does
+	 * 
+	 * @param location
+	 *            - location contains lo byte, location + 1 contains hi byte
+	 * @return word - 16 bit value
+	 */
+	public int popWord(int location) {
+		int loByte = (int) this.read(location) & 0X00FF;
+		int hiByte = (int) (this.read(location + 1) << 8) & 0XFF00;
+		return 0XFFFF & (hiByte + loByte);
+	}// popWord
 
 	/**
 	 * isValidAddress - confirms the location is in addressable memory.
@@ -213,12 +284,15 @@ public class Core {
 		}// if
 		return checkAddress;
 	}// isValidAddress
-/**
- * 	
- * @param location - starting address to be checked
- * @param length - for how many locations
- * @return true if address range is valis
- */
+
+	/**
+	 * 
+	 * @param location
+	 *            - starting address to be checked
+	 * @param length
+	 *            - for how many locations
+	 * @return true if address range is valis
+	 */
 	private boolean isValidAddressDMA(int location, int length) {
 		boolean checkAddressDMA = true;
 		if ((location < 0) | ((location + (length - 1)) > maxAddress)) {
@@ -226,8 +300,7 @@ public class Core {
 			fireAccessError(location, "Invalid DMA memory location");
 		}// if
 		return checkAddressDMA;
-	}//checkAddressDMA
-
+	}// checkAddressDMA
 
 	/**
 	 * isDiskTrapLocation - let the write know it needs to fire the MemoryTrap Event
