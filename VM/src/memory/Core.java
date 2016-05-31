@@ -3,10 +3,13 @@ package memory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Observable;
 import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
+
+//import mvc.MemoryAccessErrorEvent;
 
 /**
  * 
@@ -37,7 +40,7 @@ import javax.swing.JOptionPane;
  *
  */
 
-public class Core {
+public class Core extends Observable{
 	private byte[] storage;
 	private int maxAddress;
 
@@ -45,7 +48,7 @@ public class Core {
 	private boolean isDebugEnabled = false;
 
 	public enum Trap {
-		IO, DEBUG
+		IO, DEBUG,INVALID
 	}
 
 	private HashMap<Integer, Trap> traps;
@@ -91,7 +94,11 @@ public class Core {
 		storage[location] = value;
 
 		if (isDiskTrapLocation(location, value)) {
-			fireMemoryTrap(location, Trap.IO);
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.IO);
+			setChanged();
+			notifyObservers(mte);
+
+			//fireMemoryTrap(location, Trap.IO);
 		}// if
 	}// write
 
@@ -175,6 +182,9 @@ public class Core {
 		}
 
 		if (isDebugLocation(location)) {
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.DEBUG);
+			setChanged();
+			notifyObservers(mte);
 			// may want to fire trap - fireMemoryTrap(location, Trap.DEBUG);
 			return 0X76; // Return a fake Halt instruction
 		} else {
@@ -273,14 +283,13 @@ public class Core {
 
 	private boolean isValidAddress(int location) {
 		boolean checkAddress = true;
-		if (location < 0) {
+		if ((location < 0)|(location > maxAddress)) {
 			// negative location
 			checkAddress = false;
-			fireAccessError(location, "Attempt to access bad location");
-		} else if (location > maxAddress) {
-			// out of bounds error
-			checkAddress = false;
-			fireAccessError(location, "Attempt to access bad location");
+//			fireAccessError(location, "Attempt to access bad location");
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.INVALID);
+			setChanged();
+			notifyObservers(mte);	
 		}// if
 		return checkAddress;
 	}// isValidAddress
@@ -291,13 +300,17 @@ public class Core {
 	 *            - starting address to be checked
 	 * @param length
 	 *            - for how many locations
-	 * @return true if address range is valis
+	 * @return true if address range is valid
 	 */
 	private boolean isValidAddressDMA(int location, int length) {
 		boolean checkAddressDMA = true;
 		if ((location < 0) | ((location + (length - 1)) > maxAddress)) {
 			checkAddressDMA = false;
-			fireAccessError(location, "Invalid DMA memory location");
+//			fireAccessError(location, "Invalid DMA memory location");
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.INVALID);
+			setChanged();
+			notifyObservers(mte);
+
 		}// if
 		return checkAddressDMA;
 	}// checkAddressDMA
@@ -465,69 +478,69 @@ public class Core {
 		return isDebugEnabled;
 	}// isDebugTrapEnabled
 
-	private Vector<MemoryTrapListener> memoryTrapListeners = new Vector<MemoryTrapListener>();
+//	private Vector<MemoryTrapListener> memoryTrapListeners = new Vector<MemoryTrapListener>();
+//
+//	public synchronized void addMemoryTrapListener(MemoryTrapListener mtl) {
+//		if (memoryTrapListeners.contains(mtl)) {
+//			return; // Already here
+//		}// if
+//		memoryTrapListeners.addElement(mtl);
+//	}// addMemoryListener
+//
+//	public synchronized void removeMemoryTrapListener(MemoryTrapListener mtl) {
+//		memoryTrapListeners.remove(mtl);
+//	}// removeMemoryListener
+//
+//	private void fireMemoryTrap(int location, Trap trap) {
+//		Vector<MemoryTrapListener> mtl;
+//		synchronized (this) {
+//			mtl = (Vector<MemoryTrapListener>) memoryTrapListeners.clone();
+//
+//			int size = mtl.size();
+//			if (0 == size) {
+//				return; // no listeners
+//			}// if
+//			MemoryTrapEvent memoryTrapEvent = new MemoryTrapEvent(this, location, trap);
+//			for (int i = 0; i < size; i++) {
+//				MemoryTrapListener listener = (MemoryTrapListener) mtl
+//						.elementAt(i);
+//				listener.memoryTrap(memoryTrapEvent);
+//			}// for
+//		}// sync
+//	}// fireProtectedMemoryAccess
 
-	public synchronized void addMemoryTrapListener(MemoryTrapListener mtl) {
-		if (memoryTrapListeners.contains(mtl)) {
-			return; // Already here
-		}// if
-		memoryTrapListeners.addElement(mtl);
-	}// addMemoryListener
-
-	public synchronized void removeMemoryTrapListener(MemoryTrapListener mtl) {
-		memoryTrapListeners.remove(mtl);
-	}// removeMemoryListener
-
-	private void fireMemoryTrap(int location, Trap trap) {
-		Vector<MemoryTrapListener> mtl;
-		synchronized (this) {
-			mtl = (Vector<MemoryTrapListener>) memoryTrapListeners.clone();
-
-			int size = mtl.size();
-			if (0 == size) {
-				return; // no listeners
-			}// if
-			MemoryTrapEvent memoryTrapEvent = new MemoryTrapEvent(this, location, trap);
-			for (int i = 0; i < size; i++) {
-				MemoryTrapListener listener = (MemoryTrapListener) mtl
-						.elementAt(i);
-				listener.memoryTrap(memoryTrapEvent);
-			}// for
-		}// sync
-	}// fireProtectedMemoryAccess
-
-	private Vector<MemoryAccessErrorListener> memoryAccessErrorListeners = new Vector<MemoryAccessErrorListener>();
-
-	public synchronized void addMemoryAccessErrorListener(
-			MemoryAccessErrorListener mael) {
-		if (memoryAccessErrorListeners.contains(mael)) {
-			return; // Already here
-		}// if
-		memoryAccessErrorListeners.addElement(mael);
-	}// addMemoryListener
-
-	public synchronized void removeMemoryAccessErrorListener(
-			MemoryAccessErrorListener mael) {
-		memoryAccessErrorListeners.remove(mael);
-	}// removeMemoryListener
-
-	private void fireAccessError(int location, String errorType) {
-		Vector<MemoryAccessErrorListener> mael;
-		synchronized (this) {
-			mael = (Vector<MemoryAccessErrorListener>) memoryAccessErrorListeners.clone();
-		}// sync
-		int size = mael.size();
-		if (0 == size) {
-			return; // no listeners
-		}// if
-		MemoryAccessErrorEvent memoryAccessErrorEvent = new MemoryAccessErrorEvent(
-				this, location, errorType);
-		for (int i = 0; i < size; i++) {
-			MemoryAccessErrorListener listener = (MemoryAccessErrorListener) mael
-					.elementAt(i);
-			listener.memoryAccessError(memoryAccessErrorEvent);
-		}// for
-	}// fireProtectedMemoryAccess
+//	private Vector<MemoryAccessErrorListener> memoryAccessErrorListeners = new Vector<MemoryAccessErrorListener>();
+//
+//	public synchronized void addMemoryAccessErrorListener(
+//			MemoryAccessErrorListener mael) {
+//		if (memoryAccessErrorListeners.contains(mael)) {
+//			return; // Already here
+//		}// if
+//		memoryAccessErrorListeners.addElement(mael);
+//	}// addMemoryListener
+//
+//	public synchronized void removeMemoryAccessErrorListener(
+//			MemoryAccessErrorListener mael) {
+//		memoryAccessErrorListeners.remove(mael);
+//	}// removeMemoryListener
+//
+//	private void fireAccessError(int location, String errorType) {
+//		Vector<MemoryAccessErrorListener> mael;
+//		synchronized (this) {
+//			mael = (Vector<MemoryAccessErrorListener>) memoryAccessErrorListeners.clone();
+//		}// sync
+//		int size = mael.size();
+//		if (0 == size) {
+//			return; // no listeners
+//		}// if
+//		MemoryAccessErrorEvent memoryAccessErrorEvent = new MemoryAccessErrorEvent(
+//				this, location, errorType);
+//		for (int i = 0; i < size; i++) {
+//			MemoryAccessErrorListener listener = (MemoryAccessErrorListener) mael
+//					.elementAt(i);
+//			listener.memoryAccessError(memoryAccessErrorEvent);
+//		}// for
+//	}// fireProtectedMemoryAccess
 		// //////////////////////////////////////////////////
 
 	static int K = 1024;

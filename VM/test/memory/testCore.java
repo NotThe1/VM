@@ -2,12 +2,11 @@ package memory;
 
 import static org.junit.Assert.*;
 
-import java.awt.List;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -16,14 +15,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.BaseMatcher.*;
-import static org.hamcrest.TypeSafeMatcher.*;
 
-public class testCore {
+
+public class testCore implements Observer{
 	static int K = 1024;
-	int accessErrorLocation;
+	int badLocation;
 	int trapLocation;
-	int trapValue;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -56,6 +53,7 @@ public class testCore {
 		assertThat("constructor 25K", (25 * K), equalTo(core.getSize()));
 		assertThat("constructor Default size", size, equalTo(core.getSizeInK()));
 
+		// enable to check out JOption Pane re using default memory size
 		// coreConstructor = null;
 		// size = 125;
 		// coreConstructor = new Core(size * K);
@@ -66,7 +64,6 @@ public class testCore {
 	@Test
 	public void testTraps() {
 		Core core = new Core(24 * K);
-		int value;
 		ArrayList<Integer> locationsDebug =
 				new ArrayList<Integer>(Arrays.asList(0X0200, 0X0400, 0X0800, 0X0A00, 0X0C00, 0X0E00));
 
@@ -122,14 +119,12 @@ public class testCore {
 		ArrayList<Byte> values =
 				new ArrayList<Byte>(Arrays.asList((byte) 0X00, (byte) 0X0FF, (byte) 0X0AA, (byte) 0X055, (byte) 0X0C3,
 						(byte) 0X03C));
-		String msg;
 
 		for (int loc = 0; loc < locations.size(); loc++) {
 			for (int val = 0; val < values.size(); val++) {
 				location = locations.get(loc);
 				value = values.get(val);
 				core.write(location, value);
-				msg = String.format("Read and write: Location %04X,  Value %02X", location, value);
 				assertThat("Simple Read and write", value, equalTo(core.read(location)));
 			}// for value
 		}// for location
@@ -147,14 +142,12 @@ public class testCore {
 		ArrayList<Byte> values =
 				new ArrayList<Byte>(Arrays.asList((byte) 0X00, (byte) 0X0FF, (byte) 0X0AA, (byte) 0X055, (byte) 0X0C3,
 						(byte) 0X03C));
-		String msg;
 
 		for (int loc = 0; loc < locations.size(); loc++) {
 			for (int val = 0; val < values.size(); val++) {
 				location = locations.get(loc);
 				value = values.get(val);
 				core.writeForIO(location, value);
-				msg = String.format("Read and write: Location %04X,  Value %02X", location, value);
 				assertThat("Read and write for IO", value, equalTo(core.readForIO(location)));
 			}// for value
 		}// for location
@@ -168,23 +161,18 @@ public class testCore {
 				(byte) 0X00, (byte) 0X0FF, (byte) 0X0AA, (byte) 0X055, (byte) 0X0C3, (byte) 0X03C,
 				(byte) 0X00, (byte) 0X0FF, (byte) 0X0AA, (byte) 0X055, (byte) 0X0C3, (byte) 0X03C };
 		int numberOfBytes = values1.length;
-		byte[] values2 = new byte[numberOfBytes];
 		int maxMemory = core.getSize();
 		int location = 0;
 		core.writeDMA(location, values1);
 		assertThat("Good DMA read and write", values1, equalTo(core.readDMA(0, numberOfBytes)));
 
-		accessErrorLocation = 0;
-		core.addMemoryAccessErrorListener(new MemoryAccessErrorListener() {
-			@Override
-			public void memoryAccessError(MemoryAccessErrorEvent me) {
-				accessErrorLocation = me.getLocation();
-				System.out.println("testReadAndWriteDMA \n" + me.getMessage() + "\n");
-			}
-		});// addMemoryAccessErrorListener
-		int badLocation = maxMemory - numberOfBytes + 10;
-		core.writeDMA(badLocation, values1);
-		assertThat("write to a bad location ", badLocation, equalTo(accessErrorLocation));
+		badLocation = 0;
+		 core.addObserver(this);
+		badLocation = 00;
+
+		int thisLocation = maxMemory - numberOfBytes + 10;
+		core.writeDMA(thisLocation, values1);
+		assertThat("write to a bad location ", thisLocation, equalTo(badLocation));
 
 		core = null;
 	}
@@ -192,29 +180,18 @@ public class testCore {
 	@Test
 	public void testEvents() {
 		// Access violation
-		accessErrorLocation = 0;
+		badLocation = 0;
 		Core core = new Core(24 * K);
-		core.addMemoryAccessErrorListener(new MemoryAccessErrorListener() {
-			@Override
-			public void memoryAccessError(MemoryAccessErrorEvent me) {
-				accessErrorLocation = me.getLocation();
-				System.out.println("testEvents 1\n" + me.getMessage() + "\n");
-			}
-		});// addMemoryAccessErrorListener
-		int badLocation = 65 * K;
-		assertThat("write to a bad location ", 0, equalTo(accessErrorLocation));
-		core.write(badLocation, (byte) 0x0FF);
-		assertThat("write to a bad location ", badLocation, equalTo(accessErrorLocation));
+		 core.addObserver(this);
+
+		int ThisLocation = 65 * K;
+		assertThat("write to a bad location ", 0, equalTo(badLocation));
+		core.write(ThisLocation, (byte) 0x0FF);
+		assertThat("write to a bad location ", ThisLocation, equalTo(badLocation));
 
 		// IO
 		trapLocation = 0;
-		core.addMemoryTrapListener(new MemoryTrapListener() {
-			@Override
-			public void memoryTrap(MemoryTrapEvent mte) {
-				trapLocation = mte.getLocation();
-				System.out.println("testEvents 2\n" + mte.getMessage() + "\n");
-			}
-		});// addMemoryTrapListener
+		core.addObserver(this);
 		trapLocation = 00;
 		int location = 0X40;
 		byte zero = (byte) 0X00;
@@ -223,7 +200,7 @@ public class testCore {
 		core.addTrap(location, Core.Trap.IO);
 		assertThat("write to IO Trap location ", 0, equalTo(trapLocation));
 		assertThat("trapLocation before IO Trap set", zero, equalTo(core.read(location)));
-		byte valueRead = core.read(location);
+		core.read(location);
 		// after write
 		core.write(location, valueWrite);
 		assertThat("write to IO Trap location ", location, equalTo(trapLocation));
@@ -246,6 +223,8 @@ public class testCore {
 
 		assertThat("read Debug location first time", (byte) 0X76, equalTo(core.read(location)));
 		assertThat("read Debug location second time", valueWrite, equalTo(core.read(location)));
+		
+		
 
 		core = null;
 	}
@@ -308,7 +287,47 @@ public class testCore {
 		core = null;
 	}
 
-	// } // @Test
+	   @Test
+	 public void testDebugNotify() {
+	 Core core = new Core(24 * K);
+	 int testLocation = 0X0100;
+	 trapLocation = 0;
+	 core.addObserver(this);
+	 assertThat("Observable test",0,equalTo(trapLocation));
+	 
+	 core.addTrap(testLocation, Core.Trap.DEBUG);
+	 core.read(testLocation);
+	 assertThat("Observable test before",0,equalTo(trapLocation));
+	 
+	 core.setDebugTrapEnabled(true);
+	 core.read(testLocation);
+	 assertThat("Observable test after",testLocation,equalTo(trapLocation));
+
+	
+		core = null;
+	 }
+
+	@Override
+	public void update(Observable obs, Object arg) {
+		MemoryTrapEvent mte = (MemoryTrapEvent)arg;
+		
+		Core.Trap trap  = mte.getTrap();
+		switch (trap){
+		case IO:
+		case DEBUG:
+			trapLocation = mte.getLocation();
+			break;
+		case INVALID:
+			badLocation = mte.getLocation();
+			break;
+		default:
+		}
+		System.out.println("Observable \n" + mte.getMessage() + "\n");	
+	}
+
+
+
+	// // @Test
 	// public void test() {
 	// Core core = new Core(24 * K);
 	//
