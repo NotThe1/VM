@@ -23,13 +23,13 @@ public class ConditionCodeRegister {
 	private boolean zeroFlag = false; // set if result = 0;
 
 	/**
-	 * Constructor - no work done just makes the object
+	 *  No work done just makes the object
 	 */
 	public ConditionCodeRegister() {
 	}// Constructor - ConditionCodeRegister()
 
 	/**
-	 * getConditionCode returns the state of all the conditions
+	 * Returns the state of all the conditions
 	 * 
 	 * @return - the state of the condition codes as bits: |7|6|5|4|3|2|1|0 |S|Z|0|A|0|P|1|C
 	 */
@@ -53,7 +53,7 @@ public class ConditionCodeRegister {
 	}// getConditionCode
 
 	/**
-	 * setConditionCode sets the state of all the conditions
+	 * Sets the state of all the conditions
 	 * 
 	 * @param flags
 	 *            - the condition code as bits: |7|6|5|4|3|2|1|0 |S|Z|0|A|0|P|1|C
@@ -70,7 +70,7 @@ public class ConditionCodeRegister {
 	}// setConditionCode
 
 	/**
-	 * clearAllCodes - resets all the conditions
+	 * Resets all the conditions
 	 */
 	public void clearAllCodes() {
 		auxilaryCarryFlag = false;
@@ -81,7 +81,7 @@ public class ConditionCodeRegister {
 	}// clearAllCodes
 
 	/**
-	 * setZSP - sets the Zero, Sign, and Parity conditions based on passed value
+	 * Sets the Zero, Sign, and Parity conditions based on passed value
 	 * 
 	 * @param value
 	 *            - byte to be analyzed
@@ -93,7 +93,7 @@ public class ConditionCodeRegister {
 	}// setZSP
 
 	/**
-	 * setZSPclearCYandAUX - clears the Carry and Aux Carry, and sets Reset based on passed value
+	 * Clears the Carry and Aux Carry, and sets Reset based on passed value
 	 * 
 	 * @param value
 	 *            - byte to be analyzed
@@ -104,7 +104,7 @@ public class ConditionCodeRegister {
 	}// setZSPclearCYandAUX
 
 	/**
-	 * isAuxilaryCarryFlagSet 
+	 * 
 	 * @return the auxilaryCarryFlag
 	 */
 	public boolean isAuxilaryCarryFlagSet() {
@@ -112,7 +112,7 @@ public class ConditionCodeRegister {
 	}// isAuxilaryCarryFlagSet
 
 	/**
-	 * setAuxilaryCarryFlag
+	 * 
 	 * @param auxilaryCarryFlag
 	 *            the auxilaryCarryFlag to set
 	 */
@@ -121,7 +121,7 @@ public class ConditionCodeRegister {
 	}// setAuxilaryCarryFlag
 
 	/**
-	 * isCarryFlagSet
+	 * 
 	 * @return the carryFlag
 	 */
 	public boolean isCarryFlagSet() {
@@ -129,7 +129,7 @@ public class ConditionCodeRegister {
 	}// isCarryFlagSet
 
 	/**
-	 * setCarryFlag
+	 * 
 	 * @param carryFlag
 	 *            the carryFlag to set
 	 */
@@ -138,7 +138,7 @@ public class ConditionCodeRegister {
 	}// setCarryFlag
 
 	/**
-	 * isSignFlagSet
+	 * 
 	 * @return the signFlag
 	 */
 	public boolean isSignFlagSet() {
@@ -146,7 +146,7 @@ public class ConditionCodeRegister {
 	}// isSignFlagSet
 
 	/**
-	 * setSignFlag
+	 * 
 	 * @param signFlag
 	 *            the signFlag to set
 	 */
@@ -155,7 +155,7 @@ public class ConditionCodeRegister {
 	}// setSignFlag
 
 	/**
-	 * isParityFlagSet
+	 * 
 	 * @return the parityFlag
 	 */
 	public boolean isParityFlagSet() {
@@ -163,7 +163,7 @@ public class ConditionCodeRegister {
 	}// isParityFlagSet
 
 	/**
-	 * setParityFlag
+	 * 
 	 * @param parityFlag
 	 *            the parityFlag to set
 	 */
@@ -172,7 +172,7 @@ public class ConditionCodeRegister {
 	}// setParityFlag
 
 	/**
-	 * isZeroFlagSet
+	 * 
 	 * @return the zeroFlag
 	 */
 	public boolean isZeroFlagSet() {
@@ -180,7 +180,7 @@ public class ConditionCodeRegister {
 	}// isZeroFlagSet
 
 	/**
-	 * setZeroFlag
+	 * 
 	 * @param zeroFlag
 	 *            the zeroFlag to set
 	 */

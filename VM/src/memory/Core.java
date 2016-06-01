@@ -15,16 +15,16 @@ import javax.swing.JOptionPane;
  * @author Frank Martyn
  * @version 1.0
  * 
- *          Core is the class that acts as the physical memory.
+ *         <p> Core is the class that acts as the physical memory.
  *          <p> Core is a base level object. It represents the memory in a virtual machine.
  *          
  *           The access to the data is handled by 3 sets of read and write operations:
  *          
- *          1) read, write, readWord, writeWord, popWord & pushWord all participate in the monitoring of the locations
+ *          1) read, write, readWord, writeWord, popWord and pushWord all participate in the monitoring of the locations
  *              read for Debug Trap and written for IO trap.
- *          2) readForIO & writeForIO are to be used for byte memory access by devices.
+ *          2) readForIO and writeForIO are to be used for byte memory access by devices.
  *              They do not engage the Trap system.
- *          3) readDMA & writeDMA are for burst mode reading and writing.
+ *          3) readDMA and writeDMA are for burst mode reading and writing.
  *              They also do not engage the Trap system.
  *              
  *          Changed from using traps to Observer/Observable for IO/DEBUG?INVALID notification
@@ -32,11 +32,7 @@ import javax.swing.JOptionPane;
  *          Debug traps are triggered by the reads in conjunction with the isDebugEnabled flag
  *               
  * 
- * @throws MemoryTrapEvent. Trap
- *             is fired if: 1) writing to a Disk Control Byte 2) writing to a debug marked location
  * 
- * @throws MemoryAccessErrorEvent. Trap
- *             is fired if: 1) attempt is made to address location not in memory
  *
  */
 
@@ -54,10 +50,10 @@ public class Core extends Observable{
 	private HashMap<Integer, Trap> traps;
 
 	/**
-	 * Constructor
+	 * 
 	 * 
 	 * @param size
-	 *            Is the size of Memory
+	 *            The size of Memory to create
 	 */
 	public Core(int size) {
 		if ((size < MINIMUM_MEMORY) | size > MAXIMUM_MEMORY) {
@@ -72,14 +68,14 @@ public class Core extends Observable{
 	}
 
 	/**
-	 * Constructor uses Default size for memory
+	 *  Uses DEFAULT_MEMORY size for memory allocation
 	 */
 	public Core() {
 		this(DEFAULT_MEMORY);
 	}
 
 	/**
-	 * write - put value into memory and check for IO trap
+	 * Places value into memory and check for IO trap
 	 * 
 	 * @param location
 	 *            where to put the value in memory
@@ -103,7 +99,7 @@ public class Core extends Observable{
 	}// write
 
 	/**
-	 * writeForIO - write to a location. Bypasses the memory trap apparatus
+	 *  Write to a location. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            where to put the value
@@ -118,7 +114,7 @@ public class Core extends Observable{
 	}// writeForIO
 
 	/**
-	 * writeDMA - write consecutive locations. Bypasses the memory trap apparatus
+	 *  Write consecutive locations. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            starting address for write
@@ -135,7 +131,7 @@ public class Core extends Observable{
 	}// writeDMA
 
 	/**
-	 * writeWord - write a word (16) bits to memory
+	 *  Write a word (16) bits to memory
 	 * 
 	 * @param location
 	 *            starting place in memory for the write
@@ -151,7 +147,7 @@ public class Core extends Observable{
 	}// putWord
 
 	/**
-	 * pushWord writes bytes in location -1 and location-2. Primarily used for stack work.
+	 *  Writes bytes in location -1 and location-2. Primarily used for stack work.
 	 * 
 	 * @param location
 	 *            1 higher than actual memory address that will be written
@@ -166,7 +162,7 @@ public class Core extends Observable{
 	}// pushWord used for stack work
 
 	/**
-	 * read - returns the value found at the specified location
+	 *  Returns the value found at the specified location, and checks for DEBUG 
 	 * 
 	 * @param location
 	 *            where to get the value from
@@ -193,7 +189,7 @@ public class Core extends Observable{
 	}// read
 
 	/**
-	 * readForIO - read from a location. Bypasses the memory trap apparatus
+	 *  Read from a location. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            where to get the returned value
@@ -208,7 +204,7 @@ public class Core extends Observable{
 	}// readForIO
 
 	/**
-	 * readDMA - read consecutive locations. Bypasses the memory trap apparatus
+	 * Read consecutive locations. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            where to start reading
@@ -229,7 +225,7 @@ public class Core extends Observable{
 	}// readDMA
 
 	/**
-	 * readWord - returns a word value (16 bits)
+	 *  Returns a word value (16 bits)
 	 * 
 	 * @param location
 	 *            - location contains hi byte, location + 1 contains lo byte
@@ -243,10 +239,10 @@ public class Core extends Observable{
 	}// getWord
 
 	/**
-	 * readWordReversed - reverses the order of the immediate word byte 2 is lo byte byte 3 is hi byte
+	 *  Reverses the order of the immediate word byte 2 is lo byte byte 3 is hi byte
 	 * 
-	 * @param location
-	 * @return
+	 * @param location - starting place in memory to find vale
+	 * @return word as used by calls and jumps
 	 */
 	public int readWordReversed(int location) {
 
@@ -257,7 +253,7 @@ public class Core extends Observable{
 	}// readWordReversed
 
 	/**
-	 * popWord reads bytes from location and location +1. Primarily used for stack work.Reads the locations opposite to
+	 * Reads bytes from location and location +1. Primarily used for stack work.Reads the locations opposite to
 	 * the way readWord does
 	 * 
 	 * @param location
@@ -271,7 +267,7 @@ public class Core extends Observable{
 	}// popWord
 
 	/**
-	 * isValidAddress - confirms the location is in addressable memory.
+	 * Confirms the location is in addressable memory.
 	 * <p>
 	 * Will fire an MemoryAccessError if out of addressable memory
 	 * 
@@ -284,9 +280,7 @@ public class Core extends Observable{
 	private boolean isValidAddress(int location) {
 		boolean checkAddress = true;
 		if ((location < 0)|(location > maxAddress)) {
-			// negative location
 			checkAddress = false;
-//			fireAccessError(location, "Attempt to access bad location");
 			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.INVALID);
 			setChanged();
 			notifyObservers(mte);	
@@ -316,7 +310,7 @@ public class Core extends Observable{
 	}// checkAddressDMA
 
 	/**
-	 * isDiskTrapLocation - let the write know it needs to fire the MemoryTrap Event
+	 * Let the write know if at an IO trap location
 	 * 
 	 * @param location
 	 * @param value
@@ -332,7 +326,7 @@ public class Core extends Observable{
 	}
 
 	/**
-	 * isDebugLocation
+	 * 
 	 * <p>
 	 * Checks to see if this location is marked for debugging.
 	 * <p>
@@ -362,7 +356,7 @@ public class Core extends Observable{
 	}
 
 	/**
-	 * addTrap add a location to the trap list and identifies it type
+	 * Add a location to the trap list and identifies it type
 	 * 
 	 * @param location
 	 *            where to set the trap
@@ -379,7 +373,7 @@ public class Core extends Observable{
 	}// addTrapLocation
 
 	/**
-	 * removeTrap removes a specific trap at one location
+	 * Removes a specific trap at one location
 	 * 
 	 * @param location
 	 *            remove entry from trap list
@@ -391,7 +385,7 @@ public class Core extends Observable{
 	}// removeTrapLocation
 
 	/**
-	 * removeTraps removes all traps of a specified type from trap list
+	 * RemoveTraps removes all traps of a specified type from trap list
 	 * 
 	 * @param trap
 	 *            Type of trap to remove - IO or Debug
@@ -414,7 +408,7 @@ public class Core extends Observable{
 	}// removeTraps
 
 	/**
-	 * getTraps returns an array of all debug trap locations
+	 * Returns an array of all debug trap locations
 	 * 
 	 * @return array of debug locations
 	 */
@@ -423,7 +417,7 @@ public class Core extends Observable{
 	}// getTrapLocations - DEBUG
 
 	/**
-	 * getTraps returns an array of all traps of a specified type
+	 * Returns an array of all traps of a specified type
 	 * 
 	 * @param trap
 	 *            type of trap - IO or Debug
@@ -441,7 +435,7 @@ public class Core extends Observable{
 	}// getTrapLocations
 
 	/**
-	 * getSize() gets memory size
+	 *  Gets memory size 
 	 * 
 	 * @return the size of the memory in bytes
 	 */
@@ -450,7 +444,7 @@ public class Core extends Observable{
 	}// getSize
 
 	/**
-	 * getSizeInK() gets memory size in K
+	 * Gets memory size in K
 	 * 
 	 * @return the size of the memory in K (1024)
 	 */
@@ -460,7 +454,7 @@ public class Core extends Observable{
 
 	// ///////////////////////////////
 	/**
-	 * setDebugTrapEnabled alows the debugging trapping to occur
+	 *  Allows the debugging trapping to occur
 	 * 
 	 * @param state
 	 *            true to enable debugging
@@ -470,7 +464,7 @@ public class Core extends Observable{
 	}// enableTrap
 
 	/**
-	 * isDebugTrapEnabled identifies if the debug trap is enabled
+	 * Identifies if the debug trap is enabled
 	 * 
 	 * @return state of debug enable flag
 	 */
@@ -478,70 +472,7 @@ public class Core extends Observable{
 		return isDebugEnabled;
 	}// isDebugTrapEnabled
 
-//	private Vector<MemoryTrapListener> memoryTrapListeners = new Vector<MemoryTrapListener>();
-//
-//	public synchronized void addMemoryTrapListener(MemoryTrapListener mtl) {
-//		if (memoryTrapListeners.contains(mtl)) {
-//			return; // Already here
-//		}// if
-//		memoryTrapListeners.addElement(mtl);
-//	}// addMemoryListener
-//
-//	public synchronized void removeMemoryTrapListener(MemoryTrapListener mtl) {
-//		memoryTrapListeners.remove(mtl);
-//	}// removeMemoryListener
-//
-//	private void fireMemoryTrap(int location, Trap trap) {
-//		Vector<MemoryTrapListener> mtl;
-//		synchronized (this) {
-//			mtl = (Vector<MemoryTrapListener>) memoryTrapListeners.clone();
-//
-//			int size = mtl.size();
-//			if (0 == size) {
-//				return; // no listeners
-//			}// if
-//			MemoryTrapEvent memoryTrapEvent = new MemoryTrapEvent(this, location, trap);
-//			for (int i = 0; i < size; i++) {
-//				MemoryTrapListener listener = (MemoryTrapListener) mtl
-//						.elementAt(i);
-//				listener.memoryTrap(memoryTrapEvent);
-//			}// for
-//		}// sync
-//	}// fireProtectedMemoryAccess
 
-//	private Vector<MemoryAccessErrorListener> memoryAccessErrorListeners = new Vector<MemoryAccessErrorListener>();
-//
-//	public synchronized void addMemoryAccessErrorListener(
-//			MemoryAccessErrorListener mael) {
-//		if (memoryAccessErrorListeners.contains(mael)) {
-//			return; // Already here
-//		}// if
-//		memoryAccessErrorListeners.addElement(mael);
-//	}// addMemoryListener
-//
-//	public synchronized void removeMemoryAccessErrorListener(
-//			MemoryAccessErrorListener mael) {
-//		memoryAccessErrorListeners.remove(mael);
-//	}// removeMemoryListener
-//
-//	private void fireAccessError(int location, String errorType) {
-//		Vector<MemoryAccessErrorListener> mael;
-//		synchronized (this) {
-//			mael = (Vector<MemoryAccessErrorListener>) memoryAccessErrorListeners.clone();
-//		}// sync
-//		int size = mael.size();
-//		if (0 == size) {
-//			return; // no listeners
-//		}// if
-//		MemoryAccessErrorEvent memoryAccessErrorEvent = new MemoryAccessErrorEvent(
-//				this, location, errorType);
-//		for (int i = 0; i < size; i++) {
-//			MemoryAccessErrorListener listener = (MemoryAccessErrorListener) mael
-//					.elementAt(i);
-//			listener.memoryAccessError(memoryAccessErrorEvent);
-//		}// for
-//	}// fireProtectedMemoryAccess
-		// //////////////////////////////////////////////////
 
 	static int K = 1024;
 	static int PROTECTED_MEMORY = 0; // 100;
