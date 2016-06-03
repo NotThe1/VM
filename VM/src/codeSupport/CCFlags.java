@@ -1,0 +1,12 @@
+package codeSupport;
+
+public enum CCFlags {
+	S,		// Sign
+	Z,		// Zero
+	AC,		// Auxiliary Carry
+	P,		// Parity
+	CY,		// * Carry 
+	ZSP,	// Zero, Sign & Parity
+	ZSPAC,	// * Zero, Sign, Parity & Auxiliary Carry
+	ZSPACCY	// * Zero, Sign, Parity,Auxiliary Carry & Carry
+}

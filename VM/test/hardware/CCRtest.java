@@ -4,9 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class CCRtest {
@@ -32,15 +30,6 @@ public class CCRtest {
 	static byte MASK_CARRY = (byte) 0B00000001;
 	static byte MASK_CARRY_NOT = (byte) 0B11111110;
 
-	// XX0X 0X1X
-
-	// @BeforeClass
-	// public static void setUpBeforeClass() throws Exception {
-	// }
-	//
-	// @AfterClass
-	// public static void tearDownAfterClass() throws Exception {
-	// }
 
 	@Before
 	public void setUp() throws Exception {
