@@ -17,6 +17,17 @@ public class Instruction implements Serializable {
 	public Instruction(int opCode, int opCodeSize, int instructionSize,
 			ArgumentSignature argumentSignature, ArgumentType arg1,ArgumentType arg2, CCFlags ccFlags,
 			Command command, String description, String function) {
+		this.setOpCode(opCode);
+		this.setOpCodeSize(opCodeSize);
+		this.setInstructionSize(instructionSize);
+		this.setArgumentSignature(argumentSignature);
+		this.setArg1(arg1);
+		this.setArg2(arg2);
+		this.setCcFlags(ccFlags);
+		this.setCommand(command);
+		this.setDescription(description);
+		this.setFunction(function);
+
 	}
 
 	public int getOpCode() {
@@ -56,7 +67,7 @@ public class Instruction implements Serializable {
 	}
 
 	public void setArg2(ArgumentType arg2) {
-		this. arg1 = arg2;
+		this. arg2 = arg2;
 	}
 	public ArgumentType  getArg2() {
 		return arg2;

@@ -1,6 +1,7 @@
 package codeSupport;
 
 public enum CCFlags {
+	NONE,	// 
 	S,		// Sign
 	Z,		// Zero
 	AC,		// Auxiliary Carry
