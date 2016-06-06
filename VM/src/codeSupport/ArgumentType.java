@@ -4,8 +4,8 @@ public enum ArgumentType {
 	NONE,
 	ADDRESS,
 	D8,
-	R8,
 	D16,
-	R16,
-	VECTOR
+	VECTOR,
+	A, B, C, D, E, H, L,		// single byte register
+	BC, DE, HL, M, SP, AF, PC	// two byte  register
 }

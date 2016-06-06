@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.List;
 import java.awt.Point;
 
 import javax.swing.JFrame;
@@ -12,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
@@ -36,6 +38,7 @@ import javax.swing.JPanel;
 
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.print.PrinterException;
 
 import javax.swing.border.TitledBorder;
 import javax.swing.border.BevelBorder;
@@ -49,11 +52,15 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import javax.swing.JTable;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.JSeparator;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JTextField;
+import javax.swing.JButton;
 
 public class TableMaker {
 	private JFrame frmOpcodeTableMaker;
@@ -74,6 +81,35 @@ public class TableMaker {
 			}
 		});
 	}
+
+	private void rowUpdate() {
+		int opCode = (int) hsOpcode.getValue();
+		int opCodeSize = (int) hsOpcodeSize.getValue();
+		int instructionSize = (int) hsInstructionSize.getValue();
+		ArgumentSignature argumentSignature = (ArgumentSignature) cbArgumentSignature.getSelectedItem();
+		ArgumentType arg1 = (ArgumentType) cbArg1.getSelectedItem();
+		ArgumentType arg2 = (ArgumentType) cbArg2.getSelectedItem();
+		CCFlags flags = (CCFlags) cbFlags.getSelectedItem();
+		Command command = (Command) cbCommand.getSelectedItem();
+		String desc = txtDescription.getText();
+		String func = txtFunction.getText();
+
+		DefaultTableModel masterModel = (DefaultTableModel) tableMaster.getModel();
+
+		Instruction ins = new Instruction(opCode,
+				opCodeSize,
+				instructionSize,
+				argumentSignature,
+				arg1,
+				arg2,
+				flags,
+				command,
+				desc,
+				func);
+
+		addInstructonToTable(ins, masterModel);
+
+	}// rowUpdate
 
 	private void argumentTypeChanged(ArgumentType argumentType) {
 		// switch (argumentType) {
@@ -109,35 +145,87 @@ public class TableMaker {
 		// }
 	}// argumentTypeChanged
 
-	private void setRegisterPanels(int numberOfRegisters) {
-		// switch (numberOfRegisters) {
-		// case 0:
-		// panelRegisters.setVisible(false);
-		// panelRegisterOne.setVisible(false);
-		// panelRegisterTwo.setVisible(false);
-		// break;
-		// case 1:
-		// panelRegisters.setVisible(true);
-		// panelRegisterOne.setVisible(true);
-		// panelRegisterTwo.setVisible(false);
-		// break;
-		// case 2:
-		// panelRegisters.setVisible(true);
-		// panelRegisterOne.setVisible(true);
-		// panelRegisterTwo.setVisible(true);
-		// break;
-		// default:
-		// panelRegisters.setVisible(false);
-		// panelRegisterOne.setVisible(false);
-		// panelRegisterTwo.setVisible(false);
-		// }// switch
+	private void setArguments(ArgumentSignature signature) {
+		ArgumentType arg1 = ArgumentType.NONE;
+		ArgumentType arg2 = ArgumentType.NONE;
+		switch (signature) {
+		case NONE:
+			arg1 = ArgumentType.NONE;
+			arg2 = ArgumentType.NONE;
+			break;
+		case ADDRESS:
+			arg1 = ArgumentType.ADDRESS;
+			arg2 = ArgumentType.NONE;
+			break;
+		case D8:
+			arg1 = ArgumentType.D8;
+			arg2 = ArgumentType.NONE;
+			break;
+		case D16:
+			arg1 = ArgumentType.D16;
+			arg2 = ArgumentType.NONE;
+			break;
+		case R8:
+			arg1 = ArgumentType.A;
+			arg2 = ArgumentType.NONE;
+			break;
+		case R16:
+			arg1 = ArgumentType.AF;
+			arg2 = ArgumentType.NONE;
+			break;
+		case VECTOR:
+			arg1 = ArgumentType.VECTOR;
+			arg2 = ArgumentType.NONE;
+			break;
+		case R8D8:
+			arg1 = ArgumentType.A;
+			arg2 = ArgumentType.D8;
+			break;
+		case R8R8:
+			arg1 = ArgumentType.A;
+			arg2 = ArgumentType.A;
+			break;
+		case R16D16:
+			arg1 = ArgumentType.AF;
+			arg2 = ArgumentType.D16;
+			break;
+		default:
+			arg1 = ArgumentType.NONE;
+			arg2 = ArgumentType.NONE;
+		}// switch
+		cbArg1.setSelectedItem(arg1);
+		cbArg2.setSelectedItem(arg2);
 	}// setRegisterPanels
 
 	private void setInstructionAttributes(String instruction) {
-		// String[] instructionDetails = baseInstructions.get(instruction);
-		// lblFlags.setText(instructionDetails[1]);
-		// lblDescription.setText(instructionDetails[2]);
+		String[] instructionDetails = baseInstructions.get(instruction);
+		cbFlags.setSelectedItem(getFlags(instructionDetails[1]));
+		txtDescription.setText(instructionDetails[2]);
 	}// setInstructionAttributes
+
+	private CCFlags getFlags(String flags) {
+		CCFlags ans = CCFlags.NONE;
+		switch (flags) {
+		case "NONE":
+			ans = CCFlags.NONE;
+			break;
+		case "C":
+			ans = CCFlags.CY;
+			break;
+		case "Z,S,P,Aux":
+			ans = CCFlags.ZSPAC;
+			break;
+		case "Z,S,P,Aux,C":
+			ans = CCFlags.ZSPACCY;
+			break;
+		case "Z,S,P,C":
+			ans = CCFlags.ZSPCY;
+			break;
+		default:
+			ans = CCFlags.NONE;
+		}
+		return ans;
+	}
 
 	private void setTableUp(JTable masterTable) {
 		Object[] columnNames = { "Hex", "Len", "Size", "Signature", "Arg1",
@@ -146,20 +234,27 @@ public class TableMaker {
 		DefaultTableModel masterModel = (DefaultTableModel) masterTable.getModel();
 		masterModel.setColumnIdentifiers(columnNames);
 		adjustTableLook(masterTable);
-		Instruction ins = new Instruction(00, 1, 1,
-				ArgumentSignature.NONE, ArgumentType.NONE, ArgumentType.NONE, CCFlags.NONE,
-				Command.NOP, "No Operation", "<-+->");
-		addInstructonToTable(ins, masterModel);
-		// masterModel.insertRow(0,new Object[] { String.format("%02X", 0),
-		// 1,
-		// 1,
-		// ArgumentSignature.NONE,
-		// ArgumentType.NONE,
-		// ArgumentType.NONE,
-		// CCFlags.NONE,
-		// Command.NOP,
-		// "No Operation",
-		// "..." });
+		masterTable.setAutoCreateRowSorter(true);
+
+		TableRowSorter<TableModel> sorter = new TableRowSorter(masterModel);
+		masterTable.setRowSorter(sorter);
+
+
+		for (int i = 0; i < 256; i++) {
+			masterModel.insertRow(i, new Object[] {
+					String.format("%02X", i),
+					1,
+					1,
+					ArgumentSignature.NONE,
+					ArgumentType.NONE,
+					ArgumentType.NONE,
+					CCFlags.NONE,
+					Command.NOP,
+					"Instruction - does not exist",
+					"*******"
+			});
+		}
+
 	}
 
 	private void adjustTableLook(JTable table) {
@@ -197,7 +292,8 @@ public class TableMaker {
 	}// adjustTableLook
 
 	private void addInstructonToTable(Instruction instruction, DefaultTableModel masterModel) {
-		String hexValue = String.format("%02X", instruction.getOpCode());
+		String hexValueStr = String.format("%02X", instruction.getOpCode());
+		int hexValue = instruction.getOpCode();
 		int opCodeLength = instruction.getOpCodeSize();
 		int instructionize = instruction.getInstructionSize();
 		ArgumentSignature argSignature = instruction.getArgumentSignature();
@@ -209,20 +305,9 @@ public class TableMaker {
 		String desc = instruction.getDescription();
 		String func = instruction.getFunction();
 
-		masterModel.insertRow(0, new Object[] {
-				String.format("%02X", instruction.getOpCode()),
-				instruction.getOpCodeSize(),
-				instruction.getInstructionSize(),
-				instruction.getArgumentSignature(),
-				instruction.getArg1(),
-				instruction.getArg2(),
-				instruction.getCcFlags(),
-				instruction.getCommand(),
-				instruction.getDescription(),
-				instruction.getFunction() });
 
-		masterModel.insertRow(1, new Object[] {
-				hexValue,
+		masterModel.insertRow(hexValue, new Object[] {
+				hexValueStr,
 				opCodeLength,
 				instructionize,
 				argSignature,
@@ -233,6 +318,7 @@ public class TableMaker {
 				desc,
 				func
 		});
+		masterModel.removeRow(hexValue+1);
 
 	}// addInstructonToTable
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -248,21 +334,44 @@ public class TableMaker {
 		myPrefs = null;
 	}
 
-	@SuppressWarnings("unchecked")
 	private void appInit() {
+		// manage preferences
 		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
 		frmOpcodeTableMaker.setSize(638, 722);
 		frmOpcodeTableMaker.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 
-		// byteRegisterModel = new DefaultComboBoxModel(byteRegisters);
-		// wordRegisterModel = new DefaultComboBoxModel(wordRegisters);
+		// manage Spinners
+		SpinnerNumberModel smn = (SpinnerNumberModel) hsOpcode.getModel();
+		smn.setMaximum(0XFF);
+		SpinnerNumberModel is = (SpinnerNumberModel) hsInstructionSize.getModel();
+		is.setMinimum(0X01);
+		is.setMaximum(0X03);
+		is.setValue(0X01);
+		SpinnerNumberModel os = (SpinnerNumberModel) hsOpcodeSize.getModel();
+		os.setMinimum(0X01);
+		os.setMaximum(0X03);
+		os.setValue(0X01);
+		hsOpcodeSize.setEnabled(false);
 
-		setRegisterPanels(0);
-		// Set<String> insKeys = baseInstructions.keySet();
-		// baseInstructionModel = new DefaultComboBoxModel(insKeys.toArray((new String[insKeys.size()])));
+		// manage ComboBoxes
+		DefaultComboBoxModel<ArgumentSignature> argumentSignatureModel = new DefaultComboBoxModel<ArgumentSignature>(
+				ArgumentSignature.values());
+		cbArgumentSignature.setModel(argumentSignatureModel);
+
+		DefaultComboBoxModel<ArgumentType> arg1Model = new DefaultComboBoxModel<ArgumentType>(ArgumentType.values());
+		cbArg1.setModel(arg1Model);
+		DefaultComboBoxModel<ArgumentType> arg2Model = new DefaultComboBoxModel<ArgumentType>(ArgumentType.values());
+		cbArg2.setModel(arg2Model);
+
+		DefaultComboBoxModel<Command> commandModel = new DefaultComboBoxModel<Command>(Command.values());
+		cbCommand.setModel(commandModel);
+
+		DefaultComboBoxModel<CCFlags> flagsModel = new DefaultComboBoxModel<CCFlags>(CCFlags.values());
+		cbFlags.setModel(flagsModel);
 
 		setTableUp(tableMaster);
+
 	}
 
 	/**
@@ -295,6 +404,7 @@ public class TableMaker {
 		frmOpcodeTableMaker.getContentPane().setLayout(gridBagLayout);
 
 		JSplitPane splitPane = new JSplitPane();
+		splitPane.setEnabled(false);
 		splitPane.setDividerSize(10);
 		splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 		GridBagConstraints gbc_splitPane = new GridBagConstraints();
@@ -332,41 +442,296 @@ public class TableMaker {
 		scrollPane.setViewportView(tableMaster);
 
 		JPanel panelTop = new JPanel();
+		panelTop.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		splitPane.setLeftComponent(panelTop);
 		GridBagLayout gbl_panelTop = new GridBagLayout();
 		gbl_panelTop.columnWidths = new int[] { 0, 0 };
-		gbl_panelTop.rowHeights = new int[] { 0, 80, 0 };
+		gbl_panelTop.rowHeights = new int[] { 0, 20, 0, 0, 0 };
 		gbl_panelTop.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_panelTop.rowWeights = new double[] { 1.0, 1.0, Double.MIN_VALUE };
+		gbl_panelTop.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		panelTop.setLayout(gbl_panelTop);
 
 		JPanel panelTop1 = new JPanel();
+		panelTop1.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Opcode",
+				TitledBorder.LEFT, TitledBorder.ABOVE_TOP, null, new Color(0, 0, 0)));
 		GridBagConstraints gbc_panelTop1 = new GridBagConstraints();
 		gbc_panelTop1.insets = new Insets(0, 0, 5, 0);
-		gbc_panelTop1.fill = GridBagConstraints.BOTH;
+		gbc_panelTop1.fill = GridBagConstraints.VERTICAL;
 		gbc_panelTop1.gridx = 0;
 		gbc_panelTop1.gridy = 0;
 		panelTop.add(panelTop1, gbc_panelTop1);
 		GridBagLayout gbl_panelTop1 = new GridBagLayout();
-		gbl_panelTop1.columnWidths = new int[] { 0, 0, 0, 0 };
-		gbl_panelTop1.rowHeights = new int[] { 0, 0, 0 };
-		gbl_panelTop1.columnWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
-		gbl_panelTop1.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		gbl_panelTop1.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panelTop1.rowHeights = new int[] { 0, 0 };
+		gbl_panelTop1.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelTop1.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panelTop1.setLayout(gbl_panelTop1);
 
-		JPanel panelTop2 = new JPanel();
+		JLabel lblHexValue = new JLabel("Hex Value :");
+		GridBagConstraints gbc_lblHexValue = new GridBagConstraints();
+		gbc_lblHexValue.insets = new Insets(0, 0, 0, 5);
+		gbc_lblHexValue.gridx = 0;
+		gbc_lblHexValue.gridy = 0;
+		panelTop1.add(lblHexValue, gbc_lblHexValue);
+
+		hsOpcode = new HexSpinner();
+		hsOpcode.setMinimumSize(new Dimension(30, 20));
+		hsOpcode.setPreferredSize(new Dimension(50, 20));
+		GridBagConstraints gbc_hsOpCode = new GridBagConstraints();
+		gbc_hsOpCode.insets = new Insets(0, 0, 0, 5);
+		gbc_hsOpCode.gridx = 1;
+		gbc_hsOpCode.gridy = 0;
+		panelTop1.add(hsOpcode, gbc_hsOpCode);
+
+		JLabel lblInstructionSize = new JLabel("Instruction Size :");
+		GridBagConstraints gbc_lblInstructionSize = new GridBagConstraints();
+		gbc_lblInstructionSize.insets = new Insets(0, 0, 0, 5);
+		gbc_lblInstructionSize.gridx = 2;
+		gbc_lblInstructionSize.gridy = 0;
+		panelTop1.add(lblInstructionSize, gbc_lblInstructionSize);
+
+		hsInstructionSize = new HexSpinner();
+		hsInstructionSize.setPreferredSize(new Dimension(40, 20));
+		hsInstructionSize.setMinimumSize(new Dimension(40, 20));
+		GridBagConstraints gbc_hsInstructionSize = new GridBagConstraints();
+		gbc_hsInstructionSize.insets = new Insets(0, 0, 0, 5);
+		gbc_hsInstructionSize.gridx = 3;
+		gbc_hsInstructionSize.gridy = 0;
+		panelTop1.add(hsInstructionSize, gbc_hsInstructionSize);
+
+		JLabel lblOpcodeSize = new JLabel("Opcode size");
+		GridBagConstraints gbc_lblOpcodeSize = new GridBagConstraints();
+		gbc_lblOpcodeSize.insets = new Insets(0, 0, 0, 5);
+		gbc_lblOpcodeSize.gridx = 5;
+		gbc_lblOpcodeSize.gridy = 0;
+		panelTop1.add(lblOpcodeSize, gbc_lblOpcodeSize);
+
+		hsOpcodeSize = new HexSpinner();
+		hsOpcodeSize.setMinimumSize(new Dimension(40, 20));
+		hsOpcodeSize.setPreferredSize(new Dimension(40, 20));
+		GridBagConstraints gbc_hsOpcodeSize = new GridBagConstraints();
+		gbc_hsOpcodeSize.gridx = 6;
+		gbc_hsOpcodeSize.gridy = 0;
+		panelTop1.add(hsOpcodeSize, gbc_hsOpcodeSize);
+
+		panelTop2 = new JPanel();
+		panelTop2.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Arguments",
+				TitledBorder.LEADING, TitledBorder.ABOVE_TOP, null, new Color(0, 0, 0)));
 		GridBagConstraints gbc_panelTop2 = new GridBagConstraints();
-		gbc_panelTop2.fill = GridBagConstraints.BOTH;
+		gbc_panelTop2.insets = new Insets(0, 0, 5, 0);
+		gbc_panelTop2.fill = GridBagConstraints.VERTICAL;
 		gbc_panelTop2.gridx = 0;
 		gbc_panelTop2.gridy = 1;
 		panelTop.add(panelTop2, gbc_panelTop2);
 		GridBagLayout gbl_panelTop2 = new GridBagLayout();
-		gbl_panelTop2.columnWidths = new int[] { 0 };
-		gbl_panelTop2.rowHeights = new int[] { 0 };
-		gbl_panelTop2.columnWeights = new double[] { Double.MIN_VALUE };
-		gbl_panelTop2.rowWeights = new double[] { Double.MIN_VALUE };
+		gbl_panelTop2.columnWidths = new int[] { 0, 0, 0, 0, 0 };
+		gbl_panelTop2.rowHeights = new int[] { 0, 0 };
+		gbl_panelTop2.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelTop2.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panelTop2.setLayout(gbl_panelTop2);
-		splitPane.setDividerLocation(250);
+
+		JLabel lblArgumentSignature = new JLabel("Argument Signature :");
+		GridBagConstraints gbc_lblArgumentSignature = new GridBagConstraints();
+		gbc_lblArgumentSignature.insets = new Insets(0, 0, 0, 5);
+		gbc_lblArgumentSignature.anchor = GridBagConstraints.EAST;
+		gbc_lblArgumentSignature.gridx = 0;
+		gbc_lblArgumentSignature.gridy = 0;
+		panelTop2.add(lblArgumentSignature, gbc_lblArgumentSignature);
+
+		cbArgumentSignature = new JComboBox<ArgumentSignature>();
+		cbArgumentSignature.addActionListener(new comboAdapter());
+		cbArgumentSignature.setActionCommand(CB_ARG_SIGNATURE);
+		cbArgumentSignature.setMaximumRowCount(11);
+		cbArgumentSignature.setPreferredSize(new Dimension(90, 20));
+		cbArgumentSignature.setMinimumSize(new Dimension(90, 20));
+		GridBagConstraints gbc_cbArgumentSignature = new GridBagConstraints();
+		gbc_cbArgumentSignature.insets = new Insets(0, 0, 0, 5);
+		gbc_cbArgumentSignature.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cbArgumentSignature.gridx = 1;
+		gbc_cbArgumentSignature.gridy = 0;
+		panelTop2.add(cbArgumentSignature, gbc_cbArgumentSignature);
+
+		panelArg1 = new JPanel();
+		GridBagConstraints gbc_panelArg1 = new GridBagConstraints();
+		gbc_panelArg1.insets = new Insets(0, 0, 0, 5);
+		gbc_panelArg1.fill = GridBagConstraints.BOTH;
+		gbc_panelArg1.gridx = 2;
+		gbc_panelArg1.gridy = 0;
+		panelTop2.add(panelArg1, gbc_panelArg1);
+		GridBagLayout gbl_panelArg1 = new GridBagLayout();
+		gbl_panelArg1.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelArg1.rowHeights = new int[] { 0, 0 };
+		gbl_panelArg1.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelArg1.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panelArg1.setLayout(gbl_panelArg1);
+
+		JLabel lblArgument = new JLabel("Argument 1 :");
+		GridBagConstraints gbc_lblArgument = new GridBagConstraints();
+		gbc_lblArgument.insets = new Insets(0, 0, 0, 5);
+		gbc_lblArgument.anchor = GridBagConstraints.EAST;
+		gbc_lblArgument.gridx = 0;
+		gbc_lblArgument.gridy = 0;
+		panelArg1.add(lblArgument, gbc_lblArgument);
+
+		cbArg1 = new JComboBox<ArgumentType>();
+		cbArg1.setMinimumSize(new Dimension(90, 20));
+		cbArg1.setPreferredSize(new Dimension(90, 20));
+		GridBagConstraints gbc_cbArg1 = new GridBagConstraints();
+		gbc_cbArg1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cbArg1.gridx = 1;
+		gbc_cbArg1.gridy = 0;
+		panelArg1.add(cbArg1, gbc_cbArg1);
+
+		panelArg2 = new JPanel();
+		GridBagConstraints gbc_panelArg2 = new GridBagConstraints();
+		gbc_panelArg2.fill = GridBagConstraints.BOTH;
+		gbc_panelArg2.gridx = 3;
+		gbc_panelArg2.gridy = 0;
+		panelTop2.add(panelArg2, gbc_panelArg2);
+		GridBagLayout gbl_panelArg2 = new GridBagLayout();
+		gbl_panelArg2.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelArg2.rowHeights = new int[] { 0, 0 };
+		gbl_panelArg2.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelArg2.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panelArg2.setLayout(gbl_panelArg2);
+
+		JLabel lblArgument_1 = new JLabel("Argument 2 :");
+		GridBagConstraints gbc_lblArgument_1 = new GridBagConstraints();
+		gbc_lblArgument_1.insets = new Insets(0, 0, 0, 5);
+		gbc_lblArgument_1.anchor = GridBagConstraints.EAST;
+		gbc_lblArgument_1.gridx = 0;
+		gbc_lblArgument_1.gridy = 0;
+		panelArg2.add(lblArgument_1, gbc_lblArgument_1);
+
+		cbArg2 = new JComboBox<ArgumentType>();
+		cbArg2.setPreferredSize(new Dimension(90, 20));
+		cbArg2.setMinimumSize(new Dimension(90, 20));
+		GridBagConstraints gbc_cbArg2 = new GridBagConstraints();
+		gbc_cbArg2.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cbArg2.gridx = 1;
+		gbc_cbArg2.gridy = 0;
+		panelArg2.add(cbArg2, gbc_cbArg2);
+
+		JPanel panelTop3 = new JPanel();
+		panelTop3.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Instruction Details",
+				TitledBorder.LEADING, TitledBorder.ABOVE_TOP, null, null));
+		GridBagConstraints gbc_panelTop3 = new GridBagConstraints();
+		gbc_panelTop3.insets = new Insets(0, 0, 5, 0);
+		gbc_panelTop3.fill = GridBagConstraints.VERTICAL;
+		gbc_panelTop3.gridx = 0;
+		gbc_panelTop3.gridy = 2;
+		panelTop.add(panelTop3, gbc_panelTop3);
+		GridBagLayout gbl_panelTop3 = new GridBagLayout();
+		gbl_panelTop3.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panelTop3.rowHeights = new int[] { 0, 0, 0, 0 };
+		gbl_panelTop3.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelTop3.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		panelTop3.setLayout(gbl_panelTop3);
+
+		JLabel lblCommand = new JLabel("Command :");
+		GridBagConstraints gbc_lblCommand = new GridBagConstraints();
+		gbc_lblCommand.insets = new Insets(0, 0, 5, 5);
+		gbc_lblCommand.anchor = GridBagConstraints.EAST;
+		gbc_lblCommand.gridx = 0;
+		gbc_lblCommand.gridy = 0;
+		panelTop3.add(lblCommand, gbc_lblCommand);
+
+		cbCommand = new JComboBox<Command>();
+		cbCommand.setActionCommand(CB_COMMAND);
+		cbCommand.addActionListener(new comboAdapter());
+		cbCommand.setPreferredSize(new Dimension(70, 20));
+		cbCommand.setMinimumSize(new Dimension(70, 20));
+		GridBagConstraints gbc_cbCommand = new GridBagConstraints();
+		gbc_cbCommand.insets = new Insets(0, 0, 5, 5);
+		gbc_cbCommand.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cbCommand.gridx = 1;
+		gbc_cbCommand.gridy = 0;
+		panelTop3.add(cbCommand, gbc_cbCommand);
+
+		JLabel lblFlagsAffected = new JLabel("FLags Affected :");
+		GridBagConstraints gbc_lblFlagsAffected = new GridBagConstraints();
+		gbc_lblFlagsAffected.insets = new Insets(0, 0, 5, 5);
+		gbc_lblFlagsAffected.anchor = GridBagConstraints.EAST;
+		gbc_lblFlagsAffected.gridx = 3;
+		gbc_lblFlagsAffected.gridy = 0;
+		panelTop3.add(lblFlagsAffected, gbc_lblFlagsAffected);
+
+		cbFlags = new JComboBox<CCFlags>();
+		cbFlags.setMinimumSize(new Dimension(80, 20));
+		cbFlags.setPreferredSize(new Dimension(80, 20));
+		GridBagConstraints gbc_cbFlags = new GridBagConstraints();
+		gbc_cbFlags.insets = new Insets(0, 0, 5, 5);
+		gbc_cbFlags.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cbFlags.gridx = 4;
+		gbc_cbFlags.gridy = 0;
+		panelTop3.add(cbFlags, gbc_cbFlags);
+
+		JLabel lblDescription = new JLabel("Description :");
+		GridBagConstraints gbc_lblDescription = new GridBagConstraints();
+		gbc_lblDescription.anchor = GridBagConstraints.EAST;
+		gbc_lblDescription.insets = new Insets(0, 0, 5, 5);
+		gbc_lblDescription.gridx = 0;
+		gbc_lblDescription.gridy = 1;
+		panelTop3.add(lblDescription, gbc_lblDescription);
+
+		txtDescription = new JTextField();
+		GridBagConstraints gbc_txtDescription = new GridBagConstraints();
+		gbc_txtDescription.gridwidth = 5;
+		gbc_txtDescription.insets = new Insets(0, 0, 5, 5);
+		gbc_txtDescription.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtDescription.gridx = 1;
+		gbc_txtDescription.gridy = 1;
+		panelTop3.add(txtDescription, gbc_txtDescription);
+		txtDescription.setColumns(40);
+
+		JLabel lblFunction = new JLabel("Function :");
+		GridBagConstraints gbc_lblFunction = new GridBagConstraints();
+		gbc_lblFunction.anchor = GridBagConstraints.EAST;
+		gbc_lblFunction.insets = new Insets(0, 0, 0, 5);
+		gbc_lblFunction.gridx = 0;
+		gbc_lblFunction.gridy = 2;
+		panelTop3.add(lblFunction, gbc_lblFunction);
+
+		txtFunction = new JTextField();
+		txtFunction.setColumns(40);
+		GridBagConstraints gbc_txtFunction = new GridBagConstraints();
+		gbc_txtFunction.gridwidth = 5;
+		gbc_txtFunction.insets = new Insets(0, 0, 0, 5);
+		gbc_txtFunction.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtFunction.gridx = 1;
+		gbc_txtFunction.gridy = 2;
+		panelTop3.add(txtFunction, gbc_txtFunction);
+
+		JPanel panelButtons = new JPanel();
+		GridBagConstraints gbc_panelButtons = new GridBagConstraints();
+		gbc_panelButtons.fill = GridBagConstraints.BOTH;
+		gbc_panelButtons.gridx = 0;
+		gbc_panelButtons.gridy = 3;
+		panelTop.add(panelButtons, gbc_panelButtons);
+		GridBagLayout gbl_panelButtons = new GridBagLayout();
+		gbl_panelButtons.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelButtons.rowHeights = new int[] { 0, 0 };
+		gbl_panelButtons.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelButtons.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panelButtons.setLayout(gbl_panelButtons);
+
+		btnUpdate = new JButton("Update");
+		btnUpdate.addActionListener(new buttonAdapter());
+		btnUpdate.setActionCommand(BTN_UPDATE);
+		GridBagConstraints gbc_btnUpdate = new GridBagConstraints();
+		gbc_btnUpdate.insets = new Insets(0, 0, 0, 5);
+		gbc_btnUpdate.gridx = 0;
+		gbc_btnUpdate.gridy = 0;
+		panelButtons.add(btnUpdate, gbc_btnUpdate);
+
+		btnReset = new JButton("Reset");
+		btnReset.addActionListener(new buttonAdapter());
+		btnReset.setActionCommand(BTN_RESET);
+		GridBagConstraints gbc_btnReset = new GridBagConstraints();
+		gbc_btnReset.gridx = 1;
+		gbc_btnReset.gridy = 0;
+		panelButtons.add(btnReset, gbc_btnReset);
+		splitPane.setDividerLocation(235);
 
 		JMenuBar menuBar = new JMenuBar();
 		frmOpcodeTableMaker.setJMenuBar(menuBar);
@@ -377,6 +742,7 @@ public class TableMaker {
 		mnuFileNew = new JMenuItem("New ...");
 		mnuFileNew.setActionCommand("mnuFileNew");
 		mnuFileNew.addActionListener(new menuAdapter());
+		mnuFileNew.setActionCommand(MNU_FILE_NEW);
 		mnuFile.add(mnuFileNew);
 
 		JMenuItem mnuFileOpen = new JMenuItem("Open ...");
@@ -395,6 +761,8 @@ public class TableMaker {
 		mnuFile.add(separator_1);
 
 		JMenuItem mnuFilePrint = new JMenuItem("Print ...");
+		mnuFilePrint.addActionListener(new menuAdapter());
+		mnuFilePrint.setActionCommand(MNU_FILE_PRINT);
 		mnuFile.add(mnuFilePrint);
 
 		JSeparator separator_2 = new JSeparator();
@@ -419,24 +787,24 @@ public class TableMaker {
 	// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 	// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
-	Register[] byteRegisters = new Register[] { Register.A, Register.B, Register.C, Register.D,
-			Register.E, Register.H, Register.L };
-
-	Register[] wordRegisters = new Register[] { Register.AF, Register.BC, Register.DE, Register.HL, Register.M,
-			Register.SP, Register.PC };
-	ArgumentSignature[] argumentSignatures = new ArgumentSignature[] { ArgumentSignature.NONE,
-			ArgumentSignature.ADDRESS, ArgumentSignature.D8, ArgumentSignature.D16, ArgumentSignature.R8,
-			ArgumentSignature.R8R8, ArgumentSignature.R16, ArgumentSignature.R8D8, ArgumentSignature.R16D16 };
+	// Register[] byteRegisters = new Register[] { Register.A, Register.B, Register.C, Register.D,
+	// Register.E, Register.H, Register.L };
+	//
+	// Register[] wordRegisters = new Register[] { Register.AF, Register.BC, Register.DE, Register.HL, Register.M,
+	// Register.SP, Register.PC };
+	// ArgumentSignature[] argumentSignatures = new ArgumentSignature[] { ArgumentSignature.NONE,
+	// ArgumentSignature.ADDRESS, ArgumentSignature.D8, ArgumentSignature.D16, ArgumentSignature.R8,
+	// ArgumentSignature.R8R8, ArgumentSignature.R16, ArgumentSignature.R8D8, ArgumentSignature.R16D16 };
 
 	// -------------------------------
-	enum Register {
-		// Single Byte Registers
-		A, B, C, D, E, H, L,
-		// Double Byte Registers
-		// used for identification only
-		// nothing is stored directly into one of these
-		BC, DE, HL, M, SP, AF, PC
-	}// enum
+	// enum Register {
+	// // Single Byte Registers
+	// A, B, C, D, E, H, L,
+	// // Double Byte Registers
+	// // used for identification only
+	// // nothing is stored directly into one of these
+	// BC, DE, HL, M, SP, AF, PC
+	// }// enum
 
 	// enum ArgumentType {
 	// NONE,
@@ -457,8 +825,8 @@ public class TableMaker {
 		baseInstructions = new HashMap<String, String[]>();
 		baseInstructions.put("STC", new String[] { "STC", "C", "Set Carry" });
 		baseInstructions.put("CMC", new String[] { "CMC", "C", "Complement Carry" });
-		baseInstructions.put("INR", new String[] { "INR", "Z,S,P,Aux,C", "Increment Register/Memory" });
-		baseInstructions.put("DCR", new String[] { "DCR", "Z,S,P,Aux,C", "Deccrement Register/Memory" });
+		baseInstructions.put("INR", new String[] { "INR", "Z,S,P,Aux", "Increment Register/Memory" });
+		baseInstructions.put("DCR", new String[] { "DCR", "Z,S,P,Aux", "Deccrement Register/Memory" });
 		baseInstructions.put("CMA", new String[] { "CMA", "None", "Complement Acc" });
 		baseInstructions.put("DAA", new String[] { "DAA", "Z,S,P,Aux,C", "Decimal Adjust Acc" });
 		baseInstructions.put("NOP", new String[] { "NOP", "None", "No Operation" });
@@ -470,16 +838,16 @@ public class TableMaker {
 		baseInstructions.put("SUB", new String[] { "SUB", "Z,S,P,Aux,C", "Subtract Register/Memory from Acc" });
 		baseInstructions.put("SBB", new String[] { "SBB", "Z,S,P,Aux,C",
 				"Subtract Register/Memory from Acc with Borrow" });
-		baseInstructions.put("ANA", new String[] { "ANA", "Z,S,P,C, Aux*", "Logical AND Register/Memory with Acc" });
+		baseInstructions.put("ANA", new String[] { "ANA", "Z,S,P,Aux,C", "Logical AND Register/Memory with Acc" });
 		baseInstructions.put("XRA", new String[] { "XRA", "Z,S,P,Aux,C", "Logical XOR Register/Memory with Acc" });
-		baseInstructions.put("ORA", new String[] { "ORA", "Z,S,P,C, Aux*", "Logical OR Register/Memory with Acc" });
+		baseInstructions.put("ORA", new String[] { "ORA", "Z,S,P,Aux,C", "Logical OR Register/Memory with Acc" });
 		baseInstructions.put("CMP", new String[] { "CMP", "Z,S,P,Aux,C", "Compare Register/Memory with Acc" });
 		baseInstructions.put("RLC", new String[] { "RLC", "C", "Rotate Left Acc" });
 		baseInstructions.put("RRC", new String[] { "RRC", "C", "Rotate Right Acc" });
 		baseInstructions.put("RAL", new String[] { "RAL", "C", "Rotate Left Acc Through Carry" });
 		baseInstructions.put("RAR", new String[] { "RAR", "C", "Rotate Right Acc Through Carry" });
 		baseInstructions.put("PUSH", new String[] { "PUSH", "None", "Push Data Onto Stack" });
-		baseInstructions.put("POP", new String[] { "POP", "None/Z,S,P,Aux,C", "Pop Data Off the Stack" });
+		baseInstructions.put("POP", new String[] { "POP", "None", "Pop Data Off the Stack" });
 		baseInstructions.put("DAD", new String[] { "DAD", "C", "Double Add" });
 		baseInstructions.put("INX", new String[] { "INX", "None", "Increment register Pair" });
 		baseInstructions.put("DCX", new String[] { "DCX", "None", "Decrement register Pair" });
@@ -544,12 +912,74 @@ public class TableMaker {
 	private static final String MNU_FILE_PRINT = "mnuFilePrint";
 	private static final String MNU_FILE_CLOSE = "mnuFileClose";
 	private static final String MNU_FILE_EXIT = "mnuFileExit";
+
+	private static final String CB_ARG_SIGNATURE = "cbArgumentSignature";
+	private static final String CB_ARG_1 = "cbArg1";
+	private static final String CB_ARG_2 = "cbArg2";
+	private static final String CB_FLAGS = "cbFlags";
+	private static final String CB_COMMAND = "cbCommand";
+
+	private static final String BTN_UPDATE = "btnUpdate";
+	private static final String BTN_RESET = "btnReset";
 	private JTable tableMaster;
-	private DefaultTableModel masterModel;
+	// private DefaultTableModel masterModel;
 	private JScrollPane scrollPane;
 	private JMenuItem mnuFileNew;
+	private HexSpinner hsOpcode;
+	private JPanel panelTop2;
+	private HexSpinner hsInstructionSize;
+	private HexSpinner hsOpcodeSize;
+	private JComboBox<ArgumentSignature> cbArgumentSignature;
+	private JComboBox<ArgumentType> cbArg1;
+	private JComboBox<ArgumentType> cbArg2;
+	private JComboBox<Command> cbCommand;
+	private JComboBox<CCFlags> cbFlags;
+	private JPanel panelArg2;
+	private JPanel panelArg1;
+	private JTextField txtDescription;
+	private JTextField txtFunction;
+	private JButton btnReset;
+	private JButton btnUpdate;
 
 	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	class buttonAdapter implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent ae) {
+			String actionCommand = ae.getActionCommand();
+			switch (actionCommand) {
+			case BTN_UPDATE:
+				rowUpdate();
+				break;
+			case BTN_RESET:
+				break;
+			default:
+
+			}// switch
+		}// actionPerformed
+	}// class butonAdapter
+
+	class comboAdapter implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent ae) {
+			String actionCommand = ae.getActionCommand();
+			switch (actionCommand) {
+			case CB_ARG_SIGNATURE:
+				setArguments((ArgumentSignature) cbArgumentSignature.getSelectedItem());
+				break;
+			case CB_ARG_1:
+				break;
+			case CB_ARG_2:
+				break;
+			case CB_FLAGS:
+				break;
+			case CB_COMMAND:
+				Command cmd = (Command) cbCommand.getSelectedItem();
+				setInstructionAttributes(cmd.toString());
+				break;
+			}// switch
+		}// actionPerformed
+	}// class comboAdapter
+
 	class menuAdapter implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
@@ -564,6 +994,12 @@ public class TableMaker {
 			case MNU_FILE_SAVE_AS:
 				break;
 			case MNU_FILE_PRINT:
+				try {
+					tableMaster.print();
+				} catch (PrinterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				break;
 			case MNU_FILE_CLOSE:
 				break;

@@ -9,5 +9,6 @@ public enum CCFlags {
 	CY,		// * Carry 
 	ZSP,	// Zero, Sign & Parity
 	ZSPAC,	// * Zero, Sign, Parity & Auxiliary Carry
-	ZSPACCY	// * Zero, Sign, Parity,Auxiliary Carry & Carry
+	ZSPACCY,	// * Zero, Sign, Parity,Auxiliary Carry & Carry
+	ZSPCY	// * Zero, Sign, Parity & Carry
 }
