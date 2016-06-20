@@ -188,15 +188,15 @@ public class ConditionCodeRegister {
 		this.zeroFlag = zeroFlag;
 	}// setZeroFlag
 
-	public static byte MASK_SIGN = (byte) 0B10000000;
-	public static byte MASK_SIGN_NOT = (byte) 0B01111111;
-	public static byte MASK_ZERO = (byte) 0B01000000;
-	public static byte MASK_ZERO_NOT = (byte) 0B10111111;
-	public static byte MASK_AUX_CARRY = (byte) 0B00010000;
-	public static byte MASK_AUX_CARRY_NOT = (byte) 0B11101111;
-	public static byte MASK_PARITY = (byte) 0B00000100;
-	public static byte MASK_PARITY_NOT = (byte) 0B11111011;
-	public static byte MASK_CARRY = (byte) 0B00000001;
-	public static byte MASK_CARRY_NOT = (byte) 0B11111110;
+	public static final byte MASK_SIGN = (byte) 0B10000000;
+	public static final byte MASK_SIGN_NOT = (byte) 0B01111111;
+	public static final byte MASK_ZERO = (byte) 0B01000000;
+	public static final byte MASK_ZERO_NOT = (byte) 0B10111111;
+	public static final byte MASK_AUX_CARRY = (byte) 0B00010000;
+	public static final byte MASK_AUX_CARRY_NOT = (byte) 0B11101111;
+	public static final byte MASK_PARITY = (byte) 0B00000100;
+	public static final byte MASK_PARITY_NOT = (byte) 0B11111011;
+	public static final byte MASK_CARRY = (byte) 0B00000001;
+	public static final byte MASK_CARRY_NOT = (byte) 0B11111110;
 
 }// ConditionCodeRegister

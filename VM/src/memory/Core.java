@@ -3,10 +3,16 @@ package memory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+
+import memory.Core.Trap;
 
 //import mvc.MemoryAccessErrorEvent;
 
@@ -391,20 +397,15 @@ public class Core extends Observable{
 	 *            Type of trap to remove - IO or Debug
 	 */
 	public void removeTraps(Trap trap) {
-
-		Set<Integer> locations = traps.keySet();
-		ArrayList<Integer> locs = new ArrayList<Integer>();
-		for (Integer location : locations) {
-			if (traps.get(location).equals(trap)) {
-				locs.add(location);
-			}// inner if
-		}// for location
-		locations = null;
-
-		for (Integer loc : locs) {
-			traps.remove(loc);
-		}// for location
-
+		
+		Iterator iterator = traps.entrySet().iterator();
+		while(iterator.hasNext()){
+			Map.Entry pair = (Entry) iterator.next();
+			if(pair.getValue().equals(trap)){
+				iterator.remove();
+			}//if
+		}//while
+		
 	}// removeTraps
 
 	/**
@@ -424,14 +425,27 @@ public class Core extends Observable{
 	 * @return ArrayList of traps specified by type
 	 */
 	public ArrayList<Integer> getTraps(Trap trap) {
-		ArrayList<Integer> getTrapLocations = new ArrayList<Integer>();
-		Set<Integer> locations = traps.keySet();
-		for (Integer location : locations) {
-			if (traps.get(location).equals(trap)) {
+		List<Integer> getTrapLocations = new ArrayList<Integer>();
+		
+		Iterator iterator = traps.entrySet().iterator();
+		while(iterator.hasNext()){	
+			Map.Entry pair = (Entry) iterator.next();	
+			if(pair.getValue().equals(trap)){
+				Integer location = (Integer) pair.getKey();
 				getTrapLocations.add(location);
-			}// inner if
-		}// for location
-		return getTrapLocations;
+			}//if
+		}//while
+		
+		
+//		ArrayList<Integer> getTrapLocations = new ArrayList<Integer>();
+		
+//		Set<Integer> locations = traps.keySet();
+//		for (Integer location : locations) {
+//			if (traps.get(location).equals(trap)) {
+//				getTrapLocations.add(location);
+//			}// inner if
+//		}// for location
+		return (ArrayList<Integer>) getTrapLocations;
 	}// getTrapLocations
 
 	/**

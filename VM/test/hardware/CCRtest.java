@@ -10,9 +10,9 @@ import org.junit.Test;
 public class CCRtest {
 
 	ConditionCodeRegister ccr;
-	Byte value;
+//	Byte value;
 	Byte ans;
-	Byte otherValues;
+//	Byte otherValues;
 
 	static Byte zeros = (byte) 0x00;
 	static Byte ones = (byte) 0xFF;

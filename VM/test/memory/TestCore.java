@@ -17,7 +17,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 
 
-public class testCore implements Observer{
+public class TestCore implements Observer{
 	static int K = 1024;
 	int badLocation;
 	int trapLocation;
