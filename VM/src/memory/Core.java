@@ -1,14 +1,15 @@
 package memory;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 
@@ -21,28 +22,27 @@ import memory.Core.Trap;
  * @author Frank Martyn
  * @version 1.0
  * 
- *         <p> Core is the class that acts as the physical memory.
- *          <p> Core is a base level object. It represents the memory in a virtual machine.
- *          
- *           The access to the data is handled by 3 sets of read and write operations:
- *          
+ *          <p>
+ *          Core is the class that acts as the physical memory.
+ *          <p>
+ *          Core is a base level object. It represents the memory in a virtual machine.
+ * 
+ *          The access to the data is handled by 3 sets of read and write operations:
+ * 
  *          1) read, write, readWord, writeWord, popWord and pushWord all participate in the monitoring of the locations
- *              read for Debug Trap and written for IO trap.
- *          2) readForIO and writeForIO are to be used for byte memory access by devices.
- *              They do not engage the Trap system.
- *          3) readDMA and writeDMA are for burst mode reading and writing.
- *              They also do not engage the Trap system.
- *              
- *          Changed from using traps to Observer/Observable for IO/DEBUG?INVALID notification
- *          Traps for IO are triggered by the writes.
- *          Debug traps are triggered by the reads in conjunction with the isDebugEnabled flag
- *               
+ *          read for Debug Trap and written for IO trap. 2) readForIO and writeForIO are to be used for byte memory
+ *          access by devices. They do not engage the Trap system. 3) readDMA and writeDMA are for burst mode reading
+ *          and writing. They also do not engage the Trap system.
+ * 
+ *          Changed from using traps to Observer/Observable for IO/DEBUG?INVALID notification Traps for IO are triggered
+ *          by the writes. Debug traps are triggered by the reads in conjunction with the isDebugEnabled flag
+ * 
  * 
  * 
  *
  */
 
-public class Core extends Observable{
+public class Core extends Observable {
 	private byte[] storage;
 	private int maxAddress;
 
@@ -50,7 +50,7 @@ public class Core extends Observable{
 	private boolean isDebugEnabled = false;
 
 	public enum Trap {
-		IO, DEBUG,INVALID
+		IO, DEBUG, INVALID
 	}
 
 	private HashMap<Integer, Trap> traps;
@@ -74,7 +74,7 @@ public class Core extends Observable{
 	}
 
 	/**
-	 *  Uses DEFAULT_MEMORY size for memory allocation
+	 * Uses DEFAULT_MEMORY size for memory allocation
 	 */
 	public Core() {
 		this(DEFAULT_MEMORY);
@@ -96,16 +96,16 @@ public class Core extends Observable{
 		storage[location] = value;
 
 		if (isDiskTrapLocation(location, value)) {
-			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.IO);
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location, Trap.IO);
 			setChanged();
 			notifyObservers(mte);
 
-			//fireMemoryTrap(location, Trap.IO);
+			// fireMemoryTrap(location, Trap.IO);
 		}// if
 	}// write
 
 	/**
-	 *  Write to a location. Bypasses the memory trap apparatus
+	 * Write to a location. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            where to put the value
@@ -120,7 +120,7 @@ public class Core extends Observable{
 	}// writeForIO
 
 	/**
-	 *  Write consecutive locations. Bypasses the memory trap apparatus
+	 * Write consecutive locations. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            starting address for write
@@ -137,7 +137,7 @@ public class Core extends Observable{
 	}// writeDMA
 
 	/**
-	 *  Write a word (16) bits to memory
+	 * Write a word (16) bits to memory
 	 * 
 	 * @param location
 	 *            starting place in memory for the write
@@ -153,7 +153,7 @@ public class Core extends Observable{
 	}// putWord
 
 	/**
-	 *  Writes bytes in location -1 and location-2. Primarily used for stack work.
+	 * Writes bytes in location -1 and location-2. Primarily used for stack work.
 	 * 
 	 * @param location
 	 *            1 higher than actual memory address that will be written
@@ -168,7 +168,7 @@ public class Core extends Observable{
 	}// pushWord used for stack work
 
 	/**
-	 *  Returns the value found at the specified location, and checks for DEBUG 
+	 * Returns the value found at the specified location, and checks for DEBUG
 	 * 
 	 * @param location
 	 *            where to get the value from
@@ -184,7 +184,7 @@ public class Core extends Observable{
 		}
 
 		if (isDebugLocation(location)) {
-			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.DEBUG);
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location, Trap.DEBUG);
 			setChanged();
 			notifyObservers(mte);
 			// may want to fire trap - fireMemoryTrap(location, Trap.DEBUG);
@@ -195,7 +195,7 @@ public class Core extends Observable{
 	}// read
 
 	/**
-	 *  Read from a location. Bypasses the memory trap apparatus
+	 * Read from a location. Bypasses the memory trap apparatus
 	 * 
 	 * @param location
 	 *            where to get the returned value
@@ -231,7 +231,7 @@ public class Core extends Observable{
 	}// readDMA
 
 	/**
-	 *  Returns a word value (16 bits)
+	 * Returns a word value (16 bits)
 	 * 
 	 * @param location
 	 *            - location contains hi byte, location + 1 contains lo byte
@@ -245,9 +245,10 @@ public class Core extends Observable{
 	}// getWord
 
 	/**
-	 *  Reverses the order of the immediate word byte 2 is lo byte byte 3 is hi byte
+	 * Reverses the order of the immediate word byte 2 is lo byte byte 3 is hi byte
 	 * 
-	 * @param location - starting place in memory to find vale
+	 * @param location
+	 *            - starting place in memory to find vale
 	 * @return word as used by calls and jumps
 	 */
 	public int readWordReversed(int location) {
@@ -259,8 +260,8 @@ public class Core extends Observable{
 	}// readWordReversed
 
 	/**
-	 * Reads bytes from location and location +1. Primarily used for stack work.Reads the locations opposite to
-	 * the way readWord does
+	 * Reads bytes from location and location +1. Primarily used for stack work.Reads the locations opposite to the way
+	 * readWord does
 	 * 
 	 * @param location
 	 *            - location contains lo byte, location + 1 contains hi byte
@@ -285,11 +286,11 @@ public class Core extends Observable{
 
 	private boolean isValidAddress(int location) {
 		boolean checkAddress = true;
-		if ((location < 0)|(location > maxAddress)) {
+		if ((location < 0) | (location > maxAddress)) {
 			checkAddress = false;
-			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.INVALID);
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location, Trap.INVALID);
 			setChanged();
-			notifyObservers(mte);	
+			notifyObservers(mte);
 		}// if
 		return checkAddress;
 	}// isValidAddress
@@ -306,8 +307,8 @@ public class Core extends Observable{
 		boolean checkAddressDMA = true;
 		if ((location < 0) | ((location + (length - 1)) > maxAddress)) {
 			checkAddressDMA = false;
-//			fireAccessError(location, "Invalid DMA memory location");
-			MemoryTrapEvent mte = new MemoryTrapEvent(this, location,Trap.INVALID);
+			// fireAccessError(location, "Invalid DMA memory location");
+			MemoryTrapEvent mte = new MemoryTrapEvent(this, location, Trap.INVALID);
 			setChanged();
 			notifyObservers(mte);
 
@@ -397,15 +398,18 @@ public class Core extends Observable{
 	 *            Type of trap to remove - IO or Debug
 	 */
 	public void removeTraps(Trap trap) {
-		
-		Iterator iterator = traps.entrySet().iterator();
-		while(iterator.hasNext()){
-			Map.Entry pair = (Entry) iterator.next();
-			if(pair.getValue().equals(trap)){
-				iterator.remove();
-			}//if
-		}//while
-		
+		traps.entrySet().removeIf(s -> s.getValue().equals(trap));
+
+		// traps.removeIf(s-> s.value.equals(trap));
+
+		// Iterator iterator = traps.entrySet().iterator();
+		// while(iterator.hasNext()){
+		// Map.Entry pair = (Entry) iterator.next();
+		// if(pair.getValue().equals(trap)){
+		// iterator.remove();
+		// }//if
+		// }//while
+		//
 	}// removeTraps
 
 	/**
@@ -425,31 +429,37 @@ public class Core extends Observable{
 	 * @return ArrayList of traps specified by type
 	 */
 	public ArrayList<Integer> getTraps(Trap trap) {
-		List<Integer> getTrapLocations = new ArrayList<Integer>();
 		
-		Iterator iterator = traps.entrySet().iterator();
-		while(iterator.hasNext()){	
-			Map.Entry pair = (Entry) iterator.next();	
-			if(pair.getValue().equals(trap)){
-				Integer location = (Integer) pair.getKey();
-				getTrapLocations.add(location);
-			}//if
-		}//while
-		
-		
-//		ArrayList<Integer> getTrapLocations = new ArrayList<Integer>();
-		
-//		Set<Integer> locations = traps.keySet();
-//		for (Integer location : locations) {
-//			if (traps.get(location).equals(trap)) {
-//				getTrapLocations.add(location);
-//			}// inner if
-//		}// for location
+		List<Integer> getTrapLocations = traps.entrySet().stream()
+		.filter((t)-> t.getValue().equals(trap))
+		.map((t)->t.getKey())
+		.collect(Collectors.toList());
+				
+
+						
+//		List<Integer> getTrapLocations = new ArrayList<Integer>();
+//
+//		traps.entrySet().forEach(s ->
+//		{
+//			if (s.getValue().equals(trap)) {
+//				getTrapLocations.add(s.getKey());
+//			}
+//		});
+
+		// Iterator iterator = traps.entrySet().iterator();
+		// while(iterator.hasNext()){
+		// Map.Entry pair = (Entry) iterator.next();
+		// if(pair.getValue().equals(trap)){
+		// Integer location = (Integer) pair.getKey();
+		// getTrapLocations.add(location);
+		// }//if
+		// }//while
+
 		return (ArrayList<Integer>) getTrapLocations;
 	}// getTrapLocations
 
 	/**
-	 *  Gets memory size 
+	 * Gets memory size
 	 * 
 	 * @return the size of the memory in bytes
 	 */
@@ -468,7 +478,7 @@ public class Core extends Observable{
 
 	// ///////////////////////////////
 	/**
-	 *  Allows the debugging trapping to occur
+	 * Allows the debugging trapping to occur
 	 * 
 	 * @param state
 	 *            true to enable debugging
@@ -485,8 +495,6 @@ public class Core extends Observable{
 	public boolean isDebugTrapEnabled() {
 		return isDebugEnabled;
 	}// isDebugTrapEnabled
-
-
 
 	static int K = 1024;
 	static int PROTECTED_MEMORY = 0; // 100;
