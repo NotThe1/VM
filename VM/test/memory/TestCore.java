@@ -2,9 +2,9 @@ package memory;
 
 import static org.junit.Assert.*;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -64,10 +64,10 @@ public class TestCore implements Observer{
 	@Test
 	public void testTraps() {
 		Core core = new Core(24 * K);
-		ArrayList<Integer> locationsDebug =
+		List<Integer> locationsDebug =
 				new ArrayList<Integer>(Arrays.asList(0X0200, 0X0400, 0X0800, 0X0A00, 0X0C00, 0X0E00));
 
-		ArrayList<Integer> locationsIO =
+		List<Integer> locationsIO =
 				new ArrayList<Integer>(Arrays.asList(0X0300, 0X0500, 0X0700, 0X0900, 0X0B00, 0X0D00, 0X0F00));
 
 		assertEquals("Trap on new Core", 0, core.getTraps().size());

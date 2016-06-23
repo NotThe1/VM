@@ -1,6 +1,5 @@
 package memory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -417,7 +416,7 @@ public class Core extends Observable {
 	 * 
 	 * @return array of debug locations
 	 */
-	public ArrayList<Integer> getTraps() {
+	public List<Integer> getTraps() {
 		return getTraps(Trap.DEBUG);
 	}// getTrapLocations - DEBUG
 
@@ -428,7 +427,7 @@ public class Core extends Observable {
 	 *            type of trap - IO or Debug
 	 * @return ArrayList of traps specified by type
 	 */
-	public ArrayList<Integer> getTraps(Trap trap) {
+	public List<Integer> getTraps(Trap trap) {
 		
 		List<Integer> getTrapLocations = traps.entrySet().stream()
 		.filter((t)-> t.getValue().equals(trap))
@@ -455,7 +454,7 @@ public class Core extends Observable {
 		// }//if
 		// }//while
 
-		return (ArrayList<Integer>) getTrapLocations;
+		return  getTrapLocations;
 	}// getTrapLocations
 
 	/**
