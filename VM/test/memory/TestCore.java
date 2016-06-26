@@ -22,18 +22,11 @@ public class TestCore implements Observer {
 	// int trapLocation;
 	Core core;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		Core core = Core.getCore(25 * K);
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
 
 	@Before
 	public void setUp() throws Exception {
-	}
+		core = Core.getCore(25 * K);
+	}//setUp
 
 	@After
 	public void tearDown() throws Exception {
@@ -43,13 +36,11 @@ public class TestCore implements Observer {
 	@Test
 	public void testConstructor() {
 
-		Core core = Core.getCore();
 		// assertThat("constructor Default size", (64 * K), equalTo(core.getSize()));
 		// assertThat("constructor Default size", 64, equalTo(core.getSizeInK()));
 
 		int size = 25;
 		int sizeInBytes = size * K;
-		core = Core.getCore(sizeInBytes);
 		assertThat("constructor Default size", size, equalTo(core.getSizeInK()));
 		assertThat("constructor 25K", (sizeInBytes), equalTo(core.getSize()));
 
@@ -71,9 +62,6 @@ public class TestCore implements Observer {
 	@Test
 	public void testBadAddress() {
 		badLocation = 0;
-		// trapLocation = 66 * K;
-
-		core = Core.getCore();
 		core.addObserver(this);
 		int location = 66 * K;
 		byte value = (byte) 0XFF;
@@ -91,7 +79,6 @@ public class TestCore implements Observer {
 
 	@Test
 	public void testSimpleReadAndWrite() {
-		core = Core.getCore();
 		int location;
 		byte value;
 		ArrayList<Integer> locations =

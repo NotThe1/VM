@@ -16,4 +16,4 @@ public enum Register {
 	// used for identification only
 	// nothing is stored directly into one of these
 	BC, DE, HL, M, SP, AF, PC
-}
+}//enum Register

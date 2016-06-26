@@ -9,10 +9,8 @@ import org.junit.Test;
 
 public class CCRtest {
 
-	ConditionCodeRegister ccr;
-//	Byte value;
+	IConditionCodeRegister ccr;
 	Byte ans;
-//	Byte otherValues;
 
 	static Byte zeros = (byte) 0x00;
 	static Byte ones = (byte) 0xFF;
@@ -33,17 +31,13 @@ public class CCRtest {
 
 	@Before
 	public void setUp() throws Exception {
-		ccr = new ConditionCodeRegister();
-	}
+		ccr = ConditionCodeRegister.getConditionCodeRegister();
+	}//setUp
 
-	@After
-	public void tearDown() throws Exception {
-		ccr = null;
-	}
+	
 
 	@Test
 	public void testSetGetConditionCode() {
-		// XX0X 0X1X
 
 		ans = BASE_CC_0;
 		ccr.setConditionCode(zeros);
@@ -51,8 +45,8 @@ public class CCRtest {
 
 		ans = (byte) 0B11010111;
 		ccr.setConditionCode(ones);
-		assertThat("FF", ans, equalTo(ccr.getConditionCode()));
-	}
+		assertThat("testSetGetConditionCode", ans, equalTo(ccr.getConditionCode()));
+	}//testSetGetConditionCode
 
 	@Test
 	public void testSignFlag() {
@@ -62,132 +56,133 @@ public class CCRtest {
 		ccr.setSignFlag(true);
 		assertThat("00", true, equalTo(ccr.isSignFlagSet()));
 		ans = (byte) (BASE_CC_0 | MASK_SIGN) ;
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
+		assertThat("testSignFlag", ans, equalTo(ccr.getConditionCode()));
 
 		ccr.setSignFlag(false);
-		assertThat("00", false, equalTo(ccr.isSignFlagSet()));
-		assertThat("00", BASE_CC_0, equalTo(ccr.getConditionCode()));
+		assertThat("testSignFlag", false, equalTo(ccr.isSignFlagSet()));
+		assertThat("testSignFlag", BASE_CC_0, equalTo(ccr.getConditionCode()));
 
 		ccr.setConditionCode(ones);
 
 		ccr.setSignFlag(true);
-		assertThat("00", true, equalTo(ccr.isSignFlagSet()));
-		assertThat("00", BASE_CC_1, equalTo(ccr.getConditionCode()));
+		assertThat("testSignFlag", true, equalTo(ccr.isSignFlagSet()));
+		assertThat("testSignFlag", BASE_CC_1, equalTo(ccr.getConditionCode()));
 
 		ccr.setSignFlag(false);
-		assertThat("00", false, equalTo(ccr.isSignFlagSet()));
+		assertThat("testSignFlag", false, equalTo(ccr.isSignFlagSet()));
 		ans = (byte) (BASE_CC_1 & MASK_SIGN_NOT);
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
-
-	}
+		assertThat("testSignFlag", ans, equalTo(ccr.getConditionCode()));
+	}//testSignFlag
 
 	@Test
 	public void testZeroFlag() {
+		
 		ccr.setConditionCode(zeros);
 
 		ccr.setZeroFlag(true);
-		assertThat("00", true, equalTo(ccr.isZeroFlagSet()));
+		assertThat("testZeroFlag", true, equalTo(ccr.isZeroFlagSet()));
 		ans = (byte) (BASE_CC_0 | MASK_ZERO) ;
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
+		assertThat("testZeroFlag", ans, equalTo(ccr.getConditionCode()));
 
 		ccr.setZeroFlag(false);
-		assertThat("00", false, equalTo(ccr.isZeroFlagSet()));
-		assertThat("00", BASE_CC_0, equalTo(ccr.getConditionCode()));
+		assertThat("testZeroFlag", false, equalTo(ccr.isZeroFlagSet()));
+		assertThat("testZeroFlag", BASE_CC_0, equalTo(ccr.getConditionCode()));
 
 		ccr.setConditionCode(ones);
 
 		ccr.setZeroFlag(true);
-		assertThat("00", true, equalTo(ccr.isZeroFlagSet()));
-		assertThat("00", BASE_CC_1, equalTo(ccr.getConditionCode()));
+		assertThat("testZeroFlag", true, equalTo(ccr.isZeroFlagSet()));
+		assertThat("testZeroFlag", BASE_CC_1, equalTo(ccr.getConditionCode()));
 
 		ccr.setZeroFlag(false);
-		assertThat("00", false, equalTo(ccr.isZeroFlagSet()));
+		assertThat("testZeroFlag", false, equalTo(ccr.isZeroFlagSet()));
 		ans = (byte) (BASE_CC_1 & MASK_ZERO_NOT);
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
-
-	}
+		assertThat("testZeroFlag", ans, equalTo(ccr.getConditionCode()));
+	}//testZeroFlag
 
 	@Test
 	public void testAuxilaryCarryFlag() {
+		
 		ccr.setConditionCode(zeros);
 
 		ccr.setAuxilaryCarryFlag(true);
-		assertThat("00", true, equalTo(ccr.isAuxilaryCarryFlagSet()));
+		assertThat("testAuxilaryCarryFlag", true, equalTo(ccr.isAuxilaryCarryFlagSet()));
 		ans = (byte) (BASE_CC_0 | MASK_AUX_CARRY) ;
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
+		assertThat("testAuxilaryCarryFlag", ans, equalTo(ccr.getConditionCode()));
 
 		ccr.setAuxilaryCarryFlag(false);
-		assertThat("00", false, equalTo(ccr.isAuxilaryCarryFlagSet()));
-		assertThat("00", BASE_CC_0, equalTo(ccr.getConditionCode()));
+		assertThat("testAuxilaryCarryFlag", false, equalTo(ccr.isAuxilaryCarryFlagSet()));
+		assertThat("testAuxilaryCarryFlag", BASE_CC_0, equalTo(ccr.getConditionCode()));
 
 		ccr.setConditionCode(ones);
 
 		ccr.setAuxilaryCarryFlag(true);
-		assertThat("00", true, equalTo(ccr.isAuxilaryCarryFlagSet()));
-		assertThat("00", BASE_CC_1, equalTo(ccr.getConditionCode()));
+		assertThat("testAuxilaryCarryFlag", true, equalTo(ccr.isAuxilaryCarryFlagSet()));
+		assertThat("testAuxilaryCarryFlag", BASE_CC_1, equalTo(ccr.getConditionCode()));
 
 		ccr.setAuxilaryCarryFlag(false);
-		assertThat("00", false, equalTo(ccr.isAuxilaryCarryFlagSet()));
+		assertThat("testAuxilaryCarryFlag", false, equalTo(ccr.isAuxilaryCarryFlagSet()));
 		ans = (byte) (BASE_CC_1 & MASK_AUX_CARRY_NOT);
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
-
-	}
+		assertThat("testAuxilaryCarryFlag", ans, equalTo(ccr.getConditionCode()));
+	}//testAuxilaryCarryFlag
 
 	@Test
 	public void testParityFlag() {
+		
 		ccr.setConditionCode(zeros);
 
 		ccr.setParityFlag(true);
-		assertThat("00", true, equalTo(ccr.isParityFlagSet()));
+		assertThat("testParityFlag", true, equalTo(ccr.isParityFlagSet()));
 		ans = (byte) (BASE_CC_0 | MASK_PARITY) ;
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
+		assertThat("testParityFlag", ans, equalTo(ccr.getConditionCode()));
 
 		ccr.setParityFlag(false);
-		assertThat("00", false, equalTo(ccr.isParityFlagSet()));
-		assertThat("00", BASE_CC_0, equalTo(ccr.getConditionCode()));
+		assertThat("testParityFlag", false, equalTo(ccr.isParityFlagSet()));
+		assertThat("testParityFlag", BASE_CC_0, equalTo(ccr.getConditionCode()));
 
 		ccr.setConditionCode(ones);
 
 		ccr.setParityFlag(true);
-		assertThat("00", true, equalTo(ccr.isParityFlagSet()));
-		assertThat("00", BASE_CC_1, equalTo(ccr.getConditionCode()));
+		assertThat("testParityFlag", true, equalTo(ccr.isParityFlagSet()));
+		assertThat("testParityFlag", BASE_CC_1, equalTo(ccr.getConditionCode()));
 
 		ccr.setParityFlag(false);
-		assertThat("00", false, equalTo(ccr.isParityFlagSet()));
+		assertThat("testParityFlag", false, equalTo(ccr.isParityFlagSet()));
 		ans = (byte) (BASE_CC_1 & MASK_PARITY_NOT);
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
-
-	}
+		assertThat("testParityFlag", ans, equalTo(ccr.getConditionCode()));
+	}//testParityFlag
 
 	@Test
 	public void testCarryFlag() {
+		
 		ccr.setConditionCode(zeros);
 
 		ccr.setCarryFlag(true);
-		assertThat("00", true, equalTo(ccr.isCarryFlagSet()));
+		assertThat("testCarryFlag", true, equalTo(ccr.isCarryFlagSet()));
 		ans = (byte) (BASE_CC_0 | MASK_CARRY) ;
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
+		assertThat("testCarryFlag", ans, equalTo(ccr.getConditionCode()));
 
 		ccr.setCarryFlag(false);
-		assertThat("00", false, equalTo(ccr.isCarryFlagSet()));
-		assertThat("00", BASE_CC_0, equalTo(ccr.getConditionCode()));
+		assertThat("testCarryFlag", false, equalTo(ccr.isCarryFlagSet()));
+		assertThat("testCarryFlag", BASE_CC_0, equalTo(ccr.getConditionCode()));
 
 		ccr.setConditionCode(ones);
 
 		ccr.setCarryFlag(true);
-		assertThat("00", true, equalTo(ccr.isCarryFlagSet()));
-		assertThat("00", BASE_CC_1, equalTo(ccr.getConditionCode()));
+		assertThat("testCarryFlag", true, equalTo(ccr.isCarryFlagSet()));
+		assertThat("testCarryFlag", BASE_CC_1, equalTo(ccr.getConditionCode()));
 
 		ccr.setCarryFlag(false);
-		assertThat("00", false, equalTo(ccr.isCarryFlagSet()));
+		assertThat("testCarryFlag", false, equalTo(ccr.isCarryFlagSet()));
 		ans = (byte) (BASE_CC_1 & MASK_CARRY_NOT);
-		assertThat("00", ans, equalTo(ccr.getConditionCode()));
-
-	}
+		assertThat("testCarryFlag", ans, equalTo(ccr.getConditionCode()));
+	}//testCarryFlag
 
 	@Test
 	public void testZSP() {
+		
 		ccr.setConditionCode(zeros);
+		
 		ccr.setZSP((byte) 0x80); // set S, reset Z&P
 		assertThat("sign - zeros with 0x80", true, equalTo(ccr.isSignFlagSet()));
 		assertThat("zero - zeros with 0x80", false, equalTo(ccr.isZeroFlagSet()));
@@ -246,7 +241,6 @@ public class CCRtest {
 		assertThat("sign - zeros with 0x00", true, equalTo(ccr.isSignFlagSet()));
 		assertThat("zero - zeros with 0x00", false, equalTo(ccr.isZeroFlagSet()));
 		assertThat("parity - zeros with 0x00", true, equalTo(ccr.isParityFlagSet()));
+	}//testZSP
 
-	}
-
-}
+}//class CCRtest

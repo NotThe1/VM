@@ -7,10 +7,8 @@ import java.util.Arrays;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.junit.After;
-import org.junit.AfterClass;
+
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -21,14 +19,15 @@ public class TestIoBuss implements Observer {
 	Core core;
 	IoBuss ioBuss;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		Core core = Core.getCore(25 * K);
-	}// setUpBeforeClass
+	@Before
+	public void setUp() throws Exception {
+		core = Core.getCore(25 * K);
+		ioBuss = new IoBuss();
+	}//setUp
 
 	@Test
 	public void testReadAndWrite() {
-		IoBuss ioBuss = new IoBuss();
+		
 		int location;
 		byte value;
 		ArrayList<Integer> locations =
@@ -51,8 +50,7 @@ public class TestIoBuss implements Observer {
 
 	@Test
 	public void testReadAndWriteDMA() {
-		 core = Core.getCore();
-		IoBuss ioBuss = new IoBuss();
+		
 		byte[] values1 = { (byte) 0X00, (byte) 0X0FF, (byte) 0X0AA, (byte) 0X055, (byte) 0X0C3, (byte) 0X03C,
 				(byte) 0X00, (byte) 0X0FF, (byte) 0X0AA, (byte) 0X055, (byte) 0X0C3, (byte) 0X03C,
 				(byte) 0X00, (byte) 0X0FF, (byte) 0X0AA, (byte) 0X055, (byte) 0X0C3, (byte) 0X03C };
@@ -74,6 +72,7 @@ public class TestIoBuss implements Observer {
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
+		
 		MemoryTrapEvent mte = (MemoryTrapEvent) arg1;
 		System.out.println("Observable \n" + mte.getMessage() + "\n");
 
@@ -89,7 +88,7 @@ public class TestIoBuss implements Observer {
 			badLocation = mte.getLocation();
 			break;
 		default:
-		}
+		}//switch
 
 	}// update
 

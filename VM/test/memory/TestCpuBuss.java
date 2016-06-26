@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,11 +21,11 @@ public class TestCpuBuss implements Observer {
 	Core core;
 	CpuBuss cpuBuss;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		Core core = Core.getCore(25 * K);
-	}// setUpBeforeClass
-
+	@Before
+	public void setUp() throws Exception {
+		core = Core.getCore(25 * K);
+	}//setUp
+	
 	@Test
 	public void testSimpleReadAndWrite() {
 		CpuBuss cpuBuss = new CpuBuss();
@@ -45,7 +46,7 @@ public class TestCpuBuss implements Observer {
 				assertThat("Simple Read and write", value, equalTo(cpuBuss.read(location)));
 			}// for value
 		}// for location
-	}
+	}//testSimpleReadAndWrite
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
@@ -64,7 +65,7 @@ public class TestCpuBuss implements Observer {
 			badLocation = mte.getLocation();
 			break;
 		default:
-		}
+		}//switch
 
 	}// update
 

@@ -15,22 +15,13 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 
 public class WorkingRegisterSetTest {
+		static IWorkingRegisterSet wrs;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-	}
+		wrs = WorkingRegisterSet.getWorkingRegisterSet();
+	}//setUpBeforeClass
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
-	}
 
 	@Test
 	public void testPCandSP() {
@@ -38,7 +29,8 @@ public class WorkingRegisterSetTest {
 		int valueFFFF = 0XFFFF;
 		int valueA5A5 = 0XA5A5;
 		int value0100 = 0X0100;
-		WorkingRegisterSet wrs = new WorkingRegisterSet();
+		
+		wrs = WorkingRegisterSet.getWorkingRegisterSet();
 		// Stack Pointer
 		assertThat("SP Initial", value0100, equalTo(wrs.getStackPointer()));
 		wrs.setStackPointer(valueFFFF);
@@ -52,11 +44,11 @@ public class WorkingRegisterSetTest {
 		wrs.setProgramCounter(valueA5A5);
 		assertThat("PC A5A5", valueA5A5, equalTo(wrs.getProgramCounter()));
 		wrs = null;
-	}
+	}//testPCandSP
 
 	@Test
 	public void testSingleByteRegisters() {
-		WorkingRegisterSet wrs = new WorkingRegisterSet();
+		wrs = WorkingRegisterSet.getWorkingRegisterSet();
 
 		byte[] values = new byte[100];
 		Random random = new Random();
@@ -76,14 +68,13 @@ public class WorkingRegisterSetTest {
 		}// for values
 
 		wrs = null;
-	}
+	}//testSingleByteRegisters
 
 	@Test
 	public void testDoubleByteRegisters() {
-		WorkingRegisterSet wrs = new WorkingRegisterSet();
+		wrs = WorkingRegisterSet.getWorkingRegisterSet();
 		
 		int testCount = 100;
-
 		byte[] hiValues = new byte[testCount];
 		byte[] loValues = new byte[testCount];
 		byte hiValue,loValue;
@@ -122,6 +113,7 @@ public class WorkingRegisterSetTest {
 		}//for
 		// Initialize
 		byte byte00 = (byte)0X00;
+		
 		wrs.initialize();
 		assertThat("Word Reg - initialize SP",0X0100,equalTo(wrs.getDoubleReg(Register.SP)));
 		assertThat("Word Reg - initialize PC",0,equalTo(wrs.getDoubleReg(Register.PC)));
@@ -137,14 +129,8 @@ public class WorkingRegisterSetTest {
 		assertThat("Word Reg - initialize H)",byte00,equalTo(wrs.getReg(Register.H)));
 		assertThat("Word Reg - initialize L)",byte00,equalTo(wrs.getReg(Register.L)));
 			
-		wrs = null;
 	}//testDoubleByteRegisters
 
-//	@Test
-//	public void test() {
-//		WorkingRegisterSet wrs = new WorkingRegisterSet();
-//
-//		wrs = null;
-//	}
 
-}// End of All Tests
+
+}// class WorkingRegisterSetTest

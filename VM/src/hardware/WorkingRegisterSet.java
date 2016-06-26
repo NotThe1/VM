@@ -9,27 +9,44 @@ import java.util.HashMap;
  * 
  *          Contains the information about all the registers in the machine. Has both the data registers as well as Program
  *          Counter and Stack pointer.
- * 
+ * 	<p> This class is a singleton
  *
  */
-public class WorkingRegisterSet {
+public class WorkingRegisterSet implements IWorkingRegisterSet {
+	
+	private static IWorkingRegisterSet workingRegisterSet;
 
 	private int programCounter;
 	private int stackPointer;
 	private HashMap<Register, Byte> registers;
+	
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#getWorkingRegisterSet()
+	 */
+//	@Override
+	public static IWorkingRegisterSet getWorkingRegisterSet(){
+		if (workingRegisterSet==null){
+			workingRegisterSet = new WorkingRegisterSet();
+		}//if
+		return workingRegisterSet;
+	}//getWorkingRegisterSet
 
 	/**
 	 * Sets up the Program Counter, Stack Pointer and establishes the data registers based on the class - Register. It
 	 * determines the register names and count.
 	 */
-	public WorkingRegisterSet() {
+	private WorkingRegisterSet() {
 		registers = new HashMap<Register, Byte>();
 		initialize();
 	}// Constructor
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-	/**
-	 * Resets the Program Counter, Stack Pointer and data registers
+	
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#initialize()
 	 */
+	@Override
 	public void initialize() {
 		registers.clear();
 		for (Register register : Register.values()) {
@@ -39,82 +56,69 @@ public class WorkingRegisterSet {
 		stackPointer = 0X0100; // set to non zero
 	}// initialize
 
-	/**
-	 * 
-	 * @return current Value of Program Counter
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#getProgramCounter()
 	 */
-	protected int getProgramCounter() {
+	@Override
+	public int getProgramCounter() {
 		return programCounter;
 	}// getProgramCounter
 
-	/**
-	 * 
-	 * @param programCounter
-	 *            Value to place into Program Counter
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#setProgramCounter(int)
 	 */
-	protected void setProgramCounter(int programCounter) {
+	@Override
+	public void setProgramCounter(int programCounter) {
 		this.programCounter = programCounter & 0XFFFF;
 	}// setProgramCounter
 
-	/**
-	 * 
-	 * @return current value of Stack Pointer
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#getStackPointer()
 	 */
-	protected int getStackPointer() {
+	@Override
+	public int getStackPointer() {
 		return stackPointer;
 	}// getStackPointer
 
-	/**
-	 * 
-	 * @param stackPointer
-	 *            Value to be placed into Stack Pointer
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#setStackPointer(int)
 	 */
-	protected void setStackPointer(int stackPointer) {
+	@Override
+	public void setStackPointer(int stackPointer) {
 		this.stackPointer = stackPointer & 0XFFFF;
 	}// setStackPointer
 
-	/**
-	 * 
-	 * @param hiByte
-	 *            Most Significant Byte of Stack pointer
-	 * @param loByte
-	 *            Least Significant Byte of Stack pointer
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#setStackPointer(byte, byte)
 	 */
-	protected void setStackPointer(byte hiByte, byte loByte) {
+	@Override
+	public void setStackPointer(byte hiByte, byte loByte) {
 		int hi = (int) (hiByte << 8);
 		int lo = (int) (loByte & 0X00FF);
 		this.stackPointer = (hi + lo) & 0XFFFF;
 	}// setStackPointer
 
-	/**
-	 * 
-	 * @param reg
-	 *            8-bit register
-	 * @param value
-	 *            Value to be put into specified register
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#setReg(hardware.Register, byte)
 	 */
+	@Override
 	public void setReg(Register reg, byte value) {
 		registers.put(reg, value);
 	}// loadReg
 
-	/**
-	 * 
-	 * @param reg
-	 *            8-bit register
-	 * @return Value stored in specified register
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#getReg(hardware.Register)
 	 */
 
+	@Override
 	public byte getReg(Register reg) {
 		return registers.get(reg);
 	}// getReg
 
-	/**
-	 * 
-	 * @param reg
-	 *            16-Bit register
-	 * @param value
-	 *            Value to be put into specified register
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#setDoubleReg(hardware.Register, int)
 	 */
+	@Override
 	public void setDoubleReg(Register reg, int value) {
 		int hi = value & 0XFF00;
 		byte hiByte = (byte) ((hi >> 8) & 0XFF);
@@ -146,12 +150,10 @@ public class WorkingRegisterSet {
 		return;
 	}// setDoubleReg
 
-	/**
-	 * 
-	 * @param reg
-	 *            16-Bit register
-	 * @return Value stored in specified register
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#getDoubleReg(hardware.Register)
 	 */
+	@Override
 	public int getDoubleReg(Register reg) {
 		byte hi = 0;
 		byte lo = 0;
