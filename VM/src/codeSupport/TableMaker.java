@@ -28,6 +28,7 @@ import java.awt.Insets;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerModel;
@@ -45,6 +46,16 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.MatteBorder;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
@@ -59,12 +70,18 @@ import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.JSeparator;
 import javax.swing.border.EtchedBorder;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 
 public class TableMaker {
 	private JFrame frmOpcodeTableMaker;
 	HashMap<Integer, Instruction> instructions;
+	DefaultTableModel tableModel;
+	String currentInstructionSet = "";
+	public MyMenuAdapter menuAdapter;
+	boolean isDirty = false;
 
 	/**
 	 * Launch the application.
@@ -225,39 +242,159 @@ public class TableMaker {
 			ans = CCFlags.NONE;
 		}
 		return ans;
+	}// getFlags
+
+	// private HashMap<Integer, Instruction> newInstructionSet() {
+	// HashMap<Integer, Instruction> newInstructionSet = new HashMap<Integer, Instruction>();
+	// Instruction instruction;
+	// for (int i = 0; i < 256; i++) {
+	// instruction = new Instruction(i, 1, 1, ArgumentSignature.NONE,
+	// ArgumentType.NONE,
+	// ArgumentType.NONE,
+	// CCFlags.NONE,
+	// Command.NOP,
+	// "String Description",
+	// "(XYZ)<- Acc");
+	// newInstructionSet.put(i, instruction);
+	// }// for
+	//
+	// return newInstructionSet;
+	// }// newInstructionSet
+
+	// private void setTableUp(JTable masterTable, DefaultTableModel tableModel) {
+	//
+	// Object[] columnNames = { "Hex", "Len", "Size", "Signature", "Arg1",
+	// "Arg2", "CC affected", "Inst", "Desc", "Func" };
+	//
+	// tableModel.setColumnIdentifiers(columnNames);
+	// setColumnAttributes(masterTable);
+	// masterTable.setAutoCreateRowSorter(true);
+	//
+	// TableRowSorter<TableModel> sorter = new TableRowSorter(tableModel);
+	// masterTable.setRowSorter(sorter);
+	//
+	// }// setTableUp
+
+	private void changeInstructionSet() {
+
 	}
 
-	private void setTableUp(JTable masterTable) {
+	private HashMap<Integer, Instruction> setInstructionSet(String objectPath) {
+		HashMap<Integer, Instruction> setInstructionSet = new HashMap<Integer, Instruction>();
+
+		try (FileInputStream inStream = new FileInputStream(objectPath + FILE_EXT )) {
+			ObjectInputStream ois = new ObjectInputStream(inStream);
+			setInstructionSet = (HashMap<Integer, Instruction>) ois.readObject();
+			currentInstructionSet = objectPath;
+			ois.close();
+		} catch (IOException | ClassNotFoundException e) {
+			currentInstructionSet = ""; // signal its a new set
+			System.out.printf("Could not find %s.%n %s", objectPath, e.getMessage());
+			Instruction instruction;
+			for (int i = 0; i < 256; i++) {
+				instruction = new Instruction(i,
+						1,
+						1,
+						ArgumentSignature.NONE,
+						ArgumentType.NONE,
+						ArgumentType.NONE,
+						CCFlags.NONE,
+						Command.NOP,
+						"Instruction - does not exist",
+						"(XYZ) <- Acc");
+				setInstructionSet.put(i, instruction);
+			}// for
+		}// try
+
+		// remember where this set came from
+		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
+		myPrefs.put("instructionSet", currentInstructionSet);
+		myPrefs = null;
+		
+		if (currentInstructionSet.equals("")) {
+			frmOpcodeTableMaker.setTitle(NEW_SET);
+		} else {
+			frmOpcodeTableMaker.setTitle(currentInstructionSet);
+		}// if
+		return setInstructionSet;
+	}// getInstructionSet
+
+	private HashMap<Integer, Instruction> modelToInstructionSet(DefaultTableModel tabelModel) {
+		HashMap<Integer, Instruction> modelToInstructionSet = new HashMap<Integer, Instruction>();
+		Instruction instruction;
+
+		for (int rowNumber = 0; rowNumber < tabelModel.getRowCount(); rowNumber++) {
+			int opCode = Integer.parseInt((String) tabelModel.getValueAt(rowNumber, 0), 16);
+			instruction = new Instruction(opCode,
+					(int) tabelModel.getValueAt(rowNumber, 1),
+					(int) tabelModel.getValueAt(rowNumber, 2),
+					(ArgumentSignature) tabelModel.getValueAt(rowNumber, 3),
+					(ArgumentType) tabelModel.getValueAt(rowNumber, 4),
+					(ArgumentType) tabelModel.getValueAt(rowNumber, 5),
+					(CCFlags) tabelModel.getValueAt(rowNumber, 6),
+					(Command) tabelModel.getValueAt(rowNumber, 7),
+					(String) tabelModel.getValueAt(rowNumber, 8),
+					(String) tabelModel.getValueAt(rowNumber, 9)
+					);
+
+			// instruction.setOpCode(opCode);
+			// instruction.setOpCodeSize((int) tabelModel.getValueAt(rowNumber, 1));
+			// instruction.setInstructionSize((int) tabelModel.getValueAt(rowNumber, 2));
+			// instruction.setArgumentSignature((ArgumentSignature) tabelModel.getValueAt(rowNumber, 3));
+			// instruction.setArg1((ArgumentType) tabelModel.getValueAt(rowNumber, 4));
+			// instruction.setArg2((ArgumentType) tabelModel.getValueAt(rowNumber, 5));
+			// instruction.setCcFlags((CCFlags) tabelModel.getValueAt(rowNumber, 6));
+			// instruction.setCommand((Command) tabelModel.getValueAt(rowNumber, 7));
+			// instruction.setDescription((String) tabelModel.getValueAt(rowNumber, 8));
+			// instruction.setFunction((String) tabelModel.getValueAt(rowNumber, 9));
+
+		modelToInstructionSet.put(opCode, instruction);
+		}// for
+		return modelToInstructionSet;
+
+	}// modelToInstructionSet
+
+	private void setUpTableModel(JTable tableMaster) {
+		tableModel = (DefaultTableModel) tableMaster.getModel();
+		// set columns
 		Object[] columnNames = { "Hex", "Len", "Size", "Signature", "Arg1",
 				"Arg2", "CC affected", "Inst", "Desc", "Func" };
+		tableModel.setColumnIdentifiers(columnNames);
+		setColumnAttributes(tableMaster);
+		// set sortcapabilities
+		tableMaster.setAutoCreateRowSorter(true);
+		TableRowSorter<TableModel> sorter = new TableRowSorter(tableModel);
+		tableMaster.setRowSorter(sorter);
+		return;
+	}// setUpTableModel
 
-		DefaultTableModel masterModel = (DefaultTableModel) masterTable.getModel();
-		masterModel.setColumnIdentifiers(columnNames);
-		adjustTableLook(masterTable);
-		masterTable.setAutoCreateRowSorter(true);
+	private void loadTableModel(HashMap<Integer, Instruction> instructionSet, JTable tableMaster) {
+		DefaultTableModel dtm = (DefaultTableModel) tableMaster.getModel();
+		dtm.setRowCount(0); // truncate table
 
-		TableRowSorter<TableModel> sorter = new TableRowSorter(masterModel);
-		masterTable.setRowSorter(sorter);
-
-
+		Instruction instruction;
+		Object[] rowData;
 		for (int i = 0; i < 256; i++) {
-			masterModel.insertRow(i, new Object[] {
-					String.format("%02X", i),
-					1,
-					1,
-					ArgumentSignature.NONE,
-					ArgumentType.NONE,
-					ArgumentType.NONE,
-					CCFlags.NONE,
-					Command.NOP,
-					"Instruction - does not exist",
-					"*******"
-			});
-		}
+			instruction = instructionSet.get(i);
+			rowData = new Object[] {
+					(String) String.format("%02X", i),
+					(int) instruction.getOpCodeSize(),
+					(int) instruction.getInstructionSize(),
+					(ArgumentSignature) instruction.getArgumentSignature(),
+					(ArgumentType) instruction.getArg1(),
+					(ArgumentType) instruction.getArg2(),
+					(CCFlags) instruction.getCcFlags(),
+					(Command) instruction.getCommand(),
+					(String) instruction.getDescription(),
+					(String) instruction.getFunction()
+			};
+			dtm.insertRow(i, rowData);
+		}// for
+		isDirty = false; // no edit yet
+		return;
+	}// loadTableModel
 
-	}
-
-	private void adjustTableLook(JTable table) {
+	private void setColumnAttributes(JTable table) {
 		Font realColumnFont = table.getFont();
 		FontMetrics fontMetrics = table.getFontMetrics(realColumnFont);
 
@@ -305,7 +442,6 @@ public class TableMaker {
 		String desc = instruction.getDescription();
 		String func = instruction.getFunction();
 
-
 		masterModel.insertRow(hexValue, new Object[] {
 				hexValueStr,
 				opCodeLength,
@@ -318,7 +454,7 @@ public class TableMaker {
 				desc,
 				func
 		});
-		masterModel.removeRow(hexValue+1);
+		masterModel.removeRow(hexValue + 1);
 
 	}// addInstructonToTable
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -331,14 +467,18 @@ public class TableMaker {
 		Point point = frmOpcodeTableMaker.getLocation();
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
+
+		myPrefs.put("instructionSet", currentInstructionSet);
 		myPrefs = null;
 	}
 
 	private void appInit() {
 		// manage preferences
 		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
-		frmOpcodeTableMaker.setSize(638, 722);
+
+		frmOpcodeTableMaker.setSize(myPrefs.getInt("Width", 650), myPrefs.getInt("Height", 722));
 		frmOpcodeTableMaker.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
+		currentInstructionSet = myPrefs.get("instructionSet", "");
 		myPrefs = null;
 
 		// manage Spinners
@@ -370,9 +510,19 @@ public class TableMaker {
 		DefaultComboBoxModel<CCFlags> flagsModel = new DefaultComboBoxModel<CCFlags>(CCFlags.values());
 		cbFlags.setModel(flagsModel);
 
-		setTableUp(tableMaster);
+		// Manage menus
+		menuAdapter = new MyMenuAdapter();
 
-	}
+		// set the table's column info etc.
+		setUpTableModel(tableMaster);
+		// Get the Instruction set
+		// HashMap<Integer, Instruction> instructionSet = setInstructionSet(currentInstructionSet);
+		// put it into the table's model
+		loadTableModel(setInstructionSet(currentInstructionSet), tableMaster);
+
+
+
+	}// appInit
 
 	/**
 	 * Create the application.
@@ -740,28 +890,35 @@ public class TableMaker {
 		menuBar.add(mnuFile);
 
 		mnuFileNew = new JMenuItem("New ...");
-		mnuFileNew.setActionCommand("mnuFileNew");
-		mnuFileNew.addActionListener(new menuAdapter());
+		// mnuFileNew.setActionCommand("mnuFileNew");
+		mnuFileNew.addActionListener(new MyMenuAdapter());
 		mnuFileNew.setActionCommand(MNU_FILE_NEW);
 		mnuFile.add(mnuFileNew);
 
 		JMenuItem mnuFileOpen = new JMenuItem("Open ...");
+		mnuFileOpen.setActionCommand(MNU_FILE_OPEN);
+		mnuFileOpen.addActionListener(new MyMenuAdapter());
 		mnuFile.add(mnuFileOpen);
 
 		JSeparator separator = new JSeparator();
 		mnuFile.add(separator);
 
 		JMenuItem mnuFileSave = new JMenuItem("Save");
+		mnuFileSave.setActionCommand(MNU_FILE_SAVE);
+		mnuFileSave.addActionListener(new MyMenuAdapter());
+
 		mnuFile.add(mnuFileSave);
 
 		JMenuItem mnuFileSaveAs = new JMenuItem("Save As ...");
+		mnuFileSaveAs.setActionCommand(MNU_FILE_SAVE_AS);
+		mnuFileSaveAs.addActionListener(new MyMenuAdapter());
 		mnuFile.add(mnuFileSaveAs);
 
 		JSeparator separator_1 = new JSeparator();
 		mnuFile.add(separator_1);
 
 		JMenuItem mnuFilePrint = new JMenuItem("Print ...");
-		mnuFilePrint.addActionListener(new menuAdapter());
+		mnuFilePrint.addActionListener(new MyMenuAdapter());
 		mnuFilePrint.setActionCommand(MNU_FILE_PRINT);
 		mnuFile.add(mnuFilePrint);
 
@@ -772,15 +929,9 @@ public class TableMaker {
 		mnuFile.add(mnuFileClose);
 
 		JMenuItem mnuFileExit = new JMenuItem("Exit");
-		mnuFileExit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				appClose();
-			}
-		});
+		mnuFileExit.setActionCommand(MNU_FILE_EXIT);
+		mnuFileExit.addActionListener(new MyMenuAdapter());
 		mnuFile.add(mnuFileExit);
-
-		JMenuItem mntmNewMenuItem = new JMenuItem("New menu item");
-		mnuFile.add(mntmNewMenuItem);
 	}// initialize
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
@@ -980,18 +1131,25 @@ public class TableMaker {
 		}// actionPerformed
 	}// class comboAdapter
 
-	class menuAdapter implements ActionListener {
+	public class MyMenuAdapter implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
 			String menuItem = ae.getActionCommand();
 			switch (menuItem) {
 			case MNU_FILE_NEW:
+				newFile();
 				break;
 			case MNU_FILE_OPEN:
+				openFile();
 				break;
 			case MNU_FILE_SAVE:
+				if (currentInstructionSet.equals("")) {
+					fileSaveAs();
+				} else
+					fileSave(currentInstructionSet);
 				break;
 			case MNU_FILE_SAVE_AS:
+				fileSaveAs();
 				break;
 			case MNU_FILE_PRINT:
 				try {
@@ -1004,10 +1162,80 @@ public class TableMaker {
 			case MNU_FILE_CLOSE:
 				break;
 			case MNU_FILE_EXIT:
+				appClose();
+				System.exit(0);
 				break;
 			default:
 			}
 		}// actionPerformed
+
+		private void newFile() {
+			currentInstructionSet = "";
+			loadTableModel(setInstructionSet(currentInstructionSet), tableMaster);
+		}// newFile
+
+		private void openFile() {
+			
+			currentInstructionSet =getFilePathString(true);
+			loadTableModel(setInstructionSet(currentInstructionSet), tableMaster);
+
+		}// openFile
+
+		private void fileSave(String targetSavePath) {
+			if (targetSavePath.equals("")){
+				System.out.printf(" Nothing saved %n");
+			}else{
+				
+				try(FileOutputStream outStream = new FileOutputStream(targetSavePath + FILE_EXT)) {
+					ObjectOutputStream oos = new ObjectOutputStream(outStream);
+					oos.writeObject(modelToInstructionSet((DefaultTableModel) tableMaster.getModel()));
+					oos.close();
+					currentInstructionSet = targetSavePath;
+				} catch (IOException e) {
+					
+					e.printStackTrace();
+				}//try
+			}//if
+
+		}// fileSave
+
+		private void fileSaveAs() {
+			String savedFilePath =  getFilePathString(false);
+			fileSave(savedFilePath);
+		}// fileSaveAs
+
+		private String getFilePathString(boolean open) {
+			String currentPath = currentInstructionSet.equals("") ? "." : currentInstructionSet;
+//			Path path = Paths.get(currentPath);
+			JFileChooser fileChooser = new JFileChooser(currentPath);
+			FileFilter filter = new FileNameExtensionFilter("Instruction file", "dat", "dat");
+			fileChooser.addChoosableFileFilter(filter);
+			fileChooser.setAcceptAllFileFilterUsed(true);
+			int result;
+			if (open) {
+				result = fileChooser.showOpenDialog(null);
+			} else {
+				result = fileChooser.showSaveDialog(null);
+			}// if
+
+			String getFilePathString = "";
+			if (result != JFileChooser.APPROVE_OPTION) {
+				System.out.printf("You did not select a file%n");
+				getFilePathString = "";
+			} else {
+				String fileName = fileChooser.getSelectedFile().getAbsolutePath();
+				int dotInd = fileName.lastIndexOf('.');
+				getFilePathString = (dotInd > 0) ? fileName.substring(0, dotInd) : fileName;
+				System.out.printf("You select file %s:%n", getFilePathString);
+			}// if
+
+			return getFilePathString;
+		}//
+
 	}// class menuAdapter
+	
+		private final static String FILE_EXT = ".dat";
+
+	private final static String NEW_SET = "<< New Instruction Set>>";
 }// class TableMaker
 
