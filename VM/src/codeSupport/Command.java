@@ -1,6 +1,7 @@
 package codeSupport;
 
 public enum Command {
+	XXX,					// not used
 	STC,CMC,				//Carry Bit Instructions
 	INR,DCR,CMA,DAA,			//Single Register Instructions
 	NOP,				//NOP Instruction

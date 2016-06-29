@@ -75,6 +75,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 public class TableMaker {
 	private JFrame frmOpcodeTableMaker;
 	HashMap<Integer, Instruction> instructions;
@@ -98,6 +101,21 @@ public class TableMaker {
 			}
 		});
 	}
+	
+	private void updateEditDisplay(int rowNumber){
+		DefaultTableModel tableModel = (DefaultTableModel) tableMaster.getModel();
+//tableModel.getValueAt(rowNumber, 0)		
+		hsOpcode.setValue(Integer.valueOf((String) tableModel.getValueAt(rowNumber, 0), 16) );
+		hsOpcodeSize.setValue((int)tableModel.getValueAt(rowNumber, 1));		
+		hsInstructionSize.setValue((int)tableModel.getValueAt(rowNumber, 2));
+		cbArgumentSignature.setSelectedItem((ArgumentSignature)tableModel.getValueAt(rowNumber, 3));
+		cbArg1.setSelectedItem((ArgumentType)tableModel.getValueAt(rowNumber, 4));
+		cbArg2.setSelectedItem((ArgumentType)tableModel.getValueAt(rowNumber, 5));
+		cbFlags.setSelectedItem((CCFlags)tableModel.getValueAt(rowNumber, 6));
+		cbCommand.setSelectedItem((Command)tableModel.getValueAt(rowNumber, 7));
+		txtDescription.setText((String)tableModel.getValueAt(rowNumber, 8));
+		txtFunction.setText((String)tableModel.getValueAt(rowNumber, 9));
+	}//updateEditDisplay
 
 	private void rowUpdate() {
 		int opCode = (int) hsOpcode.getValue();
@@ -390,6 +408,7 @@ public class TableMaker {
 			};
 			dtm.insertRow(i, rowData);
 		}// for
+		updateEditDisplay(0);
 		isDirty = false; // no edit yet
 		return;
 	}// loadTableModel
@@ -589,6 +608,14 @@ public class TableMaker {
 		scrollPane.setViewportBorder(new LineBorder(Color.BLUE, 4, true));
 
 		tableMaster = new JTable();
+		tableMaster.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Just clicked in the table");
+				updateEditDisplay(tableMaster.getSelectedRow());
+			}//mouseClicked
+		});
+		
 		scrollPane.setViewportView(tableMaster);
 
 		JPanel panelTop = new JPanel();
@@ -1053,6 +1080,7 @@ public class TableMaker {
 		baseInstructions.put("IN", new String[] { "IN", "None", "Input" });
 		baseInstructions.put("OUT", new String[] { "OUT", "None", "Output" });
 		baseInstructions.put("HLT", new String[] { "HLT", "None", "Halt" });
+		baseInstructions.put("XXX", new String[] { "XXX", "None", "Not valid instruction(NOP)" });
 
 	} // static
 		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
