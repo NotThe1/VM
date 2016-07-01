@@ -7,7 +7,20 @@ import java.util.stream.Collectors;
 
 import memory.Core.Trap;
 
+/*
+ * @author Frank Martyn
+ *  June 2016
+ ** @version 1.0
+ *  <p> This interface describes the actions required to support access to memory used by
+ *  the CPU. 
+ *  <p> Trap handling is monitored by the CPU-Memory interface.
+ *  Debug - allows the CPU to stop execution at predefined locations when the debug flag is enabled.
+ *  I/O - monitors specific location to start Disk I/O operations 
+ *  
+ *  The CPU also requires word sized transfer of data. along with Push and Pop operations
+ */
 public class CpuBuss extends Observable implements ICore, IcpuBuss {
+	private static CpuBuss instance;
 	private Core core;
 	private HashMap<Integer, Trap> traps;
 
@@ -16,7 +29,14 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 
 	private static final byte HALT = (byte) 0X76; // Halt opcode
 
-	public CpuBuss() {
+	public static CpuBuss getCpuBuss() {
+		if (instance == null) {
+			instance = new CpuBuss();
+		}// if
+		return instance;
+	}// getInstance
+
+	private CpuBuss() {
 		core = Core.getCore();
 		traps = new HashMap<Integer, Trap>();
 	}// Constructor

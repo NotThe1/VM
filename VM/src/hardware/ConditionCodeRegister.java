@@ -16,7 +16,7 @@ package hardware;
  */
 public class ConditionCodeRegister implements IConditionCodeRegister {
 
-	private static IConditionCodeRegister conditionCodeRegister;
+	private static ConditionCodeRegister conditionCodeRegister;
 
 	private boolean auxilaryCarryFlag = false;
 	private boolean carryFlag = false;
@@ -26,7 +26,7 @@ public class ConditionCodeRegister implements IConditionCodeRegister {
 
 	// +++++++++++++++++++++++++++++++++++++++++++++
 
-	public static IConditionCodeRegister getConditionCodeRegister() {
+	public static ConditionCodeRegister getConditionCodeRegister() {
 		if (conditionCodeRegister == null) {
 			conditionCodeRegister = new ConditionCodeRegister();
 		}//

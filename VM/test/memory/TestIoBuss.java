@@ -22,7 +22,7 @@ public class TestIoBuss implements Observer {
 	@Before
 	public void setUp() throws Exception {
 		core = Core.getCore(25 * K);
-		ioBuss = new IoBuss();
+		ioBuss =  IoBuss.getIoBuss();
 	}//setUp
 
 	@Test

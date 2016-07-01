@@ -2,7 +2,7 @@ package hardware;
 
 public interface IWorkingRegisterSet {
 
-	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	/**
 	 * Resets the Program Counter, Stack Pointer and data registers
@@ -43,6 +43,23 @@ public interface IWorkingRegisterSet {
 	 *            Least Significant Byte of Stack pointer
 	 */
 	public abstract void setStackPointer(byte hiByte, byte loByte);// setStackPointer
+
+	/**
+	 * loads the value to the Accumulator (Register A)
+	 * 
+	 * @param value
+	 *            Value to be put into Accumulator (Register A)
+	 */
+	public abstract void setAcc(byte value);// loadReg
+
+	/**
+	 * 
+	 * Returns the value from the Accumulator (Register A)
+	 * 
+	 * @return Value stored in specified register
+	 */
+
+	public abstract byte getAcc();// getAcc
 
 	/**
 	 * 

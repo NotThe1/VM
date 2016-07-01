@@ -26,7 +26,6 @@ public class WorkingRegisterSetTest {
 		int valueA5A5 = 0XA5A5;
 		int value0100 = 0X0100;
 
-		wrs = WorkingRegisterSet.getWorkingRegisterSet();
 		// Stack Pointer
 		assertThat("SP Initial", value0100, equalTo(wrs.getStackPointer()));
 		wrs.setStackPointer(valueFFFF);
@@ -44,7 +43,6 @@ public class WorkingRegisterSetTest {
 
 	@Test
 	public void testSingleByteRegisters() {
-		wrs = WorkingRegisterSet.getWorkingRegisterSet();
 
 		byte[] values = new byte[100];
 		Random random = new Random();
@@ -57,18 +55,18 @@ public class WorkingRegisterSetTest {
 			for (int r = 0; r < byteRegisters.size(); r++) {
 
 				wrs.setReg(byteRegisters.get(r), values[v]);
-				assertThat("Single Byte read and Write", values[v], equalTo(wrs.getReg(byteRegisters.get(r))));
-
+				assertThat("Single Byte read and Write " + v, values[v], equalTo(wrs.getReg(byteRegisters.get(r))));
+				wrs.setAcc(values[v]);
+				assertThat("Single Byte read and Write Acc " + v, values[v], equalTo(wrs.getAcc()));
 			}// for registers
 
 		}// for values
 
-		wrs = null;
 	}// testSingleByteRegisters
 
 	@Test
 	public void testDoubleByteRegisters() {
-		wrs = WorkingRegisterSet.getWorkingRegisterSet();
+//		wrs = WorkingRegisterSet.getWorkingRegisterSet();
 
 		int testCount = 100;
 		byte[] hiValues = new byte[testCount];

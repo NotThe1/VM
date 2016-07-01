@@ -5,9 +5,18 @@ import java.util.Observable;
 import memory.Core.Trap;
 
 public class IoBuss  implements ICore, IioBuss {
-	Core core;
+	static IoBuss instance;
+	static Core core;
 
-	public IoBuss() {
+	
+	public static IoBuss getIoBuss() {
+		if (instance == null) {
+			instance = new IoBuss();
+		}// if
+		return instance;
+	}// getInstance
+	
+	private IoBuss() {
 		core = Core.getCore();
 	}// Constructor
 

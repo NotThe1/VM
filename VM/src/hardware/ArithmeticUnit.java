@@ -28,7 +28,7 @@ public class ArithmeticUnit implements IArithmeticUnit {
 	private static ArithmeticUnit arithmeticUnit;
 
 	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	public static ArithmeticUnit getArithmeticUnit(IConditionCodeRegister ccr) {
+	public static ArithmeticUnit getArithmeticUnit( ) {
 		if (arithmeticUnit == null) {
 			// ccr = ConditionCodeRegister.getConditionCodeRegister();
 			arithmeticUnit = new ArithmeticUnit();

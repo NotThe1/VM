@@ -24,11 +24,11 @@ public class TestCpuBuss implements Observer {
 	@Before
 	public void setUp() throws Exception {
 		core = Core.getCore(25 * K);
+		cpuBuss = CpuBuss.getCpuBuss();
 	}//setUp
 	
 	@Test
 	public void testSimpleReadAndWrite() {
-		CpuBuss cpuBuss = new CpuBuss();
 		int location;
 		byte value;
 		ArrayList<Integer> locations =
@@ -71,7 +71,6 @@ public class TestCpuBuss implements Observer {
 
 	@Test
 	public void testBadAddress() {
-		CpuBuss cpuBuss = new CpuBuss();
 		badLocation = 0;
 
 		core = Core.getCore();
@@ -90,7 +89,6 @@ public class TestCpuBuss implements Observer {
 
 	@Test
 	public void testTraps() {
-		CpuBuss cpuBuss = new CpuBuss();
 
 		List<Integer> locationsDebug =
 				new ArrayList<Integer>(Arrays.asList(0X0200, 0X0400, 0X0800, 0X0A00, 0X0C00, 0X0E00));
@@ -137,8 +135,6 @@ public class TestCpuBuss implements Observer {
 
 	@Test
 	public void testReadAndWriteWord() {
-		CpuBuss cpuBuss = new CpuBuss();
-		// core = Core.getCore();
 		int location = 0X0100;
 		final byte value55 = (byte) 0X055;
 		final byte valueAA = (byte) 0X0AA;
@@ -172,7 +168,6 @@ public class TestCpuBuss implements Observer {
 
 	@Test
 	public void testPushPop() {
-		CpuBuss cpuBuss = new CpuBuss();
 
 		int location = 0X0100;
 		final byte valueFF = (byte) 0X0FF;
@@ -196,9 +191,6 @@ public class TestCpuBuss implements Observer {
 	@Test
 	public void testEvents() {
 		// Access violation
-//		badLocation = 0;
-		CpuBuss cpuBuss = new CpuBuss();
-//		core = Core.getCore();
 		cpuBuss.addObserver(this);
 		
 		 int location = 0X40;		

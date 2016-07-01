@@ -14,7 +14,7 @@ import java.util.HashMap;
  */
 public class WorkingRegisterSet implements IWorkingRegisterSet {
 	
-	private static IWorkingRegisterSet workingRegisterSet;
+	private static WorkingRegisterSet workingRegisterSet;
 
 	private int programCounter;
 	private int stackPointer;
@@ -25,7 +25,7 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 	 * @see hardware.IWorkingRegisterSet#getWorkingRegisterSet()
 	 */
 //	@Override
-	public static IWorkingRegisterSet getWorkingRegisterSet(){
+	public static WorkingRegisterSet getWorkingRegisterSet(){
 		if (workingRegisterSet==null){
 			workingRegisterSet = new WorkingRegisterSet();
 		}//if
@@ -101,6 +101,19 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 	/* (non-Javadoc)
 	 * @see hardware.IWorkingRegisterSet#setReg(hardware.Register, byte)
 	 */
+	@Override
+	public void setAcc( byte value) {
+		registers.put(Register.A, value);
+	}// loadReg
+
+	/* (non-Javadoc)
+	 * @see hardware.IWorkingRegisterSet#getReg(hardware.Register)
+	 */
+
+	@Override
+	public byte getAcc() {
+		return registers.get(Register.A);
+	}// getReg
 	@Override
 	public void setReg(Register reg, byte value) {
 		registers.put(reg, value);

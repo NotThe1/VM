@@ -16,7 +16,7 @@ public class ArithmeticUnitTest {
 
 	@Before
 	public void setUp() throws Exception {
-		au = ArithmeticUnit.getArithmeticUnit(null);
+		au = ArithmeticUnit.getArithmeticUnit();
 		ccr = ConditionCodeRegister.getConditionCodeRegister();
 	}// setUp
 
