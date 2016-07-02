@@ -147,6 +147,7 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 			setReg(Register.E, loByte);
 			break;
 		case HL:
+		case M:
 			setReg(Register.H, hiByte);
 			setReg(Register.L, loByte);
 			break;
