@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 
-public class CentralProcessingUnitPage00Rest {
+public class CentralProcessingUnitPage00Test {
 	CentralProcessingUnit cpu;
 	CpuBuss cpuBuss;
 	IoBuss ioBuss;

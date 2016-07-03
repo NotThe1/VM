@@ -35,10 +35,12 @@ public class CentralProcessingUnit {
 		this.au = au;
 		this.ccr = ccr;
 
+		this.error = ErrorType.NONE;
+
 	}// Constructor
 
 	public boolean startInstruction() {
-		executeInstruction(cpuBuss.read(wrs.getProgramCounter()));
+		executeInstruction(wrs.getProgramCounter());
 		return isError();
 	}// startInstruction
 
@@ -55,10 +57,10 @@ public class CentralProcessingUnit {
 			instructionLength = opCodePage00(currentAddress, opCode, yyy, zzz);
 			break;
 		case 1:
-			// instructionLength = opCodePage01(yyy, zzz);
+			instructionLength = opCodePage01(opCode, yyy, zzz);
 			break;
 		case 2:
-			// instructionLength = opCodePage10(yyy, zzz);
+			instructionLength = opCodePage10(opCode, yyy);
 			break;
 		case 3:
 			// instructionLength = opCodePage11(yyy, zzz);
@@ -228,41 +230,92 @@ public class CentralProcessingUnit {
 		}// switch zzz
 		return codeLength;
 
-	}//opCodePage00
-//----------------------------------------------------	
-	private int opCodePage01(int currentAddress, byte opCode, int yyy, int zzz){
-		if (opCode == (byte) 0X76){ // (HLT)
+	}// opCodePage00
+		// ----------------------------------------------------
+
+	// private int opCodePage01(int currentAddress, byte opCode, int yyy, int zzz){
+
+	private int opCodePage01(byte opCode, int yyy, int zzz) {
+		if (opCode == (byte) 0X76) { // (HLT)
 			setError(ErrorType.HLT_INSTRUCTION);
-		}else{	//(MOV)
+		} else { // (MOV)
 			Register destination = RegisterDecode.getHighRegister(opCode);
 			Register source = RegisterDecode.getLowRegister(opCode);
 			byte value;
-			
+
 			if (source.equals(Register.M)) { // Memory reference through (HL)
 				int indirectAddress = wrs.getDoubleReg(Register.M);
 				value = cpuBuss.read(indirectAddress);
 			} else { // Standard 8-bit register
 				value = wrs.getReg(source);
 			}// if
-			
+
 			if (destination.equals(Register.M)) { // Memory reference through (HL)
 				int indirectAddress = wrs.getDoubleReg(Register.M);
 				cpuBuss.write(indirectAddress, value);
 			} else { // Standard 8-bit register
 				wrs.setReg(destination, value);
-			}// if	
-		}//else
+			}// if
+		}// else
 		int codeLength = 1;
 		return codeLength;
-	}
-		// --------------------------------------------------------------------------------------------------------
+	}// opCodePage01
+
+	private int opCodePage10(byte opCode, int yyy) {
+		byte sourceValue, accValue;
+		int indirectAddress;
+		Register register8bit = RegisterDecode.getLowRegister(opCode);
+		if (register8bit.equals(Register.M)) {
+			indirectAddress = wrs.getDoubleReg(Register.M);
+			sourceValue = cpuBuss.read(indirectAddress);
+		} else {
+			sourceValue = wrs.getReg(register8bit);
+		}// if register M for source
+
+		accValue = wrs.getAcc();
+
+		switch (yyy) {
+		case 0: // yyy = 000 (ADD)
+			wrs.setAcc(au.add(accValue, sourceValue));
+			break;
+		case 1: // yyy = 001 (ADC)
+			wrs.setAcc(au.addWithCarry(accValue, sourceValue));
+			break;
+		case 2: // yyy = 010 (SUB)
+			wrs.setAcc(au.subtract(accValue, sourceValue));
+			break;
+		case 3: // yyy = 011 (SBB)
+			wrs.setAcc(au.subtractWithBorrow(accValue, sourceValue));
+			break;
+		case 4: // yyy = 100 (ANA)
+			wrs.setAcc(au.logicalAnd(accValue, sourceValue));
+			break;
+		case 5: // yyy = 101 (XRA)
+			wrs.setAcc(au.logicalXor(accValue, sourceValue));
+			break;
+		case 6: // yyy = 110 (ORA)
+			wrs.setAcc(au.logicalOr(accValue, sourceValue));
+			break;
+		case 7: // yyy = 111 (CMP)
+			au.subtract(accValue, sourceValue); // leave both values untouched
+			break;
+		default:
+			setError(ErrorType.INVALID_OPCODE);
+			return 0;
+		}// switch yyy
+
+		int codeLength = 1;
+		return codeLength;
+	}// opCodePage10
+
+	// --------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Retrieves an error of ErrorType
 	 * 
 	 * @return error type of error
 	 */
-	private ErrorType getError() {
+	public ErrorType getError() {
 		return this.error;
 	}// setErrorFlag
 
