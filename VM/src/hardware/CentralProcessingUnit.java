@@ -63,7 +63,7 @@ public class CentralProcessingUnit {
 			instructionLength = opCodePage10(opCode, yyy);
 			break;
 		case 3:
-			// instructionLength = opCodePage11(yyy, zzz);
+			// instructionLength = opCodePage11(currentAddress,,opCode,,yyy, zzz);
 			break;
 		default:
 			setError(ErrorType.INVALID_OPCODE);
@@ -307,6 +307,12 @@ public class CentralProcessingUnit {
 		int codeLength = 1;
 		return codeLength;
 	}// opCodePage10
+	
+	private int opCodePage11(int currentAddress,byte opCode,byte yyy,byte  zzz){
+		int codeLength = 1;
+		return codeLength;
+	
+	}
 
 	// --------------------------------------------------------------------------------------------------------
 
