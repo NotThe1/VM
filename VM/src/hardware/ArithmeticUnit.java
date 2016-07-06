@@ -172,12 +172,15 @@ public class ArithmeticUnit implements IArithmeticUnit {
 	 * @return
 	 */
 	private int subtract(int minuend, int subtrahend, int wordSize) {
-		boolean carryFromAddingOne;
+		boolean carryFromAddingOne,auxCarryFromAddingOne;
 		int takeAway = add(~subtrahend, 1, wordSize);
 		carryFromAddingOne = ccr.isCarryFlagSet();
-
+		auxCarryFromAddingOne = ccr.isAuxilaryCarryFlagSet();
+		
 		int result = add(minuend, takeAway, wordSize);
-		// boolean carryFlag = !ccr.isCarryFlagSet();
+		
+//		boolean auxC = ccr.isAuxilaryCarryFlagSet() || auxCarryFromAddingOne;
+		ccr.setAuxilaryCarryFlag(ccr.isAuxilaryCarryFlagSet() || auxCarryFromAddingOne); // set if both either are  set
 		ccr.setCarryFlag(!ccr.isCarryFlagSet() & !carryFromAddingOne); // only set if both are not set
 		return result;
 	}// subtract(int minuend, int subtrahend, int wordSize)
@@ -310,8 +313,10 @@ public class ArithmeticUnit implements IArithmeticUnit {
 	 */
 	@Override
 	public byte logicalAnd(byte operand1, byte operand2) {
+//		boolean originalAuxCarryValue = ccr.isAuxilaryCarryFlagSet();
 		byte result = (byte) (operand1 & operand2);
 		ccr.setZSPclearCYandAUX(result);
+//		ccr.setAuxilaryCarryFlag(originalAuxCarryValue);
 		return result;
 	}// logicalAnd
 
@@ -327,8 +332,10 @@ public class ArithmeticUnit implements IArithmeticUnit {
 	 */
 	@Override
 	public byte logicalOr(byte operand1, byte operand2) {
+//		boolean originalAuxCarryValue = ccr.isAuxilaryCarryFlagSet();
 		byte result = (byte) (operand1 | operand2);
 		ccr.setZSPclearCYandAUX(result);
+//		ccr.setAuxilaryCarryFlag(originalAuxCarryValue);
 		return result;
 	}// logicalOr
 
@@ -453,7 +460,7 @@ public class ArithmeticUnit implements IArithmeticUnit {
 	 */
 	@Override
 	public byte complement(byte value) {
-		return (byte) ~value;
+		return (byte) (~value & 0XFF);
 	}// complement
 
 	/**

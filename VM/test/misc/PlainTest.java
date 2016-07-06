@@ -1,16 +1,56 @@
 package misc;
 
+import hardware.ArithmeticUnit;
+import hardware.CalculateCC;
 import hardware.CentralProcessingUnit;
+import hardware.ConditionCodeRegister;
 
 import java.util.Random;
 
 public class PlainTest {
 
 	public static void main(String[] args) {
-		test3();
+		test5();
+//		test4();
+		// test3();
 		// test2();
 		// test1();
 	}// main
+	
+	public static void test5(){
+		ArithmeticUnit au = ArithmeticUnit.getArithmeticUnit();
+		ConditionCodeRegister ccr = ConditionCodeRegister.getConditionCodeRegister();
+		byte value1 = (byte) 0X1E;
+		byte value2 = (byte) 0XA6;
+		ccr.setCarryFlag(false);
+		byte result = au.add(value1, value2);
+		result = (byte) (value1 & value2);
+		byte  a = result;
+		boolean auxC = CalculateCC.isAuxCarry(value1, value2, false);
+	}//test5
+
+	public static void test4() {
+		ArithmeticUnit au = ArithmeticUnit.getArithmeticUnit();
+		ConditionCodeRegister ccr = ConditionCodeRegister.getConditionCodeRegister();
+		boolean isFlagSet;
+		boolean carryIn = false;
+		String msg;
+		byte valueAns;
+		byte[] valueAcc = new byte[] { (byte) 0XF8, (byte) 0XF8, (byte) 0X10, (byte) 0X10, (byte) 0X00, (byte) 0X00 };
+		byte[] valueSource = new byte[] { (byte) 0X60, (byte) 0X61, (byte) 0X20, (byte) 0X21, (byte) 0X00, (byte) 0X01 };
+		// byte[] valueAns = new byte[] { (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF
+		// };
+		
+		for (int i = 0; i < valueAcc.length; i++) {
+			isFlagSet = CalculateCC.isAuxCarrySub(valueAcc[i], valueSource[i], carryIn);
+			valueAns = au.subtract(valueAcc[i], valueSource[i]);
+			System.out.printf("au says %s.%n",ccr.isAuxilaryCarryFlagSet() );
+			msg = String.format("AuxCarry %s, Acc: %02X, Source: %02X, Result: %02X .%n",
+					isFlagSet, valueAcc[i], valueSource[i],valueAns);
+			System.out.println(msg);
+		}// for i
+
+	}// test4
 
 	private static void test3() {
 
@@ -19,18 +59,17 @@ public class PlainTest {
 		Random random = new Random();
 		random.nextBytes(values);
 
-		byte[] mem = new byte[values.length * 2 ];
-		for (int i = 0 ; i < values.length-1;){
+		byte[] mem = new byte[values.length * 2];
+		for (int i = 0; i < values.length - 1;) {
 			for (byte opCode = 0X06; opCode <= 0X3E; opCode += 0X08) {
 				System.out.printf("i = %d %n", i);
 				mem[2 * i] = opCode;
-				mem[(2 * i) +1] = values[i];
-				System.out.printf("%2X %2X%n", opCode,values[i]);
+				mem[(2 * i) + 1] = values[i];
+				System.out.printf("%2X %2X%n", opCode, values[i]);
 				i++;
-			}// for opCode	
-		}//for i
-		
-		
+			}// for opCode
+		}// for i
+
 	}// /test 3
 
 	private static void test2() {
