@@ -21,6 +21,12 @@ public interface IWorkingRegisterSet {
 	 *            Value to place into Program Counter
 	 */
 	public abstract void setProgramCounter(int programCounter);// setProgramCounter
+	/**
+	 * 
+	 * @param programCounter
+	 *            delta amount to add to the Program Counter to place into Program Counter
+	 */
+	public abstract void incrementProgramCounter(int delta);// setProgramCounter
 
 	/**
 	 * 

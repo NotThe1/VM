@@ -5,17 +5,49 @@ import hardware.CalculateCC;
 import hardware.CentralProcessingUnit;
 import hardware.ConditionCodeRegister;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Random;
 
 public class PlainTest {
 
 	public static void main(String[] args) {
-		test5();
+		test7();
+//		test6();
+//		test5();
 //		test4();
-		// test3();
-		// test2();
-		// test1();
+//		 test3();
+//		 test2();
+//		 test1();
 	}// main
+	
+public static void test7(){
+	int ccMaskZeros = 0B1111111111010111;
+	int ccMaskOnes = 0B0000000000000010;
+	
+	int base00 = 0;
+	int base11 = 0XFFFF;
+	
+	int ans00 = base00 & ccMaskZeros;
+	int ans01 = base00 | ccMaskOnes;
+	int ans02 = ans00 | ccMaskOnes;
+	
+	int ans10 = base11 & ccMaskZeros;
+	int ans11 = base11 | ccMaskOnes;
+	int ans12 = ans10 | ccMaskOnes;
+	
+	int ans = ans00 + ans01 + ans10 + ans11;
+
+}//test7
+	public static void test6(){
+		Deque<Integer> myStack = new ArrayDeque<Integer>();
+		for (int i = 0;i <20;i++){
+			myStack.push(i);
+		}//for
+		while(!myStack.isEmpty()){
+			System.out.printf("Value = %d%n", myStack.pop());
+		}//while
+	}//test6
 	
 	public static void test5(){
 		ArithmeticUnit au = ArithmeticUnit.getArithmeticUnit();

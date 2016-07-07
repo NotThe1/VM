@@ -220,6 +220,20 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	 * 
 	 * @param location
 	 *            1 higher than actual memory address that will be written
+	 * @param value
+	 *            - goes into location -1 & location -2
+	 */
+	@Override
+	public void pushWord(int location, int value) {
+		byte hiByte = (byte) ((value & 0XFF00)>> 8);
+		byte loByte = (byte) (value & 0X00FF);
+		pushWord(location,hiByte,loByte);
+	}// pushWord used for stack work
+	/**
+	 * Writes bytes in location -1 and location-2. Primarily used for stack work. Does not check for traps
+	 * 
+	 * @param location
+	 *            1 higher than actual memory address that will be written
 	 * @param hiByte
 	 *            - goes into location -1
 	 * @param loByte

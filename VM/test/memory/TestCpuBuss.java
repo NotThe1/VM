@@ -184,7 +184,11 @@ public class TestCpuBuss implements Observer {
 
 		int ans = ((hiByte << 8) | (loByte & 0X00FF)) & 0XFFFF;
 		cpuBuss.pushWord(location, hiByte, loByte);
-		assertThat("Pus and Pop", ans, equalTo(cpuBuss.popWord(location - 2)));
+		assertThat("Push and Pop", ans, equalTo(cpuBuss.popWord(location - 2)));
+		location = 110;
+		cpuBuss.pushWord(location, ans);
+		assertThat("Push and Pop value", ans, equalTo(cpuBuss.popWord(location - 2)));
+		
 
 	}// testPushPop
 

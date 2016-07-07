@@ -7,30 +7,33 @@ import java.util.HashMap;
  * @author Frank Martyn
  * @version 1.0
  * 
- *          Contains the information about all the registers in the machine. Has both the data registers as well as Program
- *          Counter and Stack pointer.
- * 	<p> This class is a singleton
+ *          Contains the information about all the registers in the machine. Has both the data registers as well as
+ *          Program Counter and Stack pointer.
+ *          <p>
+ *          This class is a singleton
  *
  */
 public class WorkingRegisterSet implements IWorkingRegisterSet {
-	
+
 	private static WorkingRegisterSet workingRegisterSet;
 
 	private int programCounter;
 	private int stackPointer;
 	private HashMap<Register, Byte> registers;
-	
-	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	/* (non-Javadoc)
+
+	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#getWorkingRegisterSet()
 	 */
-//	@Override
-	public static WorkingRegisterSet getWorkingRegisterSet(){
-		if (workingRegisterSet==null){
+	// @Override
+	public static WorkingRegisterSet getWorkingRegisterSet() {
+		if (workingRegisterSet == null) {
 			workingRegisterSet = new WorkingRegisterSet();
-		}//if
+		}// if
 		return workingRegisterSet;
-	}//getWorkingRegisterSet
+	}// getWorkingRegisterSet
 
 	/**
 	 * Sets up the Program Counter, Stack Pointer and establishes the data registers based on the class - Register. It
@@ -40,10 +43,11 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		registers = new HashMap<Register, Byte>();
 		initialize();
 	}// Constructor
-	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-	
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#initialize()
 	 */
 	@Override
@@ -56,7 +60,9 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		stackPointer = 0X0100; // set to non zero
 	}// initialize
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#getProgramCounter()
 	 */
 	@Override
@@ -64,7 +70,9 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		return programCounter;
 	}// getProgramCounter
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#setProgramCounter(int)
 	 */
 	@Override
@@ -72,7 +80,14 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		this.programCounter = programCounter & 0XFFFF;
 	}// setProgramCounter
 
-	/* (non-Javadoc)
+	@Override
+	public void incrementProgramCounter(int delta) {// setProgramCounter
+		setProgramCounter(this.programCounter + delta);
+	}//incrementProgramCounter
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#getStackPointer()
 	 */
 	@Override
@@ -80,7 +95,9 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		return stackPointer;
 	}// getStackPointer
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#setStackPointer(int)
 	 */
 	@Override
@@ -88,7 +105,9 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		this.stackPointer = stackPointer & 0XFFFF;
 	}// setStackPointer
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#setStackPointer(byte, byte)
 	 */
 	@Override
@@ -98,15 +117,19 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		this.stackPointer = (hi + lo) & 0XFFFF;
 	}// setStackPointer
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#setReg(hardware.Register, byte)
 	 */
 	@Override
-	public void setAcc( byte value) {
+	public void setAcc(byte value) {
 		registers.put(Register.A, value);
 	}// loadReg
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#getReg(hardware.Register)
 	 */
 
@@ -114,12 +137,15 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 	public byte getAcc() {
 		return registers.get(Register.A);
 	}// getReg
+
 	@Override
 	public void setReg(Register reg, byte value) {
 		registers.put(reg, value);
 	}// loadReg
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#getReg(hardware.Register)
 	 */
 
@@ -128,7 +154,9 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		return registers.get(reg);
 	}// getReg
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#setDoubleReg(hardware.Register, int)
 	 */
 	@Override
@@ -164,7 +192,9 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 		return;
 	}// setDoubleReg
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see hardware.IWorkingRegisterSet#getDoubleReg(hardware.Register)
 	 */
 	@Override

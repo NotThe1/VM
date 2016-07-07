@@ -38,6 +38,8 @@ public class WorkingRegisterSetTest {
 		assertThat("PC FFFF", valueFFFF, equalTo(wrs.getProgramCounter()));
 		wrs.setProgramCounter(valueA5A5);
 		assertThat("PC A5A5", valueA5A5, equalTo(wrs.getProgramCounter()));
+		wrs.incrementProgramCounter(1);
+		assertThat("PC A5A5", valueA5A5 + 1, equalTo(wrs.getProgramCounter()));
 		wrs = null;
 	}// testPCandSP
 

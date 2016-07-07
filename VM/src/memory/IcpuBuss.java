@@ -92,6 +92,17 @@ public interface IcpuBuss {
 	 * @param loByte
 	 *            - goes into location -2
 	 */
+	public void pushWord(int location, int value);
+	/**
+	 * Writes bytes in location -1 and location-2. Primarily used for stack work.
+	 *  Does not check for traps
+	 * 
+	 * @param location
+	 *            1 higher than actual memory address that will be written
+	 * @param value
+	 *            - goes into location -1  & location -1
+	 * 
+	 */
 	public void pushWord(int location, byte hiByte, byte loByte);
 
 	/**

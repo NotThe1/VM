@@ -63,14 +63,14 @@ public class CentralProcessingUnit {
 			instructionLength = opCodePage10(opCode, yyy);
 			break;
 		case 3:
-			// instructionLength = opCodePage11(currentAddress,,opCode,,yyy, zzz);
+			instructionLength = opCodePage11(currentAddress, opCode, yyy, zzz);
 			break;
 		default:
 			setError(ErrorType.INVALID_OPCODE);
 			return;
 		}// Switch
 			// byte opCode =
-		wrs.setProgramCounter(instructionLength + currentAddress);
+		wrs.incrementProgramCounter(instructionLength);
 
 		return;
 	}// executeInstruction
@@ -307,12 +307,169 @@ public class CentralProcessingUnit {
 		int codeLength = 1;
 		return codeLength;
 	}// opCodePage10
-	
-	private int opCodePage11(int currentAddress,byte opCode,byte yyy,byte  zzz){
-		int codeLength = 1;
+
+	private int opCodePage11(int currentAddress, byte opCode, int yyy, int zzz) {
+		int codeLength = -1;
+		byte sourceValue, accValue;
+		int indirectAddress;
+		Register register16bit = RegisterDecode.getRegisterPairAlt(opCode);
+		Register register8bit = RegisterDecode.getLowRegister(opCode);
+		if (register8bit.equals(Register.M)) {
+			indirectAddress = wrs.getDoubleReg(Register.M);
+			sourceValue = cpuBuss.read(indirectAddress);
+		} else {
+			sourceValue = wrs.getReg(register8bit);
+		}// if register M for source
+
+		accValue = wrs.getAcc();
+
+		switch (zzz) {
+		case 0: // zzz 000 Conditional return CCC
+			ConditionFlag condition = RegisterDecode.getCondition(opCode);
+			if (opCodeConditionTrue(condition)) { // do the return
+				opCode_Return();
+				codeLength = 0;
+			} else { // just skip past
+				codeLength = 1;
+			}// if
+			break;
+		case 1: // zzz 001 POP/RET/PCHL/SPHL
+			if ((yyy & 0X01) == 0) { // POP
+				int stackLocation = wrs.getStackPointer();
+				int valueInt = cpuBuss.popWord(stackLocation);
+				if (register16bit.equals(Register.AF)) { // PSW
+					wrs.setReg(Register.A, (byte) ((valueInt >> 8) & 0X00FF));
+					ccr.setConditionCode((byte) (valueInt & 0X00FF));
+				} else {
+					wrs.setDoubleReg(register16bit, valueInt);
+				}// if
+				wrs.setStackPointer(stackLocation + 2);
+				codeLength = 1;
+			} else { // RET/PCHL/SPHL
+				if (opCode == (byte) 0XC9) {// RET
+					opCode_Return();
+					codeLength = 0;
+				} else if (opCode == (byte) 0XE9) { // PCHL
+
+				} else if (opCode == (byte) 0XF9) { // SPHL
+
+				} else { // Not used
+					// NOP
+					codeLength = 1;
+				}// inner if
+			}// if lsb = 0/1
+			break;
+		case 2: // zzz 010 Conditional Jump CCC
+			break;
+		case 3: // zzz 011 JMP/OUT/IN/XTHL/XCHL/DI/EI
+			break;
+		case 4: // zzz 100 Conditional Call CCC
+			ConditionFlag condition1 = RegisterDecode.getCondition(opCode);
+			if (opCodeConditionTrue(condition1)) { // do the return
+				opCode_Call();
+				codeLength = 0;
+			} else { // just skip past
+				codeLength = 3;
+			}// if
+
+			break;
+		case 5: // zzz 101 PUSH/CALL
+			if ((yyy & 0X01) == 0) { // PUSH
+				if (register16bit.equals(Register.AF)) {
+					opCode_Push(wrs.getReg(Register.A), ccr.getConditionCode());
+				} else {
+					opCode_Push(wrs.getDoubleReg(register16bit));
+				}// if
+				codeLength = 1;
+			} else { // CALL
+				opCode_Call();
+				codeLength = 0;
+			}// if
+
+			break;
+		case 6: // zzz 110 ADI/ACI/SUI/SBI/ANI/XRI/ORI/CPI
+			break;
+		case 7: // zzz 111 RST PPP
+			break;
+		default: // zzz 000
+			setError(ErrorType.INVALID_OPCODE);
+			return 0;
+
+		}// switch(zzz)
+
 		return codeLength;
-	
-	}
+
+	}// opCodePage11
+
+	private void opCode_Push(byte hiByte, byte loByte) {
+		int stackLocation = wrs.getStackPointer();
+		cpuBuss.pushWord(stackLocation, hiByte, loByte); // push the return address
+		wrs.setStackPointer(stackLocation - 2);
+	}// opCode_Push
+
+	private void opCode_Push(int value) {
+		byte hiByte = (byte) (value >> 8);
+		byte loByte = (byte) (value & 0X00FF);
+		opCode_Push(hiByte, loByte);
+		// int stackLocation = wrs.getStackPointer();
+		// cpuBuss.pushWord(stackLocation, hiByte, loByte); // push the return address
+		// wrs.setStackPointer(stackLocation - 2);
+	}// opCode_Push
+
+	private void opCode_Call() {
+		int currentProgramCounter = wrs.getProgramCounter();
+		int memoryLocation = cpuBuss.readWordReversed(currentProgramCounter + 1);
+		opCode_Push(currentProgramCounter + 3);
+		wrs.setProgramCounter(memoryLocation);
+		// opCodeSize = 0;
+
+	}// opCode_Call()
+
+	private void opCode_Return() {
+		int stackPointer = wrs.getStackPointer();
+		wrs.setProgramCounter(cpuBuss.popWord(stackPointer));
+		wrs.setStackPointer(stackPointer + 2);
+	}// opCode_Return
+
+	/**
+	 * checks to see if the given condition flag is set
+	 * 
+	 * @param condition
+	 *            to be tested
+	 * @return true if condition is met
+	 */
+	private boolean opCodeConditionTrue(ConditionFlag condition) {
+		boolean ans = false;
+		switch (condition) {
+		case NZ:
+			ans = ccr.isZeroFlagSet() ? false : true;
+			break;
+		case Z:
+			ans = ccr.isZeroFlagSet() ? true : false;
+			break;
+		case NC:
+			ans = ccr.isCarryFlagSet() ? false : true;
+			break;
+		case C:
+			ans = ccr.isCarryFlagSet() ? true : false;
+			break;
+		case PO:
+			ans = ccr.isParityFlagSet() ? false : true;
+			break;
+		case PE:
+			ans = ccr.isParityFlagSet() ? true : false;
+			break;
+		case P:
+			ans = ccr.isSignFlagSet() ? false : true;
+			break;
+		case M:
+			ans = ccr.isSignFlagSet() ? true : false;
+			break;
+		default:
+
+		}// switch
+		return ans;
+	}// conditionTrue
 
 	// --------------------------------------------------------------------------------------------------------
 

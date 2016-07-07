@@ -72,17 +72,17 @@ public class CentralProcessingUnitPage00Test {
 		// DAD
 		instructionLength = 1;
 		opCodes = new byte[] { (byte) 0X09, (byte) 0X19, (byte) 0X29, (byte) 0X39 };
+		ioBuss.writeDMA(pc, opCodes);
 		int values[] = new int[] { 1234, 2222, 32768, 0XFFFF };
 		int results[] = new int[] { 2345, 4567, 0, 0XFFFF };
 
 		int seed = 1111;
 		wrs.setDoubleReg(Register.HL, seed);
+		wrs.setProgramCounter(pc);
 		for (int i = 0; i < results.length; i++) {
 			wrs.setDoubleReg(registers[i], values[i]);
-			cpuBuss.write(pc, opCodes[i]);
-			cpu.executeInstruction(pc);
+			cpu.executeInstruction(wrs.getProgramCounter());
 			assertThat("testZZZ001 DAD " + i, results[i], equalTo(wrs.getDoubleReg(Register.HL)));
-			assertThat("testZZZ001 pc after " + i, pc + instructionLength, equalTo(wrs.getProgramCounter()));
 		}// for
 
 		// check carry flag
