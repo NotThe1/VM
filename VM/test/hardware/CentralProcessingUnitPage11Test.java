@@ -248,7 +248,7 @@ public class CentralProcessingUnitPage11Test {
 				(byte) 0XCC, (byte) 0XAA, (byte) 0X55,
 				(byte) 0XDC, (byte) 0XAA, (byte) 0X55,
 				(byte) 0XEC, (byte) 0XAA, (byte) 0X55,
-				(byte) 0XF4, (byte) 0XAA, (byte) 0X55 };
+				(byte) 0XFC, (byte) 0XAA, (byte) 0X55 };
 		int pc = 0X0100;
 		ioBuss.writeDMA(pc, mem); // put the code in memory
 		// RET RET RET
@@ -277,69 +277,246 @@ public class CentralProcessingUnitPage11Test {
 		ccr.setSignFlag(false);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CM
 
-		assertThat("testConditionalCalls", pc + (mem.length/3), equalTo(wrs.getProgramCounter()));
+		assertThat("testConditionalCalls", pc + (mem.length), equalTo(wrs.getProgramCounter()));
 
-		
 		wrs.setProgramCounter(pc);
 		// make the calls
 		ccr.setZeroFlag(false);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CNZ
-		assertThat("CNZ ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CNS - RET",pc + 3,equalTo(wrs.getProgramCounter()));
-		
+		assertThat("CNZ ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CNS - RET", pc + 3, equalTo(wrs.getProgramCounter()));
+
 		ccr.setCarryFlag(false);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CNC
-		assertThat("CNC ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CNC - RET",pc + 6,equalTo(wrs.getProgramCounter()));
+		assertThat("CNC ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CNC - RET", pc + 6, equalTo(wrs.getProgramCounter()));
 
 		ccr.setParityFlag(false);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CPO
-		assertThat("CPO ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CPO - RET",pc + 6,equalTo(wrs.getProgramCounter()));
+		assertThat("CPO ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CPO - RET", pc + 9, equalTo(wrs.getProgramCounter()));
 
-		
 		ccr.setSignFlag(false);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CP
-		assertThat("CP ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CP - RET",pc + 6,equalTo(wrs.getProgramCounter()));
+		assertThat("CP ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CP - RET", pc + 12, equalTo(wrs.getProgramCounter()));
 
 		ccr.setZeroFlag(true);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CZ
-		assertThat("CZ ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CZ - RET",pc + 6,equalTo(wrs.getProgramCounter()));
+		assertThat("CZ ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CZ - RET", pc + 15, equalTo(wrs.getProgramCounter()));
 
 		ccr.setCarryFlag(true);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CC
-		assertThat("CC ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CC - RET",pc + 6,equalTo(wrs.getProgramCounter()));
+		assertThat("CC ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CC - RET", pc + 18, equalTo(wrs.getProgramCounter()));
 
 		ccr.setParityFlag(true);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CPE
-		assertThat("CPE ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CPE - RET",pc + 6,equalTo(wrs.getProgramCounter()));
+		assertThat("CPE ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CPE - RET", pc + 21, equalTo(wrs.getProgramCounter()));
 
 		ccr.setSignFlag(true);
 		cpu.executeInstruction(wrs.getProgramCounter()); // CM
-		assertThat("CM ",pc1,equalTo(wrs.getProgramCounter()));
-		cpu.executeInstruction(wrs.getProgramCounter());	//RET
-		assertThat("CM - RET",pc + 6,equalTo(wrs.getProgramCounter()));
-
-
-
-
+		assertThat("CM ", pc1, equalTo(wrs.getProgramCounter()));
+		cpu.executeInstruction(wrs.getProgramCounter()); // RET
+		assertThat("CM - RET", pc + 24, equalTo(wrs.getProgramCounter()));
 
 	}// testConditionalCalls
 
+	@Test
+	public void testJump() {
+		// CALL (NZ/NC/PO/P) 0X55AA...CALL (Z/C/PE/M) 0X55AA
+		byte[] mem = new byte[] { (byte) 0XC3, (byte) 0XAA, (byte) 0X55 };
+		int pc = 0X0100;
+		ioBuss.writeDMA(pc, mem); // put the code in memory
+		// RET RET RET
+		byte[] mem1 = new byte[] { (byte) 0XC9, (byte) 0XC9, (byte) 0XC9 };
+		int pc1 = 0X55AA;
+		ioBuss.writeDMA(pc1, mem1); // put the code in memory
+
+		wrs.setProgramCounter(pc);
+		// make the Call & return
+		ccr.setZeroFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // execute the call
+		assertThat("JMP ", pc1, equalTo(wrs.getProgramCounter()));
+
+	}// testJump
+
+	@Test
+	public void testConditionalJumps() {
+		// // JMP (NZ/NC/PO/P) 0X55AA...CALL (Z/C/PE/M) 0X55AA
+		byte[] mem = new byte[] { (byte) 0XC2, (byte) 0XAA, (byte) 0X55,
+				(byte) 0XD2, (byte) 0XAA, (byte) 0X55,
+				(byte) 0XE2, (byte) 0XAA, (byte) 0X55,
+				(byte) 0XF2, (byte) 0XAA, (byte) 0X55,
+				(byte) 0XCA, (byte) 0XAA, (byte) 0X55,
+				(byte) 0XDA, (byte) 0XAA, (byte) 0X55,
+				(byte) 0XEA, (byte) 0XAA, (byte) 0X55,
+				(byte) 0XFA, (byte) 0XAA, (byte) 0X55 };
+		int pc = 0X0100;
+		ioBuss.writeDMA(pc, mem); // put the code in memory
+		// RET RET RET
+		byte[] mem1 = new byte[] { (byte) 0XC9, (byte) 0XC9, (byte) 0XC9 };
+		int pc1 = 0X55AA;
+		ioBuss.writeDMA(pc1, mem1); // put the code in memory
+
+		wrs.setProgramCounter(pc);
+		// do not make the calls
+
+		ccr.setZeroFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JNZ
+		ccr.setCarryFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JNC
+		ccr.setParityFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JPO
+		ccr.setSignFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JP
+
+		ccr.setZeroFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JZ
+		ccr.setCarryFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JC
+		ccr.setParityFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JPE
+		ccr.setSignFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JM
+
+		assertThat("testConditionalJumps", pc + (mem.length), equalTo(wrs.getProgramCounter()));
+
+		// make the calls
+		wrs.setProgramCounter(pc);
+		ccr.setZeroFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JNZ
+		assertThat("JNZ ", pc1, equalTo(wrs.getProgramCounter()));
+
+		wrs.setProgramCounter(pc + 3);
+		ccr.setCarryFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JNC
+		assertThat("JNC ", pc1, equalTo(wrs.getProgramCounter()));
+
+		wrs.setProgramCounter(pc + 6);
+		ccr.setParityFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JPO
+		assertThat("JPO ", pc1, equalTo(wrs.getProgramCounter()));
+
+		wrs.setProgramCounter(pc + 9);
+		ccr.setSignFlag(false);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JP
+		assertThat("JP ", pc1, equalTo(wrs.getProgramCounter()));
+
+		wrs.setProgramCounter(pc + 12);
+		ccr.setZeroFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JZ
+		assertThat("JZ ", pc1, equalTo(wrs.getProgramCounter()));
+
+		wrs.setProgramCounter(pc + 15);
+		ccr.setCarryFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JC
+		assertThat("JC ", pc1, equalTo(wrs.getProgramCounter()));
+
+		wrs.setProgramCounter(pc + 18);
+		ccr.setParityFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JPE
+		assertThat("JPE ", pc1, equalTo(wrs.getProgramCounter()));
+
+		wrs.setProgramCounter(pc + 21);
+		ccr.setSignFlag(true);
+		cpu.executeInstruction(wrs.getProgramCounter()); // JM
+		assertThat("JM ", pc1, equalTo(wrs.getProgramCounter()));
+
+	}// testConditionalJumps
+
+	@Test
+	public void testRST() {
+		byte[] mem = new byte[] { (byte) 0XC7, (byte) 0XCF, (byte) 0XD7, (byte) 0XDF,
+				(byte) 0XE7, (byte) 0XEF, (byte) 0XF7, (byte) 0XFF };
+		int pc = 0X0100;
+		ioBuss.writeDMA(pc, mem);
+		for (int i = 0; i < mem.length; i++) {
+			wrs.setProgramCounter(pc + i);
+			cpu.executeInstruction(wrs.getProgramCounter());
+			assertThat("RST " + i, i * 8, equalTo(wrs.getProgramCounter()));
+
+		}// for
+	}// testRST
+
+	@Test
+	public void testPCHL_SPHL() {
+		testCount = 15;
+		int valueTest;
+		int pc = 0100;
+		byte[] mem = new byte[] { (byte) 0XF9, (byte) 0XE9 };
+		ioBuss.writeDMA(pc, mem);
+
+		for (int i = 0; i < testCount; i++) {
+			clearWordRegisters();
+			valueTest = random.nextInt(0X10000);
+			wrs.setDoubleReg(Register.HL, valueTest);
+			wrs.setProgramCounter(pc);
+
+			cpu.executeInstruction(wrs.getProgramCounter());
+			assertThat(i + "  testSPHL", valueTest, equalTo(wrs.getStackPointer()));
+
+			cpu.executeInstruction(wrs.getProgramCounter());
+			assertThat(i + "  testPCHL", valueTest, equalTo(wrs.getProgramCounter()));
+		}// for
+
+	}// testPCHL_SPHL
+
+	@Test
+	public void testXTHL_XCHG() {
+		testCount = 15;
+		int valueHlOriginal, valueDeOriginal, valueStackOriginal;
+		int pc = 0100;
+		byte[] mem = new byte[] { (byte) 0XEB, (byte) 0XEB };
+		ioBuss.writeDMA(pc, mem);
+		// XCHG
+		for (int i = 0; i < testCount; i++) {
+			clearWordRegisters();
+			valueHlOriginal = random.nextInt(0X10000);
+			valueDeOriginal = random.nextInt(0X10000);
+			wrs.setDoubleReg(Register.HL, valueHlOriginal);
+			wrs.setDoubleReg(Register.DE, valueDeOriginal);
+			wrs.setProgramCounter(pc);
+
+			cpu.executeInstruction(wrs.getProgramCounter());
+			assertThat(i + "  test_XCHG 1", valueHlOriginal, equalTo(wrs.getDoubleReg(Register.DE)));
+			assertThat(i + "  test_XCHG 2", valueDeOriginal, equalTo(wrs.getDoubleReg(Register.HL)));
+		}// for
+			// XTHL
+		int stackPointerValue = 210;
+		mem = new byte[] { (byte) 0XE3, (byte) 0XE3 };
+		ioBuss.writeDMA(pc, mem);
+
+		for (int i = 0; i < testCount; i++) {
+			clearWordRegisters();
+			valueHlOriginal = random.nextInt(0X10000);
+			wrs.setDoubleReg(Register.HL, valueHlOriginal);
+			valueStackOriginal = random.nextInt(0X10000);
+			cpuBuss.pushWord(stackPointerValue, valueStackOriginal);
+			
+			
+			wrs.setStackPointer(stackPointerValue);
+			wrs.setProgramCounter(pc);
+			cpu.executeInstruction(wrs.getProgramCounter());
+			
+			assertThat(i + " testXTHL 1",valueStackOriginal,equalTo(wrs.getDoubleReg(Register.HL)));
+			assertThat(i + " testXTHL 2",valueHlOriginal,equalTo(cpuBuss.popWord(stackPointerValue-2)));
+
+		}// for
+	}//
+
 	// @Test
-	// public void test() {
-	// fail("Not yet implemented");
-	// }//
+	// public void testPCHL_SPHL{
+	//
+	// }
 
 }// class CentralProcessingUnitPage11Test

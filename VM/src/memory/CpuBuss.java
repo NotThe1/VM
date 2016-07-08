@@ -210,8 +210,8 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	 */
 	@Override
 	public int popWord(int location) {
-		int loByte = (int) core.read(location) & 0X00FF;
-		int hiByte = (int) (core.read(location + 1) << 8) & 0XFF00;
+		int loByte = (int) core.read(location + 1) & 0X00FF;
+		int hiByte = (int) (core.read(location ) << 8) & 0XFF00;
 		return 0XFFFF & (hiByte + loByte);
 	}// popWord used for stack work
 
@@ -241,8 +241,8 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	 */
 	@Override
 	public void pushWord(int location, byte hiByte, byte loByte) {
-		core.write(location - 1, hiByte);
-		core.write(location - 2, loByte);
+		core.write(location - 2, hiByte);
+		core.write(location - 1, loByte);
 	}// pushWord used for stack work
 
 	/**

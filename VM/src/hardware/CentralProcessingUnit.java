@@ -314,6 +314,7 @@ public class CentralProcessingUnit {
 		int indirectAddress;
 		Register register16bit = RegisterDecode.getRegisterPairAlt(opCode);
 		Register register8bit = RegisterDecode.getLowRegister(opCode);
+		ConditionFlag condition = RegisterDecode.getCondition(opCode);
 		if (register8bit.equals(Register.M)) {
 			indirectAddress = wrs.getDoubleReg(Register.M);
 			sourceValue = cpuBuss.read(indirectAddress);
@@ -325,7 +326,6 @@ public class CentralProcessingUnit {
 
 		switch (zzz) {
 		case 0: // zzz 000 Conditional return CCC
-			ConditionFlag condition = RegisterDecode.getCondition(opCode);
 			if (opCodeConditionTrue(condition)) { // do the return
 				opCode_Return();
 				codeLength = 0;
@@ -350,9 +350,13 @@ public class CentralProcessingUnit {
 					opCode_Return();
 					codeLength = 0;
 				} else if (opCode == (byte) 0XE9) { // PCHL
-
+					int hlValue = wrs.getDoubleReg(Register.HL);
+					wrs.setProgramCounter(hlValue);
+					codeLength = 0;
 				} else if (opCode == (byte) 0XF9) { // SPHL
-
+					int hlValue = wrs.getDoubleReg(Register.HL);
+					wrs.setStackPointer(hlValue);
+					codeLength = 1;
 				} else { // Not used
 					// NOP
 					codeLength = 1;
@@ -360,12 +364,59 @@ public class CentralProcessingUnit {
 			}// if lsb = 0/1
 			break;
 		case 2: // zzz 010 Conditional Jump CCC
+			if (opCodeConditionTrue(condition)) { // do the return
+				opCode_Jump();
+				codeLength = 0;
+			} else { // just skip past
+				codeLength = 3;
+			}// if
+
 			break;
 		case 3: // zzz 011 JMP/OUT/IN/XTHL/XCHL/DI/EI
+			switch (yyy) {
+			case 0: // yyy 000 JMP
+				opCode_Jump();
+				codeLength = 0;
+				break;
+			case 1: // yyy 001 Not Used
+				break;
+			case 2: // yyy 010 OUT
+				System.out.println("Not yet implemented");
+				codeLength = 2;
+				break;
+			case 3: // yyy 011 IN
+				System.out.println("Not yet implemented");
+				codeLength = 2;
+				break;
+			case 4: // yyy 100 XTHL
+				int hlValue = wrs.getDoubleReg(Register.HL);
+				int stackLocation = wrs.getStackPointer();
+				int stackValue = cpuBuss.popWord(stackLocation-2);
+				wrs.setDoubleReg(Register.HL, stackValue);			
+				cpuBuss.pushWord(stackLocation, hlValue);
+				break;
+			case 5: // yyy 101 XCHG
+				int deValue = wrs.getDoubleReg(Register.DE);
+				wrs.setDoubleReg(Register.DE, wrs.getDoubleReg(Register.HL));
+				wrs.setDoubleReg(Register.HL, deValue);
+				codeLength = 1;
+				break;
+			case 6: // yyy 110 DI
+				System.out.println("Not yet implemented");
+				codeLength = 1;
+				break;
+			case 7: // yyy 111 EI
+				System.out.println("Not yet implemented");
+				codeLength = 1;
+				break;
+			default:
+				setError(ErrorType.INVALID_OPCODE);
+				return 0;
+
+			}// switch(opCod
 			break;
 		case 4: // zzz 100 Conditional Call CCC
-			ConditionFlag condition1 = RegisterDecode.getCondition(opCode);
-			if (opCodeConditionTrue(condition1)) { // do the return
+			if (opCodeConditionTrue(condition)) { // do the return
 				opCode_Call();
 				codeLength = 0;
 			} else { // just skip past
@@ -388,8 +439,60 @@ public class CentralProcessingUnit {
 
 			break;
 		case 6: // zzz 110 ADI/ACI/SUI/SBI/ANI/XRI/ORI/CPI
+			byte resultValue;
+			byte immediateValue = cpuBuss.read(wrs.getProgramCounter() + 1);
+//			accValue = wrs.getAcc();
+			switch (yyy) {
+			case 0: // yyy 000 ADI
+				resultValue = au.add(accValue, immediateValue);
+				wrs.setAcc(resultValue);
+				codeLength = 2;
+				break;
+			case 1: // yyy 001 ACI
+				resultValue = au.addWithCarry(accValue, immediateValue);
+				wrs.setAcc(resultValue);
+				codeLength = 2;
+				break;
+			case 2: // yyy 010 SUI
+				resultValue = au.subtract(accValue, immediateValue);
+				wrs.setAcc(resultValue);
+				codeLength = 2;
+				break;
+			case 3: // yyy 011 SBI
+				resultValue = au.subtractWithBorrow(accValue, immediateValue);
+				wrs.setAcc(resultValue);
+				codeLength = 2;
+				break;
+			case 4: // yyy 100 ANI
+				resultValue = au.logicalAnd(accValue, immediateValue);
+				wrs.setAcc(resultValue);
+				codeLength = 2;
+				break;
+			case 5: // yyy 101 XRI
+				resultValue = au.logicalXor(accValue, immediateValue);
+				wrs.setAcc(resultValue);
+				codeLength = 2;
+				break;
+			case 6: // yyy 110 ORI
+				resultValue = au.logicalOr(accValue, immediateValue);
+				wrs.setAcc(resultValue);
+				codeLength = 2;
+				break;
+			case 7: // yyy 111 CPI
+				resultValue = au.subtract(accValue, immediateValue);
+				codeLength = 2;
+				break;
+			default:
+				setError(ErrorType.INVALID_OPCODE);
+				return 0;
+
+			}// switch(yyy)
 			break;
 		case 7: // zzz 111 RST PPP
+			opCode_Push(wrs.getProgramCounter());
+			int address = yyy * 8;
+			wrs.setProgramCounter(address);
+			codeLength = 0;
 			break;
 		default: // zzz 000
 			setError(ErrorType.INVALID_OPCODE);
@@ -416,10 +519,16 @@ public class CentralProcessingUnit {
 		// wrs.setStackPointer(stackLocation - 2);
 	}// opCode_Push
 
-	private void opCode_Call() {
+	private void opCode_Jump() {
 		int currentProgramCounter = wrs.getProgramCounter();
 		int memoryLocation = cpuBuss.readWordReversed(currentProgramCounter + 1);
+		wrs.setProgramCounter(memoryLocation);
+	}// opCode_Jump
+
+	private void opCode_Call() {
+		int currentProgramCounter = wrs.getProgramCounter();
 		opCode_Push(currentProgramCounter + 3);
+		int memoryLocation = cpuBuss.readWordReversed(currentProgramCounter + 1);
 		wrs.setProgramCounter(memoryLocation);
 		// opCodeSize = 0;
 
