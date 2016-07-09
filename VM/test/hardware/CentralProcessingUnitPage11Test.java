@@ -21,11 +21,9 @@ public class CentralProcessingUnitPage11Test {
 	WorkingRegisterSet wrs;
 	ConditionCodeRegister ccr;
 	Random random;
-	Register[] registersByte;
 	Register[] registersWord;
-	Register registerByte, registerWord;
+	Register registerWord;
 	int testCount;
-	boolean isTestSign, isTestZero, isTestAuxCarry, isTestParity, isTestCarry;
 
 	@Before
 	public void setUp() throws Exception {
@@ -36,8 +34,6 @@ public class CentralProcessingUnitPage11Test {
 		ccr = ConditionCodeRegister.getConditionCodeRegister();
 
 		random = new Random();
-		registersByte = new Register[] { Register.B, Register.C, Register.D, Register.E,
-				Register.H, Register.L, Register.M, Register.A };
 		registersWord = new Register[] { Register.BC, Register.DE, Register.HL, Register.AF };
 		testCount = 2000;
 	}// setUp

@@ -1,7 +1,6 @@
 package memory;
 
 import java.util.Observable;
-import javax.swing.JOptionPane;
 
 //import memory.Core.Trap;
 
@@ -34,9 +33,9 @@ import javax.swing.JOptionPane;
  */
 
 public class Core extends Observable implements ICore {
-	private static Core instance;
-	private byte[] storage;
-	private int maxAddress;
+	private static Core instance = new Core();
+	private  byte[] storage;
+	private  int maxAddress;
 
 	/**
 	 * 
@@ -44,37 +43,22 @@ public class Core extends Observable implements ICore {
 	 *            The size of Memory to create first time
 	 * @return The only instance of the core object
 	 */
-	public static Core getCore(int size) {
-		if (instance == null) {
-			instance = new Core(size);
-		}// if
+	public static Core getCore() {
 		return instance;
 	}// getInstance
 
-	/**
-	 * 
-	 * @return The only instance of the core object(DEFAULT_MEMORY) if first invocation
-	 */
-
-	public static Core getCore() {
-		return getCore(DEFAULT_MEMORY);
-	}// getInstance
 
 	/**
 	 * 
 	 * 
 	 * @param size
-	 *            The size of Memory to create
+	 *            n/u
 	 */
-	private Core(int size) {
-		if ((size < MINIMUM_MEMORY) | size > MAXIMUM_MEMORY) {
-			String msg = String.format("%1$d [0X%1$X] bad size for memory,%2$d used instead", size, DEFAULT_MEMORY);
-			JOptionPane.showMessageDialog(null, msg, "Core",
-					JOptionPane.ERROR_MESSAGE);
-			size = DEFAULT_MEMORY;
-		}// if
+	private Core() {
+		int size = 64 * 1024;
 		storage = new byte[size];
 		maxAddress = size - 1;
+		System.out.println("In core constructor");
 	}// Constructor
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 

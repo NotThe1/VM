@@ -405,7 +405,7 @@ public class ArithmeticUnit implements IArithmeticUnit {
 		} else {// not rotate thru carry
 			s = originalBit0Set ? (s | 0X80) : s & 0X7F;
 		}
-		return (byte) (s & (byte) 0XFF);
+		return (byte) (s &  0XFF);
 	}// private rotateRight
 
 	/**
@@ -448,7 +448,7 @@ public class ArithmeticUnit implements IArithmeticUnit {
 			s = originalBit7Set ? (s | 0X01) : s & 0XFE;
 		}// if for Bit0
 
-		return (byte) (s & (byte) 0XFF);
+		return (byte) (s &  0XFF);
 	}// rotateLeft(byte source, boolean thruCarry)
 
 	/**

@@ -250,7 +250,6 @@ public class ArithmeticUnitTest {
 			isTestParity = random.nextBoolean();
 			ccr.setParityFlag(isTestParity);
 			isTestCarry = random.nextBoolean();
-			isTestCarry = false;
 			ccr.setCarryFlag(isTestCarry);
 
 			valueB1 = (byte) random.nextInt(0X100);
@@ -314,7 +313,6 @@ public class ArithmeticUnitTest {
 			isTestParity = random.nextBoolean();
 			ccr.setParityFlag(isTestParity);
 			isTestCarry = random.nextBoolean();
-			isTestCarry = false;
 			ccr.setCarryFlag(isTestCarry);
 
 			valueB1 = (byte) random.nextInt(0X100);

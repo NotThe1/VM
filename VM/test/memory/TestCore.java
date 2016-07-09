@@ -21,28 +21,28 @@ public class TestCore implements Observer {
 
 	@Before
 	public void setUp() throws Exception {
-		core = Core.getCore(25 * K);
+		core = Core.getCore();
 	}//setUp
 
 
-	@Test
-	public void testConstructor() {
-
-		// assertThat("constructor Default size", (64 * K), equalTo(core.getSize()));
-		// assertThat("constructor Default size", 64, equalTo(core.getSizeInK()));
-
-		int size = 25;
-		int sizeInBytes = size * K;
-		assertThat("constructor Default size", size, equalTo(core.getSizeInK()));
-		assertThat("constructor 25K", (sizeInBytes), equalTo(core.getSize()));
-
-		// enable to check out JOption Pane re using default memory size
-		// Core coreConstructor = null;
-		// int size = 125;
-		// coreConstructor = Core.getCore(size * K);
-		// assertThat("constructor Too large", (64 * K), equalTo(coreConstructor.getSize()));
-		// coreConstructor = null;
-	}
+//	@Test
+//	public void testConstructor() {
+//
+//		// assertThat("constructor Default size", (64 * K), equalTo(core.getSize()));
+//		// assertThat("constructor Default size", 64, equalTo(core.getSizeInK()));
+//
+////		int size = 25;
+////		int sizeInBytes = size * K;
+////		assertThat("constructor Default size", size, equalTo(core.getSizeInK()));
+////		assertThat("constructor 25K", (sizeInBytes), equalTo(core.getSize()));
+//
+//		// enable to check out JOption Pane re using default memory size
+//		// Core coreConstructor = null;
+//		// int size = 125;
+//		// coreConstructor = Core.getCore(size * K);
+//		// assertThat("constructor Too large", (64 * K), equalTo(coreConstructor.getSize()));
+//		// coreConstructor = null;
+//	}
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
@@ -62,7 +62,7 @@ public class TestCore implements Observer {
 		assertThat("Bad write address", badLocation, equalTo(location));
 
 		location = -1;
-		value = core.read(location);
+		core.read(location);
 		assertThat("Bad read address", badLocation, equalTo(location));
 		core.deleteObserver(this);
 	}// testBadAddress

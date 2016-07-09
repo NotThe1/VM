@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.Random;
 
 import memory.CpuBuss;
-import memory.IoBuss;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +14,6 @@ import static org.hamcrest.CoreMatchers.*;
 public class CentralProcessingUnitPage11ATest {
 	CentralProcessingUnit cpu;
 	CpuBuss cpuBuss;
-	IoBuss ioBuss;
 	WorkingRegisterSet wrs;
 	ConditionCodeRegister ccr;
 	Random random;
@@ -28,7 +26,6 @@ public class CentralProcessingUnitPage11ATest {
 		cpu = new CentralProcessingUnit();
 		cpuBuss = CpuBuss.getCpuBuss();
 		wrs = WorkingRegisterSet.getWorkingRegisterSet();
-		ioBuss = IoBuss.getIoBuss();
 		ccr = ConditionCodeRegister.getConditionCodeRegister();
 
 		random = new Random();

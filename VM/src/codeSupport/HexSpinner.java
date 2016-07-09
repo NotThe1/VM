@@ -27,7 +27,7 @@ public class HexSpinner extends JSpinner {
 		ftf.setFormatterFactory(new MyFormatterFactory());
 	}// constructor
 
-	class HexFormatter extends DefaultFormatter {
+	static class HexFormatter extends DefaultFormatter {
 
 		/**
 	 * 

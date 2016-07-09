@@ -20,7 +20,7 @@ import memory.Core.Trap;
  *  The CPU also requires word sized transfer of data. along with Push and Pop operations
  */
 public class CpuBuss extends Observable implements ICore, IcpuBuss {
-	private static CpuBuss instance;
+	private static CpuBuss instance = new CpuBuss();
 	private Core core;
 	private HashMap<Integer, Trap> traps;
 
@@ -30,9 +30,6 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	private static final byte HALT = (byte) 0X76; // Halt opcode
 
 	public static CpuBuss getCpuBuss() {
-		if (instance == null) {
-			instance = new CpuBuss();
-		}// if
 		return instance;
 	}// getInstance
 

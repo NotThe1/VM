@@ -1,18 +1,15 @@
 package memory;
 
-import java.util.Observable;
-
-import memory.Core.Trap;
+//import java.util.Observable;
+//
+//import memory.Core.Trap;
 
 public class IoBuss  implements ICore, IioBuss {
-	static IoBuss instance;
+	static IoBuss instance = new IoBuss();
 	static Core core;
 
 	
 	public static IoBuss getIoBuss() {
-		if (instance == null) {
-			instance = new IoBuss();
-		}// if
 		return instance;
 	}// getInstance
 	

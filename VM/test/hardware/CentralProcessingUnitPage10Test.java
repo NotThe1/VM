@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.util.Random;
 
 import memory.CpuBuss;
-import memory.IoBuss;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +15,6 @@ public class CentralProcessingUnitPage10Test {
 
 	CentralProcessingUnit cpu;
 	CpuBuss cpuBuss;
-	IoBuss ioBuss;
 	WorkingRegisterSet wrs;
 	ConditionCodeRegister ccr;
 	Random random;
@@ -29,7 +27,6 @@ public class CentralProcessingUnitPage10Test {
 		cpu = new CentralProcessingUnit();
 		cpuBuss = CpuBuss.getCpuBuss();
 		wrs = WorkingRegisterSet.getWorkingRegisterSet();
-		ioBuss = IoBuss.getIoBuss();
 		ccr = ConditionCodeRegister.getConditionCodeRegister();
 
 		random = new Random();

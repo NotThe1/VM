@@ -16,7 +16,6 @@ public class CentralProcessingUnitPage01Test {
 	CpuBuss cpuBuss;
 	IoBuss ioBuss;
 	WorkingRegisterSet wrs;
-	ConditionCodeRegister ccr;
 	Random random;
 	Register[] registers;
 
@@ -26,7 +25,6 @@ public class CentralProcessingUnitPage01Test {
 		cpuBuss = CpuBuss.getCpuBuss();
 		wrs = WorkingRegisterSet.getWorkingRegisterSet();
 		ioBuss = IoBuss.getIoBuss();
-		ccr = ConditionCodeRegister.getConditionCodeRegister();
 
 		random = new Random();
 		registers = new Register[] { Register.B, Register.C, Register.D, Register.E,
@@ -76,7 +74,7 @@ public class CentralProcessingUnitPage01Test {
 
 			value = (byte) random.nextInt(0X100); // between 00 and 0XFF
 
-			if (sourceRegister.equals(Register.M) | destRegister.equals(Register.M)) {
+			if (sourceRegister.equals(Register.M) || destRegister.equals(Register.M)) {
 				continue; // tested below
 			}// if Register.M
 

@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 
 public class WorkingRegisterSetTest {
-	static IWorkingRegisterSet wrs;
+	 IWorkingRegisterSet wrs;
 
 	@Before
 	public void setUp() throws Exception {
@@ -42,7 +42,6 @@ public class WorkingRegisterSetTest {
 		assertThat("PC A5A5", valueA5A5, equalTo(wrs.getProgramCounter()));
 		wrs.incrementProgramCounter(1);
 		assertThat("PC A5A5", valueA5A5 + 1, equalTo(wrs.getProgramCounter()));
-		wrs = null;
 	}// testPCandSP
 
 	@Test

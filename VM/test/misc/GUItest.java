@@ -36,7 +36,7 @@ import java.awt.Insets;
 import javax.swing.JMenuItem;
 
 public class GUItest {
-	class menuAdapter implements ActionListener {
+	static class menuAdapter implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
 			System.out.format("toString: %s%n", ae.toString());
@@ -81,7 +81,7 @@ public class GUItest {
 		frmTest.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 		Set<String> insKeys = baseInstructions.keySet();
-		baseInstructionModel = new DefaultComboBoxModel(insKeys.toArray((new String[insKeys.size()])));
+		baseInstructionModel = new DefaultComboBoxModel<>(insKeys.toArray((new String[insKeys.size()])));
 		cbIns.setModel(baseInstructionModel);
 	}
 

@@ -22,7 +22,7 @@ public class TestCpuBuss implements Observer {
 
 	@Before
 	public void setUp() throws Exception {
-		core = Core.getCore(25 * K);
+		core = Core.getCore();
 		cpuBuss = CpuBuss.getCpuBuss();
 	}//setUp
 	
@@ -75,13 +75,12 @@ public class TestCpuBuss implements Observer {
 		core = Core.getCore();
 		core.addObserver(this);
 		int location = 66 * K;
-		byte value = (byte) 0XFF;
 
-		cpuBuss.write(location, value);
+		cpuBuss.write(location, (byte) 0);
 		assertThat("Bad write address", badLocation, equalTo(location));
 
 		location = -1;
-		value = cpuBuss.read(location);
+		cpuBuss.read(location);
 		assertThat("Bad read address", badLocation, equalTo(location));
 		core.deleteObserver(this);
 	}// testBadAddress

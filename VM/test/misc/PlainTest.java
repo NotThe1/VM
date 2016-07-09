@@ -30,13 +30,10 @@ public static void test7(){
 	
 	int ans00 = base00 & ccMaskZeros;
 	int ans01 = base00 | ccMaskOnes;
-	int ans02 = ans00 | ccMaskOnes;
 	
 	int ans10 = base11 & ccMaskZeros;
 	int ans11 = base11 | ccMaskOnes;
-	int ans12 = ans10 | ccMaskOnes;
 	
-	int ans = ans00 + ans01 + ans10 + ans11;
 
 }//test7
 	public static void test6(){
