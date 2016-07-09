@@ -82,7 +82,7 @@ public class CentralProcessingUnit {
 		int directAddress = cpuBuss.readWordReversed(currentAddress + 1);
 		Register register16Bit = RegisterDecode.getRegisterPairStd(opCode);
 		Register register8bit = RegisterDecode.getHighRegister(opCode);
-		int codeLength = 0;
+		int codeLength;
 		// 00 YYY ZZZ
 		switch (zzz) {
 		case 0: // zzz = 000 (NOP)
@@ -136,7 +136,7 @@ public class CentralProcessingUnit {
 			default:
 				codeLength = 0;
 				setError(ErrorType.INVALID_OPCODE);
-				return codeLength;
+				// return codeLength;
 			}// switch (yyy)
 			break;
 		case 3: // zzz = 011 (INX & DCX) - Register Pair (BC,DE,HL,SP)
@@ -219,8 +219,7 @@ public class CentralProcessingUnit {
 				break;
 			default:
 				setError(ErrorType.INVALID_OPCODE);
-				return 0;
-
+				codeLength = 0;
 			}// switch yyy
 			break;
 		default:
@@ -272,7 +271,7 @@ public class CentralProcessingUnit {
 		}// if register M for source
 
 		accValue = wrs.getAcc();
-
+		int codeLength = 1;
 		switch (yyy) {
 		case 0: // yyy = 000 (ADD)
 			wrs.setAcc(au.add(accValue, sourceValue));
@@ -300,27 +299,17 @@ public class CentralProcessingUnit {
 			break;
 		default:
 			setError(ErrorType.INVALID_OPCODE);
-			return 0;
+			codeLength = 0;
 		}// switch yyy
 
-		int codeLength = 1;
 		return codeLength;
 	}// opCodePage10
 
 	private int opCodePage11(int currentAddress, byte opCode, int yyy, int zzz) {
 		int codeLength = -1;
-		byte sourceValue, accValue;
-		int indirectAddress;
+		byte accValue;
 		Register register16bit = RegisterDecode.getRegisterPairAlt(opCode);
-		Register register8bit = RegisterDecode.getLowRegister(opCode);
 		ConditionFlag condition = RegisterDecode.getCondition(opCode);
-		if (register8bit.equals(Register.M)) {
-			indirectAddress = wrs.getDoubleReg(Register.M);
-			sourceValue = cpuBuss.read(indirectAddress);
-		} else {
-			sourceValue = wrs.getReg(register8bit);
-		}// if register M for source
-
 		accValue = wrs.getAcc();
 
 		switch (zzz) {
@@ -357,8 +346,8 @@ public class CentralProcessingUnit {
 					wrs.setStackPointer(hlValue);
 					codeLength = 1;
 				} else { // Not used
-					// NOP
-					codeLength = 1;
+					setError(ErrorType.INVALID_OPCODE);
+					codeLength = 0;
 				}// inner if
 			}// if lsb = 0/1
 			break;
@@ -369,7 +358,6 @@ public class CentralProcessingUnit {
 			} else { // just skip past
 				codeLength = 3;
 			}// if
-
 			break;
 		case 3: // zzz 011 JMP/OUT/IN/XTHL/XCHL/DI/EI
 			switch (yyy) {
@@ -378,6 +366,8 @@ public class CentralProcessingUnit {
 				codeLength = 0;
 				break;
 			case 1: // yyy 001 Not Used
+				setError(ErrorType.INVALID_OPCODE);
+				codeLength = 0;
 				break;
 			case 2: // yyy 010 OUT
 				System.out.println("Not yet implemented");
@@ -390,9 +380,10 @@ public class CentralProcessingUnit {
 			case 4: // yyy 100 XTHL
 				int hlValue = wrs.getDoubleReg(Register.HL);
 				int stackLocation = wrs.getStackPointer();
-				int stackValue = cpuBuss.popWord(stackLocation-2);
-				wrs.setDoubleReg(Register.HL, stackValue);			
+				int stackValue = cpuBuss.popWord(stackLocation - 2);
+				wrs.setDoubleReg(Register.HL, stackValue);
 				cpuBuss.pushWord(stackLocation, hlValue);
+				codeLength = 1;
 				break;
 			case 5: // yyy 101 XCHG
 				int deValue = wrs.getDoubleReg(Register.DE);
@@ -410,8 +401,7 @@ public class CentralProcessingUnit {
 				break;
 			default:
 				setError(ErrorType.INVALID_OPCODE);
-				return 0;
-
+				codeLength = 0;
 			}// switch(opCod
 			break;
 		case 4: // zzz 100 Conditional Call CCC
@@ -421,7 +411,6 @@ public class CentralProcessingUnit {
 			} else { // just skip past
 				codeLength = 3;
 			}// if
-
 			break;
 		case 5: // zzz 101 PUSH/CALL
 			if ((yyy & 0X01) == 0) { // PUSH
@@ -431,60 +420,54 @@ public class CentralProcessingUnit {
 					opCode_Push(wrs.getDoubleReg(register16bit));
 				}// if
 				codeLength = 1;
-			} else { // CALL
+			} else if (opCode == (byte) 0XCD) { // CALL
 				opCode_Call();
 				codeLength = 0;
-			}// if
-
+			} else {
+				setError(ErrorType.INVALID_OPCODE);
+				codeLength = 0;
+			}// if odd/even
 			break;
 		case 6: // zzz 110 ADI/ACI/SUI/SBI/ANI/XRI/ORI/CPI
 			byte resultValue;
 			byte immediateValue = cpuBuss.read(wrs.getProgramCounter() + 1);
-//			accValue = wrs.getAcc();
+			// accValue = wrs.getAcc();
+			codeLength = 2;
 			switch (yyy) {
 			case 0: // yyy 000 ADI
 				resultValue = au.add(accValue, immediateValue);
 				wrs.setAcc(resultValue);
-				codeLength = 2;
 				break;
 			case 1: // yyy 001 ACI
 				resultValue = au.addWithCarry(accValue, immediateValue);
 				wrs.setAcc(resultValue);
-				codeLength = 2;
 				break;
 			case 2: // yyy 010 SUI
 				resultValue = au.subtract(accValue, immediateValue);
 				wrs.setAcc(resultValue);
-				codeLength = 2;
 				break;
 			case 3: // yyy 011 SBI
 				resultValue = au.subtractWithBorrow(accValue, immediateValue);
 				wrs.setAcc(resultValue);
-				codeLength = 2;
 				break;
 			case 4: // yyy 100 ANI
 				resultValue = au.logicalAnd(accValue, immediateValue);
 				wrs.setAcc(resultValue);
-				codeLength = 2;
 				break;
 			case 5: // yyy 101 XRI
 				resultValue = au.logicalXor(accValue, immediateValue);
 				wrs.setAcc(resultValue);
-				codeLength = 2;
 				break;
 			case 6: // yyy 110 ORI
 				resultValue = au.logicalOr(accValue, immediateValue);
 				wrs.setAcc(resultValue);
-				codeLength = 2;
 				break;
 			case 7: // yyy 111 CPI
 				resultValue = au.subtract(accValue, immediateValue);
-				codeLength = 2;
 				break;
 			default:
 				setError(ErrorType.INVALID_OPCODE);
-				return 0;
-
+				codeLength = 0;
 			}// switch(yyy)
 			break;
 		case 7: // zzz 111 RST PPP
@@ -496,7 +479,6 @@ public class CentralProcessingUnit {
 		default: // zzz 000
 			setError(ErrorType.INVALID_OPCODE);
 			return 0;
-
 		}// switch(zzz)
 
 		return codeLength;
