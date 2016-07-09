@@ -9,7 +9,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;

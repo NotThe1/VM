@@ -53,14 +53,12 @@ public class CentralProcessingUnitPage01Test {
 		byte opCode, value;
 		int pc = 0X0100;
 
-		int indirectAddress = 0X500;
 		byte opCode67 = 0B01000000;
 		byte opCode345 = 0B00000000;
 		byte opCode012 = 0B00000000;
 
 		int sourceIndex, destIndex;
 		Register sourceRegister, destRegister;
-		byte sourceValue, destValue;
 		for (int i = 0; i < count; i++) {
 			clearAllRegs();
 

@@ -1,6 +1,5 @@
 package hardware;
 
-import memory.Core;
 import memory.CpuBuss;
 
 /**

@@ -44,7 +44,8 @@ public class CentralProcessingUnitPage11Test {
 
 	@Test
 	public void testPushPop() {
-		testCount = 15;
+//		testCount = 15;
+		
 		byte pushCode, popCode;
 		byte pushBase = (byte) 0XC5;
 		byte popBase = (byte) 0XC1;
@@ -144,7 +145,6 @@ public class CentralProcessingUnitPage11Test {
 		// RET - NZ/NC/PO/P...Z/C/PE/M
 		byte[] opCodes = new byte[] { (byte) 0XC0, (byte) 0XD0, (byte) 0XE0, (byte) 0XF0,
 				(byte) 0XC8, (byte) 0XD8, (byte) 0XE8, (byte) 0XF8 };
-		byte retOpCode;
 		int pc = 0X0100;
 		ioBuss.writeDMA(pc, opCodes);
 		// no returns
@@ -450,7 +450,8 @@ public class CentralProcessingUnitPage11Test {
 
 	@Test
 	public void testPCHL_SPHL() {
-		testCount = 15;
+//		testCount = 15;
+		
 		int valueTest;
 		int pc = 0100;
 		byte[] mem = new byte[] { (byte) 0XF9, (byte) 0XE9 };
@@ -473,7 +474,8 @@ public class CentralProcessingUnitPage11Test {
 
 	@Test
 	public void testXTHL_XCHG() {
-		testCount = 15;
+//		testCount = 15;
+		
 		int valueHlOriginal, valueDeOriginal, valueStackOriginal;
 		int pc = 0100;
 		byte[] mem = new byte[] { (byte) 0XEB, (byte) 0XEB };

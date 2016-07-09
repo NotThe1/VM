@@ -3,7 +3,7 @@ package hardware;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
-import org.junit.AfterClass;
+//import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,9 +19,9 @@ public class RegisterDecodeTest {
 		byte[] opCodesStd = new byte[] { (byte) 0X01, (byte) 0X11, (byte) 0X21, (byte) 0X31,
 				(byte) 0X09, (byte) 0X19, (byte) 0X29, (byte) 0X39
 		};
-		byte[] opCodesAlt = new byte[] { (byte) 0XC1, (byte) 0XD1, (byte) 0XE1, (byte) 0XF1,
-				(byte) 0XC5, (byte) 0XD5, (byte) 0XE5, (byte) 0XF5
-		};
+//		byte[] opCodesAlt = new byte[] { (byte) 0XC1, (byte) 0XD1, (byte) 0XE1, (byte) 0XF1,
+//				(byte) 0XC5, (byte) 0XD5, (byte) 0XE5, (byte) 0XF5
+//		};
 		Register[] wordRegistersStd = new Register[] { Register.BC, Register.DE, Register.HL, Register.SP,
 				Register.BC, Register.DE, Register.HL, Register.SP
 		};

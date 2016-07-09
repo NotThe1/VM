@@ -27,12 +27,14 @@ public class WorkingRegisterSetTest {
 		int value0100 = 0X0100;
 
 		// Stack Pointer
+		wrs.setStackPointer(value0100);
 		assertThat("SP Initial", value0100, equalTo(wrs.getStackPointer()));
 		wrs.setStackPointer(valueFFFF);
 		assertThat("SP FFFF", valueFFFF, equalTo(wrs.getStackPointer()));
 		wrs.setStackPointer(valueA5A5);
 		assertThat("SP A5A5", valueA5A5, equalTo(wrs.getStackPointer()));
 		// ProgramCounter
+		wrs.setProgramCounter(value0000);
 		assertThat("PC Initial", value0000, equalTo(wrs.getProgramCounter()));
 		wrs.setProgramCounter(valueFFFF);
 		assertThat("PC FFFF", valueFFFF, equalTo(wrs.getProgramCounter()));

@@ -4,14 +4,10 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -28,10 +24,6 @@ public class TestCore implements Observer {
 		core = Core.getCore(25 * K);
 	}//setUp
 
-	@After
-	public void tearDown() throws Exception {
-		// core = null;
-	}
 
 	@Test
 	public void testConstructor() {

@@ -423,7 +423,6 @@ public class CentralProcessingUnitPage00Test {
 
 	@Test
 	public void testZZZ111() {
-		byte targetFlags = (byte) 0B10000110; // FF -> S & C
 		byte noFlags = (byte) 0B00000010; // FF -> S & C
 		byte allFlags = (byte) 0B11010111; // FF -> S & C
 
@@ -577,7 +576,6 @@ public class CentralProcessingUnitPage00Test {
 		cpuBuss.write(pc, (byte) 0X27); // DAA
 		initValue = (byte) 0X9B;
 		resultValue = (byte) 0X01;
-		targetFlags = (byte) 0B00001011; // Aux & C
 		wrs.setAcc(initValue);
 		ccr.setConditionCode(noFlags);
 		cpu.executeInstruction(pc);
