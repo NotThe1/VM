@@ -378,11 +378,19 @@ public class CentralProcessingUnit {
 				codeLength = 2;
 				break;
 			case 4: // yyy 100 XTHL
-				int hlValue = wrs.getDoubleReg(Register.HL);
+				byte valueL = wrs.getReg(Register.L);
+				byte valueH = wrs.getReg(Register.H);
+				
+//				int hlValue = wrs.getDoubleReg(Register.HL);
 				int stackLocation = wrs.getStackPointer();
-				int stackValue = cpuBuss.popWord(stackLocation - 2);
-				wrs.setDoubleReg(Register.HL, stackValue);
-				cpuBuss.pushWord(stackLocation, hlValue);
+				wrs.setReg(Register.L, cpuBuss.read(stackLocation));
+				wrs.setReg(Register.H, cpuBuss.read(stackLocation+1));
+//				int stackValue = cpuBuss.popWord(stackLocation);
+//				wrs.setDoubleReg(Register.HL, stackValue);
+//				cpuBuss.pushWord(stackLocation, hlValue);
+				cpuBuss.write(stackLocation, valueL);
+				cpuBuss.write(stackLocation + 1, valueH);
+				
 				codeLength = 1;
 				break;
 			case 5: // yyy 101 XCHG

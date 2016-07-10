@@ -1,5 +1,6 @@
 package misc;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
@@ -34,6 +35,7 @@ import javax.swing.JLabel;
 import java.awt.Insets;
 
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButton;
 
 public class GUItest {
 	static class menuAdapter implements ActionListener {
@@ -142,9 +144,9 @@ public class GUItest {
 		mnuFile.add(mntmAdapter);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
-		gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0 };
+		gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		frmTest.getContentPane().setLayout(gridBagLayout);
 
 		cbIns = new JComboBox();
@@ -157,9 +159,25 @@ public class GUItest {
 
 		lblPath = new JLabel("lblPath");
 		GridBagConstraints gbc_lblPath = new GridBagConstraints();
+		gbc_lblPath.insets = new Insets(0, 0, 5, 0);
 		gbc_lblPath.gridx = 0;
 		gbc_lblPath.gridy = 2;
 		frmTest.getContentPane().add(lblPath, gbc_lblPath);
+		
+		rdbtnNewRadioButton = new JRadioButton("New radio button");
+		rdbtnNewRadioButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if (rdbtnNewRadioButton.isSelected()){
+				rdbtnNewRadioButton.setForeground(Color.RED);
+				}else{
+					rdbtnNewRadioButton.setForeground(Color.GRAY);
+				}
+			}
+		});
+		GridBagConstraints gbc_rdbtnNewRadioButton = new GridBagConstraints();
+		gbc_rdbtnNewRadioButton.gridx = 0;
+		gbc_rdbtnNewRadioButton.gridy = 5;
+		frmTest.getContentPane().add(rdbtnNewRadioButton, gbc_rdbtnNewRadioButton);
 	}// initialize
 		// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -169,6 +187,7 @@ public class GUItest {
 	private JLabel lblPath;
 	private JMenuItem mnuFileOpen;
 	private JMenuItem mntmAdapter;
+	private JRadioButton rdbtnNewRadioButton;
 	static {
 		baseInstructions = new HashMap<String, String[]>();
 		baseInstructions.put("STC", new String[] { "STC", "C", "Set Carry" });

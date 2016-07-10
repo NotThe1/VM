@@ -40,8 +40,8 @@ public class CentralProcessingUnitPage11Test {
 
 	@Test
 	public void testPushPop() {
-//		testCount = 15;
-		
+		// testCount = 15;
+
 		byte pushCode, popCode;
 		byte pushBase = (byte) 0XC5;
 		byte popBase = (byte) 0XC1;
@@ -446,8 +446,8 @@ public class CentralProcessingUnitPage11Test {
 
 	@Test
 	public void testPCHL_SPHL() {
-//		testCount = 15;
-		
+		// testCount = 15;
+
 		int valueTest;
 		int pc = 0100;
 		byte[] mem = new byte[] { (byte) 0XF9, (byte) 0XE9 };
@@ -470,8 +470,8 @@ public class CentralProcessingUnitPage11Test {
 
 	@Test
 	public void testXTHL_XCHG() {
-//		testCount = 15;
-		
+		// testCount = 15;
+
 		int valueHlOriginal, valueDeOriginal, valueStackOriginal;
 		int pc = 0100;
 		byte[] mem = new byte[] { (byte) 0XEB, (byte) 0XEB };
@@ -493,21 +493,31 @@ public class CentralProcessingUnitPage11Test {
 		int stackPointerValue = 210;
 		mem = new byte[] { (byte) 0XE3, (byte) 0XE3 };
 		ioBuss.writeDMA(pc, mem);
+		
 
+		wrs.setStackPointer(stackPointerValue);
 		for (int i = 0; i < testCount; i++) {
 			clearWordRegisters();
 			valueHlOriginal = random.nextInt(0X10000);
 			wrs.setDoubleReg(Register.HL, valueHlOriginal);
-			valueStackOriginal = random.nextInt(0X10000);
-			cpuBuss.pushWord(stackPointerValue, valueStackOriginal);
+			byte valueH = wrs.getReg(Register.H);
+			byte valueL = wrs.getReg(Register.L);
 			
-			
-			wrs.setStackPointer(stackPointerValue);
+			valueStackOriginal = random.nextInt(0X10000);	
+			byte valueStackOriginalLo = (byte) (valueStackOriginal & 0X00FF);
+			byte valueStackOriginalHi = (byte) ((valueStackOriginal >> 8) & 0X00FF);
+
+			// cpuBuss.pushWord(stackPointerValue, valueStackOriginal);
+			cpuBuss.write(stackPointerValue, valueStackOriginalLo);
+			cpuBuss.write(stackPointerValue + 1, valueStackOriginalHi);
+
 			wrs.setProgramCounter(pc);
 			cpu.executeInstruction(wrs.getProgramCounter());
-			
-			assertThat(i + " testXTHL 1",valueStackOriginal,equalTo(wrs.getDoubleReg(Register.HL)));
-			assertThat(i + " testXTHL 2",valueHlOriginal,equalTo(cpuBuss.popWord(stackPointerValue-2)));
+
+			assertThat(i + " testXTHL HL", valueStackOriginal, equalTo(wrs.getDoubleReg(Register.HL)));
+
+			assertThat(i + " testXTHL Lo", valueL, equalTo(cpuBuss.read(stackPointerValue)));
+			assertThat(i + " testXTHL Hi", valueH, equalTo(cpuBuss.read(stackPointerValue+1)));
 
 		}// for
 	}//
