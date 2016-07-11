@@ -1,12 +1,14 @@
 package misc;
 
 import java.awt.Color;
+
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Observable;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
@@ -37,7 +39,9 @@ import java.awt.Insets;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 
-public class GUItest {
+
+
+public class GUItest extends Observable{
 	static class menuAdapter implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
@@ -47,7 +51,8 @@ public class GUItest {
 
 	private JFrame frmTest;
 	DefaultComboBoxModel baseInstructionModel;
-
+	static ButtonsWatch watchButtons;
+	static GUItest window;
 	/**
 	 * Launch the application.
 	 */
@@ -56,13 +61,22 @@ public class GUItest {
 			public void run() {
 				try {
 					GUItest window = new GUItest();
+					watchButtons = new ButtonsWatch();
+
+//					window.addObserver(watchButtons);
+
 					window.frmTest.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+		
 	}// main
+	private void doIt(){
+		window = new GUItest();
+		window.frmTest.setVisible(true);
+	}
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 	private void appClose() {
@@ -85,7 +99,10 @@ public class GUItest {
 		Set<String> insKeys = baseInstructions.keySet();
 		baseInstructionModel = new DefaultComboBoxModel<>(insKeys.toArray((new String[insKeys.size()])));
 		cbIns.setModel(baseInstructionModel);
-	}
+//		watchButtons = new WatchButtons();
+		
+//		window.addObserver(watchButtons);
+	}//
 
 	/**
 	 * Create the application.
@@ -163,14 +180,18 @@ public class GUItest {
 		gbc_lblPath.gridx = 0;
 		gbc_lblPath.gridy = 2;
 		frmTest.getContentPane().add(lblPath, gbc_lblPath);
-		
+
+		// RoundIcon redLED = new RoundIcon(Color.RED);
+
 		rdbtnNewRadioButton = new JRadioButton("New radio button");
+		rdbtnNewRadioButton.setPressedIcon(new RoundIcon(Color.GREEN));
 		rdbtnNewRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if (rdbtnNewRadioButton.isSelected()){
-				rdbtnNewRadioButton.setForeground(Color.RED);
-				}else{
-					rdbtnNewRadioButton.setForeground(Color.GRAY);
+				if (rdbtnNewRadioButton.isSelected()) {
+					rdbtnNewRadioButton.setIcon(new RoundIcon(Color.RED));
+				window.notifyObservers(rdbtnNewRadioButton);
+				} else {
+					rdbtnNewRadioButton.setIcon(new RoundIcon(Color.GRAY));
 				}
 			}
 		});
