@@ -15,7 +15,7 @@ import java.util.HashMap;
  */
 public class WorkingRegisterSet implements IWorkingRegisterSet {
 
-	private static WorkingRegisterSet workingRegisterSet;
+	private static WorkingRegisterSet instance = new WorkingRegisterSet();
 
 	private int programCounter;
 	private int stackPointer;
@@ -28,11 +28,9 @@ public class WorkingRegisterSet implements IWorkingRegisterSet {
 	 * @see hardware.IWorkingRegisterSet#getWorkingRegisterSet()
 	 */
 	// @Override
-	public static WorkingRegisterSet getWorkingRegisterSet() {
-		if (workingRegisterSet == null) {
-			workingRegisterSet = new WorkingRegisterSet();
-		}// if
-		return workingRegisterSet;
+	public static WorkingRegisterSet getInstance() {
+		
+		return instance;
 	}// getWorkingRegisterSet
 
 	/**

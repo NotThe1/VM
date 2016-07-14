@@ -47,8 +47,8 @@ public static void test7(){
 	}//test6
 	
 	public static void test5(){
-		ArithmeticUnit au = ArithmeticUnit.getArithmeticUnit();
-		ConditionCodeRegister ccr = ConditionCodeRegister.getConditionCodeRegister();
+		ArithmeticUnit au = ArithmeticUnit.getInstance();
+		ConditionCodeRegister ccr = ConditionCodeRegister.getInstance();
 		byte value1 = (byte) 0X1E;
 		byte value2 = (byte) 0XA6;
 		ccr.setCarryFlag(false);
@@ -59,8 +59,8 @@ public static void test7(){
 	}//test5
 
 	public static void test4() {
-		ArithmeticUnit au = ArithmeticUnit.getArithmeticUnit();
-		ConditionCodeRegister ccr = ConditionCodeRegister.getConditionCodeRegister();
+		ArithmeticUnit au = ArithmeticUnit.getInstance();
+		ConditionCodeRegister ccr = ConditionCodeRegister.getInstance();
 		boolean isFlagSet;
 		boolean carryIn = false;
 		String msg;

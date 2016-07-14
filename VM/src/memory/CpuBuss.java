@@ -29,12 +29,12 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 
 	private static final byte HALT = (byte) 0X76; // Halt opcode
 
-	public static CpuBuss getCpuBuss() {
+	public static CpuBuss getInstance() {
 		return instance;
 	}// getInstance
 
 	private CpuBuss() {
-		core = Core.getCore();
+		core = Core.getInstance();
 		traps = new HashMap<Integer, Trap>();
 	}// Constructor
 		// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

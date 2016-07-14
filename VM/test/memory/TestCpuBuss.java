@@ -22,8 +22,8 @@ public class TestCpuBuss implements Observer {
 
 	@Before
 	public void setUp() throws Exception {
-		core = Core.getCore();
-		cpuBuss = CpuBuss.getCpuBuss();
+		core = Core.getInstance();
+		cpuBuss = CpuBuss.getInstance();
 	}//setUp
 	
 	@Test
@@ -72,7 +72,7 @@ public class TestCpuBuss implements Observer {
 	public void testBadAddress() {
 		badLocation = 0;
 
-		core = Core.getCore();
+		core = Core.getInstance();
 		core.addObserver(this);
 		int location = 66 * K;
 

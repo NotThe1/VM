@@ -16,7 +16,7 @@ public class WorkingRegisterSetTest {
 
 	@Before
 	public void setUp() throws Exception {
-		wrs = WorkingRegisterSet.getWorkingRegisterSet();
+		wrs = WorkingRegisterSet.getInstance();
 	}// setUpBeforeClass
 
 	@Test

@@ -21,7 +21,7 @@ public class TestCore implements Observer {
 
 	@Before
 	public void setUp() throws Exception {
-		core = Core.getCore();
+		core = Core.getInstance();
 	}//setUp
 
 

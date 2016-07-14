@@ -9,12 +9,12 @@ public class IoBuss  implements ICore, IioBuss {
 	static Core core;
 
 	
-	public static IoBuss getIoBuss() {
+	public static IoBuss getInstance() {
 		return instance;
 	}// getInstance
 	
 	private IoBuss() {
-		core = Core.getCore();
+		core = Core.getInstance();
 	}// Constructor
 
 	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++

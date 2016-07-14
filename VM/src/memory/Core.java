@@ -43,7 +43,7 @@ public class Core extends Observable implements ICore {
 	 *            The size of Memory to create first time
 	 * @return The only instance of the core object
 	 */
-	public static Core getCore() {
+	public static Core getInstance() {
 		return instance;
 	}// getInstance
 
@@ -58,7 +58,7 @@ public class Core extends Observable implements ICore {
 		int size = 64 * 1024;
 		storage = new byte[size];
 		maxAddress = size - 1;
-		System.out.println("In core constructor");
+//		System.out.println("In core constructor");
 	}// Constructor
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 

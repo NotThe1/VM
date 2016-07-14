@@ -22,10 +22,10 @@ public class CentralProcessingUnitPage00Test {
 	@Before
 	public void setUp() throws Exception {
 		cpu = new CentralProcessingUnit();
-		cpuBuss = CpuBuss.getCpuBuss();
-		wrs = WorkingRegisterSet.getWorkingRegisterSet();
-		ioBuss = IoBuss.getIoBuss();
-		ccr = ConditionCodeRegister.getConditionCodeRegister();
+		cpuBuss = CpuBuss.getInstance();
+		wrs = WorkingRegisterSet.getInstance();
+		ioBuss = IoBuss.getInstance();
+		ccr = ConditionCodeRegister.getInstance();
 	}
 
 	@Test

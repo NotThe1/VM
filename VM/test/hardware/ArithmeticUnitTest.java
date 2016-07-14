@@ -21,8 +21,8 @@ public class ArithmeticUnitTest {
 
 	@Before
 	public void setUp() throws Exception {
-		au = ArithmeticUnit.getArithmeticUnit();
-		ccr = ConditionCodeRegister.getConditionCodeRegister();
+		au = ArithmeticUnit.getInstance();
+		ccr = ConditionCodeRegister.getInstance();
 
 		random = new Random();
 		testCount = 2000;

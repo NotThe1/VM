@@ -25,9 +25,9 @@ public class CentralProcessingUnitPage10Test {
 	@Before
 	public void setUp() throws Exception {
 		cpu = new CentralProcessingUnit();
-		cpuBuss = CpuBuss.getCpuBuss();
-		wrs = WorkingRegisterSet.getWorkingRegisterSet();
-		ccr = ConditionCodeRegister.getConditionCodeRegister();
+		cpuBuss = CpuBuss.getInstance();
+		wrs = WorkingRegisterSet.getInstance();
+		ccr = ConditionCodeRegister.getInstance();
 
 		random = new Random();
 		registers = new Register[] { Register.B, Register.C, Register.D, Register.E,

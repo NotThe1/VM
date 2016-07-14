@@ -25,15 +25,12 @@ package hardware;
  */
 public class ArithmeticUnit implements IArithmeticUnit {
 	static IConditionCodeRegister ccr;
-	private static ArithmeticUnit arithmeticUnit;
+	private static ArithmeticUnit instance = new ArithmeticUnit();
 
 	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	public static ArithmeticUnit getArithmeticUnit( ) {
-		if (arithmeticUnit == null) {
-			// ccr = ConditionCodeRegister.getConditionCodeRegister();
-			arithmeticUnit = new ArithmeticUnit();
-		}// if
-		return arithmeticUnit;
+	public static ArithmeticUnit getInstance( ) {
+		
+		return instance;
 	}// getArithmeticUnit
 
 	/**
@@ -42,7 +39,7 @@ public class ArithmeticUnit implements IArithmeticUnit {
 	 *            requires the system Condition Code Register
 	 */
 	private ArithmeticUnit() {
-		ccr = ConditionCodeRegister.getConditionCodeRegister();
+		ccr = ConditionCodeRegister.getInstance();
 	}// Constructor
 
 	// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -18,10 +18,10 @@ public class CentralProcessingUnit {
 	ErrorType error;
 
 	public CentralProcessingUnit() {
-		this(CpuBuss.getCpuBuss(),
-				WorkingRegisterSet.getWorkingRegisterSet(),
-				ArithmeticUnit.getArithmeticUnit(),
-				ConditionCodeRegister.getConditionCodeRegister());
+		this(CpuBuss.getInstance(),
+				WorkingRegisterSet.getInstance(),
+				ArithmeticUnit.getInstance(),
+				ConditionCodeRegister.getInstance());
 
 	}// Constructor
 

@@ -30,7 +30,7 @@ public class CCRtest {
 
 	@Before
 	public void setUp() throws Exception {
-		ccr = ConditionCodeRegister.getConditionCodeRegister();
+		ccr = ConditionCodeRegister.getInstance();
 	}//setUp
 
 	
