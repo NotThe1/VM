@@ -15,91 +15,91 @@ public interface IStateDisplay {
 	 * all registers and flags will be updated to current values.
 	 */
 	
-	public void updateAll();
+	public void updateDisplayAll();
 	/**
 	 * all flags (Sign,Zero,Aux Carry, Parity & Carry) will be updated to current values.
 	 */
-	public void updateFlags();
+	public void updateDisplayAllFlags();
 	
 	/**
 	 * all registers (A,B,C,D,E,H,L & (M) ) will be updated to current value
 	 */
-	public void updateRegisters();
+	public void updateDisplayAllRegisters();
 	
 	/**
 	 *  The Stack Pointer will be updated to the current value
 	 */
-	public void updateStackPointer();
+	public void updateDisplayStackPointer();
 	
 	/**
 	 *  The Program Counter will be updated to the current value
 	 */
-	public void updateProgramCounter();
+	public void updateDisplayProgramCounter();
 	
 	/**
 	 * the Sign flag will be updated to current value
 	 */
-	public void updateSignFlag();
+	public void updateDisplaySignFlag();
 	
 	/**
 	 * the Zero flag will be updated to current value
 	 */
-	public void updateZeroFlag();
+	public void updateDisplayZeroFlag();
 	
 	/**
 	 * the Aux Carry flag will be updated to current value
 	 */
-	public void updateAuxCarryFlag();
+	public void updateDisplayAuxCarryFlag();
 	
 	/**
 	 * the Parity flag will be updated to current value
 	 */
-	public void updateParityFlag();
+	public void updateDisplayParityFlag();
 	
 	/**
 	 * the Carry flag will be updated to current value
 	 */
-	public void updateCarryFlag();
+	public void updateDisplayCarryFlag();
 	
+	/**
+	 *  The Accumulator (A Register) will be updated to the current value
+	 */
+	public void updateDisplayAcc();
 	/**
 	 *  The A Register (Accumulator) will be updated to the current value
 	 */
-	public void updateRegisterA();
+	public void updateDisplayRegisterA();
 	
 	/**
 	 *  The B Register will be updated to the current value
 	 */
-	public void updateRegisterB();
+	public void updateDisplayRegisterB();
 	
 	/**
 	 *  The C Register will be updated to the current value
 	 */
-	public void updateRegisterC();
+	public void updateDisplayRegisterC();
 	
 	/**
 	 *  The D Register will be updated to the current value
 	 */
-	public void updateRegisterD();
+	public void updateDisplayRegisterD();
 	
 	/**
 	 *  The E Register will be updated to the current value
 	 */
-	public void updateRegisterE();
+	public void updateDisplayRegisterE();
 	
 	/**
 	 *  The H Register will be updated to the current value
 	 */
-	public void updateRegisterH();
+	public void updateDisplayRegisterH();
 	
 	/**
 	 *  The L Register will be updated to the current value
 	 */
-	public void updateRegisterL();
+	public void updateDisplayRegisterL();
 	
-	/**
-	 *  The M Register (value pointed at by the contenets of HL) will be updated to the current value
-	 */
-	public void updateRegisterM();
 
 
 }// interface StateDisplay

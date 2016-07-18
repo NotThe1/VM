@@ -1,7 +1,8 @@
 package misc;
 
-import java.awt.Color;
+import hardware.RoundIcon1;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
@@ -184,14 +185,14 @@ public class GUItest extends Observable{
 		// RoundIcon redLED = new RoundIcon(Color.RED);
 
 		rdbtnNewRadioButton = new JRadioButton("New radio button");
-		rdbtnNewRadioButton.setPressedIcon(new RoundIcon(Color.GREEN));
+		rdbtnNewRadioButton.setPressedIcon(new RoundIcon1(Color.GREEN));
 		rdbtnNewRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if (rdbtnNewRadioButton.isSelected()) {
-					rdbtnNewRadioButton.setIcon(new RoundIcon(Color.RED));
+					rdbtnNewRadioButton.setIcon(new RoundIcon1(Color.RED));
 				window.notifyObservers(rdbtnNewRadioButton);
 				} else {
-					rdbtnNewRadioButton.setIcon(new RoundIcon(Color.GRAY));
+					rdbtnNewRadioButton.setIcon(new RoundIcon1(Color.GRAY));
 				}
 			}
 		});

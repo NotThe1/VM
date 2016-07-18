@@ -15,7 +15,7 @@ public class HexSpinner extends JSpinner {
  */
 	private static final long serialVersionUID = 1L;
 	
-	HexSpinner(){
+	public HexSpinner(){
 		//SpinnerNumberModel numberModel = new SpinnerNumberModel(0,0,Integer.MAX_VALUE,1);
 		this(new SpinnerNumberModel(0,0,Integer.MAX_VALUE,1));
 	}//Constructor

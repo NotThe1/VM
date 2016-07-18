@@ -6,19 +6,17 @@ import java.awt.Graphics;
 
 import javax.swing.Icon;
 
-public class RoundIcon implements Icon {
+public class RoundIcon1 implements Icon {
 	Color color;
 
-	public RoundIcon(Color c) {
+	public RoundIcon1(Color c) {
 		color = c;
 	}// Constructor
 
 	@Override
-	public void paintIcon(Component c, Graphics g,
-			int x, int y) {
+	public void paintIcon(Component c, Graphics g, int x, int y) {
 		g.setColor(color);
-		g.fillOval(
-				x, y, getIconWidth(), getIconHeight());
+		g.fillOval(x, y, getIconWidth(), getIconHeight());
 	}// paintIcon
 
 	@Override
