@@ -20,7 +20,7 @@ import java.text.ParseException;
 
 //import memory.Core;
 
-public class StateDisplay extends JPanel implements IStateDisplay {
+public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	private static final long serialVersionUID = 1L;
 
 	ConditionCodeRegister ccr = ConditionCodeRegister.getInstance();
@@ -29,6 +29,11 @@ public class StateDisplay extends JPanel implements IStateDisplay {
 	StateAdapter stateAdapter;
 
 	// --------------------------------------------------------------------------
+	@Override
+	public void run() {
+		updateDisplayAll();
+	}// run
+
 	@Override
 	public void updateDisplayAll() {
 		updateDisplayAllFlags();
@@ -475,7 +480,7 @@ public class StateDisplay extends JPanel implements IStateDisplay {
 	 * 
 	 * @author Frank Martyn
 	 * 
-	 *         This verifier is used to limit the input value to only  Hex values.
+	 *         This verifier is used to limit the input value to only Hex values.
 	 *
 	 */
 

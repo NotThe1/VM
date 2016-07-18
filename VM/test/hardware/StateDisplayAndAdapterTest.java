@@ -41,6 +41,7 @@ import codeSupport.HexSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 public class StateDisplayAndAdapterTest {
 	
@@ -81,6 +82,7 @@ public class StateDisplayAndAdapterTest {
 	private JButton btnLoadSpinnersFromRegiters;
 	private JButton btnLoadCheckBox;
 	private JButton btnSetEachReg;
+	private JButton btnSameAsAbove;
 
 	/**
 	 * Launch the application.
@@ -370,11 +372,11 @@ public class StateDisplayAndAdapterTest {
 		frmStatedisplayAndAdapter.getContentPane().add(StateDisplay, gbc_StateDisplay);
 
 		stateDisplay = new StateDisplay();
-		stateDisplay.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent arg0) {
-				System.out.printf("stateDisplay: %n");
-			}
-		});
+//		stateDisplay.addPropertyChangeListener(new PropertyChangeListener() {
+//			public void propertyChange(PropertyChangeEvent arg0) {
+//				System.out.printf("stateDisplay: %n");
+//			}
+//		});
 		stateDisplay.setBounds(0, 11, 600, 285);
 
 		StateDisplay.add(stateDisplay);
@@ -389,9 +391,9 @@ public class StateDisplayAndAdapterTest {
 		frmStatedisplayAndAdapter.getContentPane().add(panelAction, gbc_panelAction);
 		GridBagLayout gbl_panelAction = new GridBagLayout();
 		gbl_panelAction.columnWidths = new int[]{0, 0};
-		gbl_panelAction.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+		gbl_panelAction.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
 		gbl_panelAction.columnWeights = new double[]{0.0, Double.MIN_VALUE};
-		gbl_panelAction.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelAction.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panelAction.setLayout(gbl_panelAction);
 		
 		btnSetAllToA = new JButton("set All to A's value");
@@ -456,10 +458,41 @@ public class StateDisplayAndAdapterTest {
 		gbc_btnSetEachReg.gridx = 0;
 		gbc_btnSetEachReg.gridy = 1;
 		panelAction.add(btnSetEachReg, gbc_btnSetEachReg);
+		
+		btnSameAsAbove = new JButton("Same as above, but as Thread");
+		btnSameAsAbove.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				wrs.setProgramCounter((int) hsPC.getValue());
+				wrs.setStackPointer((int) hsSP.getValue());
+				
+				wrs.setReg(Register.A,(byte) ((int) hsA.getValue()));
+				wrs.setReg(Register.B,(byte) ((int) hsB.getValue()));
+				wrs.setReg(Register.C,(byte) ((int) hsC.getValue()));
+				wrs.setReg(Register.D,(byte) ((int) hsD.getValue()));
+				wrs.setReg(Register.E,(byte) ((int) hsE.getValue()));
+				wrs.setReg(Register.H,(byte) ((int) hsH.getValue()));
+				wrs.setReg(Register.L,(byte) ((int) hsL.getValue()));
+				
+				System.out.printf("%s: starting.%n", Thread.currentThread().getName());
+				
+				Thread t = new Thread(stateDisplay);
+				t.setName("Fred");
+				t.run();
+				SwingUtilities.invokeLater(stateDisplay);
+				
+//				stateDisplay.updateDisplayAllRegisters();
+	
+			}
+		});
+		GridBagConstraints gbc_btnSameAsAbove = new GridBagConstraints();
+		gbc_btnSameAsAbove.insets = new Insets(0, 0, 5, 0);
+		gbc_btnSameAsAbove.gridx = 0;
+		gbc_btnSameAsAbove.gridy = 2;
+		panelAction.add(btnSameAsAbove, gbc_btnSameAsAbove);
 		GridBagConstraints gbc_btnSetFlagsFromCBs = new GridBagConstraints();
 		gbc_btnSetFlagsFromCBs.insets = new Insets(0, 0, 5, 0);
 		gbc_btnSetFlagsFromCBs.gridx = 0;
-		gbc_btnSetFlagsFromCBs.gridy = 2;
+		gbc_btnSetFlagsFromCBs.gridy = 3;
 		panelAction.add(btnSetFlagsFromCBs, gbc_btnSetFlagsFromCBs);
 		
 		btnLoadSpinnersFromRegiters = new JButton("Load Spinners from WRS");
@@ -481,7 +514,7 @@ public class StateDisplayAndAdapterTest {
 		GridBagConstraints gbc_btnLoadSpinnersFromRegiters = new GridBagConstraints();
 		gbc_btnLoadSpinnersFromRegiters.insets = new Insets(0, 0, 5, 0);
 		gbc_btnLoadSpinnersFromRegiters.gridx = 0;
-		gbc_btnLoadSpinnersFromRegiters.gridy = 3;
+		gbc_btnLoadSpinnersFromRegiters.gridy = 4;
 		panelAction.add(btnLoadSpinnersFromRegiters, gbc_btnLoadSpinnersFromRegiters);
 		
 		btnLoadCheckBox = new JButton("Load Check Box from CCR");
@@ -496,7 +529,7 @@ public class StateDisplayAndAdapterTest {
 		});
 		GridBagConstraints gbc_btnLoadCheckBox = new GridBagConstraints();
 		gbc_btnLoadCheckBox.gridx = 0;
-		gbc_btnLoadCheckBox.gridy = 4;
+		gbc_btnLoadCheckBox.gridy = 5;
 		panelAction.add(btnLoadCheckBox, gbc_btnLoadCheckBox);
 	}
 }

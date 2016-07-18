@@ -43,7 +43,7 @@ public class StateAdapter implements PropertyChangeListener, FocusListener, Acti
 	@Override
 	public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
 
-		System.out.printf(" Changed Property is %s%n", propertyChangeEvent.getPropertyName());
+//		System.out.printf(" Changed Property is %s%n", propertyChangeEvent.getPropertyName());
 
 		if (propertyChangeEvent.getOldValue() == null) {
 			return;
@@ -59,23 +59,23 @@ public class StateAdapter implements PropertyChangeListener, FocusListener, Acti
 		JFormattedTextField ftfSource = (JFormattedTextField) propertyChangeEvent.getSource();
 		String sourceName = ftfSource.getName();
 
-		System.out.printf("sourceName: %S%n", sourceName);
-		System.out.printf("Text: %S%n", ftfSource.getText());
-		System.out.printf("Value: %d%n", ftfSource.getValue());
+//		System.out.printf("sourceName: %S%n", sourceName);
+//		System.out.printf("Text: %S%n", ftfSource.getText());
+//		System.out.printf("Value: %d%n", ftfSource.getValue());
+//
+//		System.out.printf("OldValue: %s%n", propertyChangeEvent.getOldValue());
+//		System.out.printf("Newalue: %s%n", propertyChangeEvent.getNewValue());
+//		String newValueType = "Unknown";
+//		if (propertyChangeEvent.getNewValue() instanceof Integer) {
+//			newValueType = "Integer";
+//		} else if (propertyChangeEvent.getNewValue() instanceof Byte) {
+//			newValueType = "Byte";
+//		}// if
+//
+//		System.out.printf("newValueType: %s%n", newValueType);
+		
+		
 
-		System.out.printf("OldValue: %s%n", propertyChangeEvent.getOldValue());
-		System.out.printf("Newalue: %s%n", propertyChangeEvent.getNewValue());
-		String newValueType = "Unknown";
-		if (propertyChangeEvent.getNewValue() instanceof Integer) {
-			newValueType = "Integer";
-		} else if (propertyChangeEvent.getNewValue() instanceof Byte) {
-			newValueType = "Byte";
-		}// if
-
-		System.out.printf("newValueType: %s%n", newValueType);
-
-		// Byte valueWord = (Byte) ftfSource.getValue();
-		// byte valueByte = (byte) ((int) ftfSource.getValue());
 		switch (sourceName) {
 		case StateDisplay.FTF_PC:
 			wrs.setProgramCounter((int) propertyChangeEvent.getNewValue());
