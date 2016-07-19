@@ -118,7 +118,7 @@ public class StateDisplayAndAdapterTest {
 		
 		frmStatedisplayAndAdapter = new JFrame();
 		frmStatedisplayAndAdapter.setTitle("StateDisplay And Adapter Test");
-		frmStatedisplayAndAdapter.setBounds(100, 100, 743, 639);
+		frmStatedisplayAndAdapter.setBounds(100, 100, 781, 639);
 		frmStatedisplayAndAdapter.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0, 0 };
