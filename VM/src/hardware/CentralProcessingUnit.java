@@ -3,7 +3,7 @@ package hardware;
 import memory.CpuBuss;
 
 /**
- * This class is responsible for the execution of the instruction for the system
+ * This class is responsible for the execution of the instruction for the system. It is a singleton Construction
  * 
  * @author Frank Martyn
  * @version 1.0
@@ -11,31 +11,25 @@ import memory.CpuBuss;
  */
 
 public class CentralProcessingUnit {
+	private static CentralProcessingUnit instance = new CentralProcessingUnit();
 	CpuBuss cpuBuss;
 	ConditionCodeRegister ccr;
 	WorkingRegisterSet wrs;
 	ArithmeticUnit au;
 	ErrorType error;
 
-	public CentralProcessingUnit() {
-		this(CpuBuss.getInstance(),
-				WorkingRegisterSet.getInstance(),
-				ArithmeticUnit.getInstance(),
-				ConditionCodeRegister.getInstance());
+	
+	public static CentralProcessingUnit getInstance(){
+		return instance;
+	}//getInstance
 
-	}// Constructor
-
-	public CentralProcessingUnit(CpuBuss cpuBuss,
-			WorkingRegisterSet wrs,
-			ArithmeticUnit au,
-			ConditionCodeRegister ccr) {
-		this.cpuBuss = cpuBuss;
-		this.wrs = wrs;
-		this.au = au;
-		this.ccr = ccr;
+	private CentralProcessingUnit() {
+		this.cpuBuss = CpuBuss.getInstance();
+		this.wrs = WorkingRegisterSet.getInstance();
+		this.au = ArithmeticUnit.getInstance();
+		this.ccr = ConditionCodeRegister.getInstance();
 
 		this.error = ErrorType.NONE;
-
 	}// Constructor
 
 	public boolean startInstruction() {

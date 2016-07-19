@@ -24,7 +24,7 @@ public class CentralProcessingUnitPage10Test {
 
 	@Before
 	public void setUp() throws Exception {
-		cpu = new CentralProcessingUnit();
+		cpu = CentralProcessingUnit.getInstance();
 		cpuBuss = CpuBuss.getInstance();
 		wrs = WorkingRegisterSet.getInstance();
 		ccr = ConditionCodeRegister.getInstance();
