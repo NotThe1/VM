@@ -161,6 +161,7 @@ public class GUItest extends Observable{
 //				JFileChooser c = filePicker.getDataPicker("Sample File Descriptors", "F5DD","F8SS","QQQ");
 				JFileChooser c = FilePicker.getDiskPicker("Virtual Disks", "F5DD","F8SS","QQQ");
 				c.showOpenDialog(null);
+				
 			}//actionPerformed
 		});
 		mnuFile.add(mnuFileOpen);
