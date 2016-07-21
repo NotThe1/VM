@@ -42,7 +42,7 @@ public class DiskDisplayAndAdapterTest {
 	}//main
 	
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskDisplayAndAdapterTest.class);
 		Dimension dim = frameDisks.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -55,7 +55,7 @@ public class DiskDisplayAndAdapterTest {
 
 	private void appInit() {
 		// manage preferences
-		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskDisplayAndAdapterTest.class);
 		frameDisks.setSize(341, 345);
 		frameDisks.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;

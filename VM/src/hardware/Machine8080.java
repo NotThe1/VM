@@ -77,7 +77,7 @@ public class Machine8080 {
 		// -------------------------------------------------------------------
 
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
 		Dimension dim = frmMachine.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -90,7 +90,7 @@ public class Machine8080 {
 
 	private void appInit() {
 		// manage preferences
-		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
 		frmMachine.setSize(1115, 730);
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;

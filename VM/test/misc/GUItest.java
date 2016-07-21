@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
 import codeSupport.TableMaker;
@@ -39,6 +40,8 @@ import java.awt.Insets;
 
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
+
+import utilities.FilePicker;
 
 
 
@@ -77,6 +80,9 @@ public class GUItest extends Observable{
 	private void doIt(){
 		window = new GUItest();
 		window.frmTest.setVisible(true);
+	}
+	private void stuff(JFileChooser c){
+		c.showOpenDialog(null);
 	}
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
@@ -151,7 +157,11 @@ public class GUItest extends Observable{
 				System.out.format("subpath(0,2): %s%n", path.subpath(0, 2));
 				System.out.format("getParent: %s%n", path.getParent());
 				System.out.format("getRoot: %s%n", path.getRoot());
-			}
+//				FilePicker filePicker = new FilePicker();
+//				JFileChooser c = filePicker.getDataPicker("Sample File Descriptors", "F5DD","F8SS","QQQ");
+				JFileChooser c = FilePicker.getDiskPicker("Virtual Disks", "F5DD","F8SS","QQQ");
+				c.showOpenDialog(null);
+			}//actionPerformed
 		});
 		mnuFile.add(mnuFileOpen);
 
