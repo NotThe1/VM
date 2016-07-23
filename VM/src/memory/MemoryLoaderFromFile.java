@@ -102,10 +102,10 @@ public class MemoryLoaderFromFile {
 				}// if
 
 				byteCount = Integer.valueOf(line.substring(HEX_COUNT_START, HEX_COUNT_END), HEX_VALUE);
-				System.out.printf("byteCount: %02X%n", byteCount);
+//				System.out.printf("byteCount: %02X%n", byteCount);
 
 				address = Integer.valueOf(line.substring(HEX_ADDRESS_START, HEX_ADDRESS_END), HEX_VALUE);
-				System.out.printf("address: %04X%n", address);
+//				System.out.printf("address: %04X%n", address);
 
 				if ((address + byteCount) >= memorySize) {
 
@@ -134,7 +134,7 @@ public class MemoryLoaderFromFile {
 
 					checksumValue = Integer.valueOf(line.substring((byteCount * 2) + HEX_DATA_START,
 							(byteCount * 2) + HEX_DATA_END), HEX_VALUE);
-					System.out.printf("checksumValue: %02X%n", checksumValue);
+//					System.out.printf("checksumValue: %02X%n", checksumValue);
 
 					checksum = checksum + checksumValue;
 
@@ -151,7 +151,7 @@ public class MemoryLoaderFromFile {
 				case END_OF_FILE_RECORD:
 					String msg = "End of File Record found!";
 					System.out.println(msg);
-					JOptionPane.showMessageDialog(null, msg, "Hex memory loader", JOptionPane.INFORMATION_MESSAGE);
+//					JOptionPane.showMessageDialog(null, msg, "Hex memory loader", JOptionPane.INFORMATION_MESSAGE);
 					break;
 				case EXTENDED_SEGMENT_ADDRESS_RECORD:
 					// Not coded

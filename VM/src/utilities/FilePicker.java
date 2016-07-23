@@ -33,9 +33,8 @@ public class FilePicker {
 		userDirectory = System.getProperty("user.home", ".");
 
 		dataPath = Paths.get(userDirectory, DATA_NAME);
-		if (Files.exists(dataPath, LinkOption.NOFOLLOW_LINKS)) {
-			System.out.println(dataPath.toAbsolutePath().toString() + " is there");
-		} else {
+
+		if (!Files.exists(dataPath, LinkOption.NOFOLLOW_LINKS)) {
 			System.out.println(dataPath.toAbsolutePath().toString() + " DOES NOT EXIST, creating ...");
 			try {
 				Files.createDirectory(dataPath);
@@ -46,12 +45,10 @@ public class FilePicker {
 				e.printStackTrace();
 				return; // exit gracefully
 			}// try - create
-		}// if dataPath exits
+		}// if dataPath does not exist
 
 		diskPath = Paths.get(userDirectory, DATA_NAME, DISK_NAME);
-		if (Files.exists(diskPath, LinkOption.NOFOLLOW_LINKS)) {
-			System.out.println(diskPath.toAbsolutePath().toString() + " is there");
-		} else {
+		if (!Files.exists(diskPath, LinkOption.NOFOLLOW_LINKS)) {
 			System.out.println(diskPath.toAbsolutePath().toString() + " DOES NOT EXISTS creating ...");
 			try {
 				Files.createDirectory(diskPath);
@@ -62,8 +59,7 @@ public class FilePicker {
 				e.printStackTrace();
 				return; // exit gracefully
 			}// try - create
-
-		}// if diskPath exits
+		}// if diskPath does not exist
 
 	}// setTargetPaths
 

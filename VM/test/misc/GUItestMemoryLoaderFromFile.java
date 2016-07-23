@@ -21,6 +21,8 @@ import utilities.FilePicker;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class GUItestMemoryLoaderFromFile {
 
@@ -44,9 +46,11 @@ public class GUItestMemoryLoaderFromFile {
 		});
 	}//main
 	private void doOpen(){
-		JFileChooser fc = FilePicker.getDataPicker("Memory Files", "mem","hex");
+//		JFileChooser fc = FilePicker.getDataPicker("Memory Files", "mem","hex");
+		JFileChooser fc = FilePicker.getDiskPicker("Data Files", "xxx","yyy");
 		if ( fc.showOpenDialog(null)== JFileChooser.CANCEL_OPTION){
 			System.out.println("Bailed out of the open");
+			return;
 		}//if - open
 		
 		String fileName = MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
@@ -65,7 +69,6 @@ public class GUItestMemoryLoaderFromFile {
 		myPrefs = null;
 	}//appClose
 
-	@SuppressWarnings("unchecked")
 	private void appInit() {
 		Preferences myPrefs = Preferences.userNodeForPackage(GUItestMemoryLoaderFromFile.class);
 		frame.setSize(318, 395);
@@ -87,6 +90,12 @@ public class GUItestMemoryLoaderFromFile {
 	 */
 	private void initialize() {
 		frame = new JFrame();
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				appClose();
+			}
+		});
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
