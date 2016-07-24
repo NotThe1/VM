@@ -49,6 +49,29 @@ public class InLineDisassembler {
 		}// if new display
 		return doc;
 	}// updateDisplay()
+	
+	public StyledDocument updateCleanDisplay(int programCounter) {
+		// this.workingProgramCounter = programCounter;
+		int workingProgramCounter = programCounter;
+		currentLine = 0;
+		try {
+			doc.remove(0, doc.getLength());
+		} catch (BadLocationException e) {
+			JOptionPane.showMessageDialog(null, "Error clearing Disply Document", "UpdateDisplay",
+					JOptionPane.ERROR_MESSAGE);
+			return null; // graceful exit
+		} // try clear the contents of doc
+		categoryAttributes = makeAttrsForCategory(1); // current line
+		for (int i = 0; i < LINES_TO_DISPLAY; i++) {
+			workingProgramCounter += insertCode(i, workingProgramCounter);
+			nextProgramCounter = (i == 0) ? workingProgramCounter : nextProgramCounter;
+			categoryAttributes = makeAttrsForCategory(2); // future lines
+		}// for
+int elementCount =  doc.getElementCount();
+		
+		return doc;
+	}// updateCleanDisplay
+	
 
 	public StyledDocument updateTheDisplay(int programCounter) {
 		String oldLine;
@@ -60,6 +83,7 @@ public class InLineDisassembler {
 			int start = docText.indexOf(targetAddressString);
 			int end = docText.indexOf(LINE_SEPARATOR, start)+2 ;
 			
+			// change the current line's attributes
 			categoryAttributes = makeAttrsForCategory(1); // current line
 			String targetAddress = docText.substring(start+ START_ADDR, start + END_ADDR +1);
 			String targetHexValue = docText.substring(start + START_HEX, start + END_HEX+1);
@@ -87,25 +111,6 @@ public class InLineDisassembler {
 		return doc;
 	}//
 
-	public StyledDocument updateCleanDisplay(int programCounter) {
-		// this.workingProgramCounter = programCounter;
-		int workingProgramCounter = programCounter;
-		currentLine = 0;
-		try {
-			doc.remove(0, doc.getLength());
-		} catch (BadLocationException e) {
-			JOptionPane.showMessageDialog(null, "Error clearing Disply Document", "UpdateDisplay",
-					JOptionPane.ERROR_MESSAGE);
-			return null; // graceful exit
-		} // try clear the contents of doc
-		categoryAttributes = makeAttrsForCategory(1); // current line
-		for (int i = 0; i < LINES_TO_DISPLAY; i++) {
-			workingProgramCounter += insertCode(i, workingProgramCounter);
-			nextProgramCounter = (i == 0) ? workingProgramCounter : nextProgramCounter;
-			categoryAttributes = makeAttrsForCategory(2); // future lines
-		}// for
-		return doc;
-	}// updateCleanDisplay
 
 	private int insertCode(int thisLineNumber, int workingProgramCounter) {
 		// int workingPosition = thisLineNumber * LINE_WIDTH;
