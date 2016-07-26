@@ -2,9 +2,11 @@ package utilities;
 
 import java.awt.Color;
 
+import javax.lang.model.element.Element;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -21,7 +23,8 @@ public class InLineDisassembler {
 	private static SimpleAttributeSet[] simpleAttributes;
 	private static SimpleAttributeSet[] categoryAttributes;
 	private static int currentLine;
-	private static int nextProgramCounter;
+	private static int priorProgramCounter; // value of previous update PC
+	private static int nextProgramCounter; // value of the location next instruction after update.
 
 	private static boolean newDisplay;
 	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
@@ -39,21 +42,40 @@ public class InLineDisassembler {
 	}// getInstance
 		// -------------------------------------------------
 
+	/**
+	 * locates formats and sets attributes for history lines
+	 * 
+	 * @param programCounter
+	 * @return currentLine number;
+	 */
+
 	public StyledDocument updateDisplay(int programCounter) {
 		if (newDisplay) {
 			updateCleanDisplay(programCounter);
 			newDisplay = false;
+		} else if (programCounter == nextProgramCounter) {
+			// updateTheDisplayNextInstruction(programCounter);
+			updateTheDisplayAnyInstruction(programCounter);
 		} else { // next instruction
-			updateTheDisplay(0XF848);
-			// updateTheDisplay( programCounter);
+			// updateTheDisplay(0XF836);
+			updateTheDisplayAnyInstruction(programCounter);
 		}// if new display
+		priorProgramCounter = programCounter; // remember for next update
 		return doc;
 	}// updateDisplay()
-	
-	public StyledDocument updateCleanDisplay(int programCounter) {
-		// this.workingProgramCounter = programCounter;
+
+	public void processCurrentAndFutureLines(int programCounter, int lineNumber) {
 		int workingProgramCounter = programCounter;
-		currentLine = 0;
+		categoryAttributes = makeAttrsForCategory(1); // current line
+		for (int i = 0; i < LINES_TO_DISPLAY - lineNumber; i++) {
+			workingProgramCounter += insertCode(i, workingProgramCounter);
+			nextProgramCounter = (i == 0) ? workingProgramCounter : nextProgramCounter;
+			categoryAttributes = makeAttrsForCategory(2); // future lines
+		}// for
+
+	}// processCurrentAndFutureLines
+
+	public StyledDocument updateCleanDisplay(int programCounter) {
 		try {
 			doc.remove(0, doc.getLength());
 		} catch (BadLocationException e) {
@@ -61,56 +83,71 @@ public class InLineDisassembler {
 					JOptionPane.ERROR_MESSAGE);
 			return null; // graceful exit
 		} // try clear the contents of doc
-		categoryAttributes = makeAttrsForCategory(1); // current line
-		for (int i = 0; i < LINES_TO_DISPLAY; i++) {
-			workingProgramCounter += insertCode(i, workingProgramCounter);
-			nextProgramCounter = (i == 0) ? workingProgramCounter : nextProgramCounter;
-			categoryAttributes = makeAttrsForCategory(2); // future lines
-		}// for
-int elementCount =  doc.getElementCount();
-		
+
+		processCurrentAndFutureLines(programCounter, currentLine);
 		return doc;
 	}// updateCleanDisplay
-	
 
-	public StyledDocument updateTheDisplay(int programCounter) {
-		String oldLine;
+
+
+	public StyledDocument updateTheDisplayAnyInstruction(int programCounter) {
 		try {
-			String docText = doc.getText(0, doc.getLength());
-			
-			// find the target line:
-			String targetAddressString = String.format("%04X:", programCounter);
-			int start = docText.indexOf(targetAddressString);
-			int end = docText.indexOf(LINE_SEPARATOR, start)+2 ;
-			
-			// change the current line's attributes
-			categoryAttributes = makeAttrsForCategory(1); // current line
-			String targetAddress = docText.substring(start+ START_ADDR, start + END_ADDR +1);
-			String targetHexValue = docText.substring(start + START_HEX, start + END_HEX+1);
-			String targetInstruction = docText.substring(start + START_INS, start + END_INS+1);
-			String targetFunction = docText.substring(start + START_FUNC, start + END_FUNC) + LINE_SEPARATOR;
-			doc.remove(start, end-start);
-			doc.insertString(start + START_ADDR, targetAddress, categoryAttributes[ATTR_ADDRESS]);
-			doc.insertString(start + START_HEX, targetHexValue, categoryAttributes[ATTR_OPCODE]);
-			doc.insertString(start + START_INS, targetInstruction, categoryAttributes[ATTR_INSTRUCTION]);
-			doc.insertString(start + START_FUNC, targetFunction , categoryAttributes[ATTR_ADDRESS]);
-			
+			StringBuilder sbDoc = new StringBuilder(doc.getText(0, doc.getLength()));
+			// find the limit of the history:
+			String targetAddressString = String.format("%04X:", priorProgramCounter);
+			int start = sbDoc.indexOf(targetAddressString);
+			int end = sbDoc.indexOf(LINE_SEPARATOR, start) + LINE_SEPARATOR.length();
+			int firstLineLength = 0;
+			// do we need to scroll?
+			int lineNumber = findLineNumber(sbDoc, start);
+			if (lineNumber >= LINES_OF_HISTORY) {
+				firstLineLength = removeFirstLine(sbDoc);
+				lineNumber--; // decrement the line number
+			}// if lineNumber
+
 			// replace all earlier line attributes to ATTR_ADDRESS ( gray)
 			categoryAttributes = makeAttrsForCategory(0); // history lines
-			String history = docText.substring(0, start);
-			doc.remove(0, history.length());
+			String history = sbDoc.substring(0, end - firstLineLength);
+			doc.remove(0, doc.getLength());
 			doc.insertString(0, history, categoryAttributes[ATTR_ADDRESS]);
-			
 
-
+			processCurrentAndFutureLines(programCounter, lineNumber);
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}// try
-
+		byte opCode = core.read(programCounter);
+		nextProgramCounter += OpCodeMap.getSize(opCode);
+		// need to set nextProgramCounter
 		return doc;
-	}//
+	}// updateTheDisplay
 
+	private int findLineNumber(StringBuilder sbDoc, int lineStart) {
+		String section = sbDoc.substring(0, lineStart);
+		int lineNumber = -1;
+		int fromIndex = 0;
+		do {
+			fromIndex = section.indexOf(COLON, fromIndex + 1);
+			// fromIndex += position;
+			lineNumber++;
+		} while (fromIndex != -1);
+		return lineNumber;
+	}// findLineNumber
+
+	private int removeFirstLine(StringBuilder sbDoc) {
+
+		int firstLineLength = sbDoc.indexOf(LINE_SEPARATOR, 0) + 2;
+		sbDoc.replace(0, firstLineLength, "");
+		// try {
+		// doc.remove(0, firstLineLength);
+		// } catch (BadLocationException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }//
+
+		return firstLineLength;
+
+	}// removeFirstLine
 
 	private int insertCode(int thisLineNumber, int workingProgramCounter) {
 		// int workingPosition = thisLineNumber * LINE_WIDTH;
@@ -124,7 +161,7 @@ int elementCount =  doc.getElementCount();
 		String linePart3 = null;
 
 		try {
-			linePart1 = String.format("%04X:%4s", workingProgramCounter, "");
+			linePart1 = String.format("%04X%s%4s", workingProgramCounter, COLON, "");
 			doc.insertString(doc.getLength(), linePart1, categoryAttributes[ATTR_ADDRESS]);
 			switch (opCodeSize) {
 			case 1:
@@ -186,7 +223,7 @@ int elementCount =  doc.getElementCount();
 		// make a new base style that changes only the font to Bold
 		SimpleAttributeSet boldAttribute = new SimpleAttributeSet(baseAttribute);
 		StyleConstants.setFontSize(boldAttribute, baseFontSize + 1);
-//		StyleConstants.setBold(boldAttribute, true);
+		// StyleConstants.setBold(boldAttribute, true);
 
 		// make 4 simple attributes using the modified base style also only differing in color
 		a[ATTR_BLACK_BOLD] = new SimpleAttributeSet(boldAttribute);
@@ -239,8 +276,10 @@ int elementCount =  doc.getElementCount();
 	}// makeAttrsForCategory
 		// -------------------------------------------------
 
+	private final static String COLON = ":";
+
 	private final static int LINES_TO_DISPLAY = 120; // LTD-> Lines To Display
-	private final static int LINES_TO_TRAIL = 4; // LTT-> Lines to Trail
+	private final static int LINES_OF_HISTORY = 7; // LTT-> Lines to Trail
 
 	private final static int LINE_WIDTH = 54; // calculated by hand for now
 	private final static int FUNCTION_START = LINE_WIDTH - 15; // calculated by hand for now
@@ -258,7 +297,7 @@ int elementCount =  doc.getElementCount();
 	private static final int ATTR_OPCODE = 1;
 	private static final int ATTR_INSTRUCTION = 2;
 	private static final int ATTR_DESCRIPTION = 3;
-	
+
 	private static final int START_ADDR = 0;
 	private static final int END_ADDR = START_ADDR + 8;
 	private static final int START_HEX = END_ADDR + 1;
@@ -267,9 +306,5 @@ int elementCount =  doc.getElementCount();
 	private static final int END_INS = START_INS + 19;
 	private static final int START_FUNC = END_INS + 1;
 	private static final int END_FUNC = LINE_WIDTH + 2;
-
-
-	
-	
 
 }// class InLineDisassembler
