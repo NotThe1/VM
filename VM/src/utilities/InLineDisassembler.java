@@ -1,39 +1,37 @@
 package utilities;
 
+import hardware.WorkingRegisterSet;
+
 import java.awt.Color;
 
-import javax.lang.model.element.Element;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+//import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import memory.Core;
 
-public class InLineDisassembler {
+public class InLineDisassembler implements Runnable{
 
 	private static InLineDisassembler instance = new InLineDisassembler();
+	@SuppressWarnings("unused")// only static static methods are used
 	private static OpCodeMap opCodeMap = new OpCodeMap();
 	private static Core core = Core.getInstance();
+	private static WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
 	private static StyledDocument doc = new JTextPane().getStyledDocument();
 
 	private static SimpleAttributeSet[] simpleAttributes;
 	private static SimpleAttributeSet[] categoryAttributes;
-	private static int currentLine;
+	
 	private static int priorProgramCounter; // value of previous update PC
-	private static int nextProgramCounter; // value of the location next instruction after update.
-
 	private static boolean newDisplay;
 	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 
 	private InLineDisassembler() {
 		simpleAttributes = makeSimpleAttributes();
-		currentLine = -1;
-		// workingProgramCounter = -1;
-		nextProgramCounter = -1;
 		newDisplay = true;
 	}// Constructor
 
@@ -48,18 +46,29 @@ public class InLineDisassembler {
 	 * @param programCounter
 	 * @return currentLine number;
 	 */
+	
+	public void run(){
+		updateDisplay(wrs.getProgramCounter());
+	}//run()
+	public StyledDocument getDocument(){
+		return doc;
+	}//getDocument()
 
 	public StyledDocument updateDisplay(int programCounter) {
 		if (newDisplay) {
-			updateCleanDisplay(programCounter);
+			try {
+				doc.remove(0, doc.getLength());
+			} catch (BadLocationException e) {
+				JOptionPane.showMessageDialog(null, "Error clearing Disply Document", "UpdateDisplay",
+						JOptionPane.ERROR_MESSAGE);
+				return null; // graceful exit
+			} // try clear the contents of doc
 			newDisplay = false;
-		} else if (programCounter == nextProgramCounter) {
-			// updateTheDisplayNextInstruction(programCounter);
-			updateTheDisplayAnyInstruction(programCounter);
-		} else { // next instruction
-			// updateTheDisplay(0XF836);
-			updateTheDisplayAnyInstruction(programCounter);
+			processCurrentAndFutureLines(programCounter, 0);
+		} else {
+			updateTheDisplay(programCounter);
 		}// if new display
+
 		priorProgramCounter = programCounter; // remember for next update
 		return doc;
 	}// updateDisplay()
@@ -68,29 +77,13 @@ public class InLineDisassembler {
 		int workingProgramCounter = programCounter;
 		categoryAttributes = makeAttrsForCategory(1); // current line
 		for (int i = 0; i < LINES_TO_DISPLAY - lineNumber; i++) {
-			workingProgramCounter += insertCode(i, workingProgramCounter);
-			nextProgramCounter = (i == 0) ? workingProgramCounter : nextProgramCounter;
+			workingProgramCounter += insertCode( workingProgramCounter);
 			categoryAttributes = makeAttrsForCategory(2); // future lines
 		}// for
 
 	}// processCurrentAndFutureLines
 
-	public StyledDocument updateCleanDisplay(int programCounter) {
-		try {
-			doc.remove(0, doc.getLength());
-		} catch (BadLocationException e) {
-			JOptionPane.showMessageDialog(null, "Error clearing Disply Document", "UpdateDisplay",
-					JOptionPane.ERROR_MESSAGE);
-			return null; // graceful exit
-		} // try clear the contents of doc
-
-		processCurrentAndFutureLines(programCounter, currentLine);
-		return doc;
-	}// updateCleanDisplay
-
-
-
-	public StyledDocument updateTheDisplayAnyInstruction(int programCounter) {
+	public StyledDocument updateTheDisplay(int programCounter) {
 		try {
 			StringBuilder sbDoc = new StringBuilder(doc.getText(0, doc.getLength()));
 			// find the limit of the history:
@@ -116,9 +109,6 @@ public class InLineDisassembler {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}// try
-		byte opCode = core.read(programCounter);
-		nextProgramCounter += OpCodeMap.getSize(opCode);
-		// need to set nextProgramCounter
 		return doc;
 	}// updateTheDisplay
 
@@ -135,21 +125,12 @@ public class InLineDisassembler {
 	}// findLineNumber
 
 	private int removeFirstLine(StringBuilder sbDoc) {
-
 		int firstLineLength = sbDoc.indexOf(LINE_SEPARATOR, 0) + 2;
 		sbDoc.replace(0, firstLineLength, "");
-		// try {
-		// doc.remove(0, firstLineLength);
-		// } catch (BadLocationException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }//
-
 		return firstLineLength;
-
 	}// removeFirstLine
 
-	private int insertCode(int thisLineNumber, int workingProgramCounter) {
+	private int insertCode(int workingProgramCounter) {//int thisLineNumber, int workingProgramCounter
 		// int workingPosition = thisLineNumber * LINE_WIDTH;
 		byte opCode = core.read(workingProgramCounter);
 		byte value1 = core.read(workingProgramCounter + 1);
@@ -278,8 +259,9 @@ public class InLineDisassembler {
 
 	private final static String COLON = ":";
 
-	private final static int LINES_TO_DISPLAY = 120; // LTD-> Lines To Display
-	private final static int LINES_OF_HISTORY = 7; // LTT-> Lines to Trail
+	private final static int LINES_TO_DISPLAY = 80
+			; // LTD-> Lines To Display
+	private final static int LINES_OF_HISTORY = 8; // LTT-> Lines to Trail
 
 	private final static int LINE_WIDTH = 54; // calculated by hand for now
 	private final static int FUNCTION_START = LINE_WIDTH - 15; // calculated by hand for now
