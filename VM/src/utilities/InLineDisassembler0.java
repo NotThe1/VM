@@ -3,99 +3,87 @@ package utilities;
 import hardware.WorkingRegisterSet;
 
 import java.awt.Color;
-import java.awt.GridBagLayout;
 
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-
-import java.awt.GridBagConstraints;
-
-import javax.swing.JTextArea;
-import javax.swing.border.BevelBorder;
-import javax.swing.UIManager;
-import javax.swing.border.EtchedBorder;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+//import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 import memory.Core;
 
-import java.awt.Dimension;
+public class InLineDisassembler0 implements Runnable{
 
-public class InLineDisassembler extends JPanel implements Runnable {
-	private static InLineDisassembler instance = new InLineDisassembler();
-
+	private static InLineDisassembler0 instance = new InLineDisassembler0();
+	@SuppressWarnings("unused")// only static static methods are used
 	private static OpCodeMap opCodeMap = new OpCodeMap();
 	private static Core core = Core.getInstance();
 	private static WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
-	private static StyledDocument doc;
+	private static StyledDocument doc = new JTextPane().getStyledDocument();
 
 	private static SimpleAttributeSet[] simpleAttributes;
 	private static SimpleAttributeSet[] categoryAttributes;
-
+	
 	private static int priorProgramCounter; // value of previous update PC
 	private static boolean newDisplay;
 	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
-	private JTextPane txtInstructions;
 
-	public static InLineDisassembler getInstance() {
-		return instance;
-	}// getInstance
-
-	private InLineDisassembler() {
-		super();
-		initialize();
-		appInit();
-	}// Constructor
-
-	private void appInit() {
+	private InLineDisassembler0() {
 		simpleAttributes = makeSimpleAttributes();
 		newDisplay = true;
-		doc = txtInstructions.getStyledDocument();
-	}// appInit
+	}// Constructor
 
-	/*----------------------------------------------------------------*/
+	public static InLineDisassembler0 getInstance() {
+		return instance;
+	}// getInstance
+		// -------------------------------------------------
+
+	/**
+	 * locates formats and sets attributes for history lines
+	 * 
+	 * @param programCounter
+	 * @return currentLine number;
+	 */
 	
 	public void run(){
 		updateDisplay(wrs.getProgramCounter());
 	}//run()
-	
-	public void updateDisplay(int programCounter) {
+	public StyledDocument getDocument(){
+		return doc;
+	}//getDocument()
+
+	public StyledDocument updateDisplay(int programCounter) {
 		if (newDisplay) {
 			try {
 				doc.remove(0, doc.getLength());
 			} catch (BadLocationException e) {
 				JOptionPane.showMessageDialog(null, "Error clearing Disply Document", "UpdateDisplay",
 						JOptionPane.ERROR_MESSAGE);
-				return; // graceful exit
+				return null; // graceful exit
 			} // try clear the contents of doc
 			newDisplay = false;
 			processCurrentAndFutureLines(programCounter, 0);
-			txtInstructions.setCaretPosition(0);
 		} else {
 			updateTheDisplay(programCounter);
 		}// if new display
 
 		priorProgramCounter = programCounter; // remember for next update
-		return;
+		return doc;
 	}// updateDisplay()
 
 	public void processCurrentAndFutureLines(int programCounter, int lineNumber) {
 		int workingProgramCounter = programCounter;
 		categoryAttributes = makeAttrsForCategory(1); // current line
-
 		for (int i = 0; i < LINES_TO_DISPLAY - lineNumber; i++) {
-			workingProgramCounter += insertCode(workingProgramCounter);
+			workingProgramCounter += insertCode( workingProgramCounter);
 			categoryAttributes = makeAttrsForCategory(2); // future lines
 		}// for
+
 	}// processCurrentAndFutureLines
 
-	public Document updateTheDisplay(int programCounter) {
+	public StyledDocument updateTheDisplay(int programCounter) {
 		try {
 			StringBuilder sbDoc = new StringBuilder(doc.getText(0, doc.getLength()));
 			// find the limit of the history:
@@ -142,7 +130,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		return firstLineLength;
 	}// removeFirstLine
 
-	private int insertCode(int workingProgramCounter) {// int thisLineNumber, int workingProgramCounter
+	private int insertCode(int workingProgramCounter) {//int thisLineNumber, int workingProgramCounter
 		// int workingPosition = thisLineNumber * LINE_WIDTH;
 		byte opCode = core.read(workingProgramCounter);
 		byte value1 = core.read(workingProgramCounter + 1);
@@ -193,7 +181,8 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		return opCodeSize;
 	}// insertCode
 
-	/*----------------------------------------------------------------*/
+	// -------------------------------------------------
+
 	private SimpleAttributeSet[] makeSimpleAttributes() {
 		// make a base style that that has font type & size which is used by all the constructed Styles
 		int baseFontSize = 16;
@@ -202,15 +191,15 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		StyleConstants.setFontSize(baseAttribute, baseFontSize);
 
 		// make 4 simple attributes using the base style while differing only in color
-		SimpleAttributeSet[] sas = new SimpleAttributeSet[8]; // hand calculated value - fix it
-		sas[ATTR_BLACK] = new SimpleAttributeSet(baseAttribute);
-		sas[ATTR_BLUE] = new SimpleAttributeSet(baseAttribute);
-		sas[ATTR_GRAY] = new SimpleAttributeSet(baseAttribute);
-		sas[ATTR_RED] = new SimpleAttributeSet(baseAttribute);
-		StyleConstants.setForeground(sas[ATTR_BLACK], Color.BLACK);
-		StyleConstants.setForeground(sas[ATTR_BLUE], Color.BLUE);
-		StyleConstants.setForeground(sas[ATTR_GRAY], Color.GRAY);
-		StyleConstants.setForeground(sas[ATTR_RED], Color.RED);
+		SimpleAttributeSet[] a = new SimpleAttributeSet[8]; // hand calculated value - fix it
+		a[ATTR_BLACK] = new SimpleAttributeSet(baseAttribute);
+		a[ATTR_BLUE] = new SimpleAttributeSet(baseAttribute);
+		a[ATTR_GRAY] = new SimpleAttributeSet(baseAttribute);
+		a[ATTR_RED] = new SimpleAttributeSet(baseAttribute);
+		StyleConstants.setForeground(a[ATTR_BLACK], Color.BLACK);
+		StyleConstants.setForeground(a[ATTR_BLUE], Color.BLUE);
+		StyleConstants.setForeground(a[ATTR_GRAY], Color.GRAY);
+		StyleConstants.setForeground(a[ATTR_RED], Color.RED);
 
 		// make a new base style that changes only the font to Bold
 		SimpleAttributeSet boldAttribute = new SimpleAttributeSet(baseAttribute);
@@ -218,21 +207,21 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		// StyleConstants.setBold(boldAttribute, true);
 
 		// make 4 simple attributes using the modified base style also only differing in color
-		sas[ATTR_BLACK_BOLD] = new SimpleAttributeSet(boldAttribute);
-		sas[ATTR_BLUE_BOLD] = new SimpleAttributeSet(boldAttribute);
-		sas[ATTR_GRAY_BOLD] = new SimpleAttributeSet(boldAttribute);
-		sas[ATTR_RED_BOLD] = new SimpleAttributeSet(boldAttribute);
-		StyleConstants.setForeground(sas[ATTR_BLACK_BOLD], Color.BLACK);
-		StyleConstants.setForeground(sas[ATTR_BLUE_BOLD], Color.BLUE);
-		StyleConstants.setForeground(sas[ATTR_GRAY_BOLD], Color.GRAY);
-		StyleConstants.setForeground(sas[ATTR_RED_BOLD], Color.RED);
+		a[ATTR_BLACK_BOLD] = new SimpleAttributeSet(boldAttribute);
+		a[ATTR_BLUE_BOLD] = new SimpleAttributeSet(boldAttribute);
+		a[ATTR_GRAY_BOLD] = new SimpleAttributeSet(boldAttribute);
+		a[ATTR_RED_BOLD] = new SimpleAttributeSet(boldAttribute);
+		StyleConstants.setForeground(a[ATTR_BLACK_BOLD], Color.BLACK);
+		StyleConstants.setForeground(a[ATTR_BLUE_BOLD], Color.BLUE);
+		StyleConstants.setForeground(a[ATTR_GRAY_BOLD], Color.GRAY);
+		StyleConstants.setForeground(a[ATTR_RED_BOLD], Color.RED);
 
-		StyleConstants.setBackground(sas[ATTR_BLACK_BOLD], Color.yellow);
-		StyleConstants.setBackground(sas[ATTR_BLUE_BOLD], Color.yellow);
-		StyleConstants.setBackground(sas[ATTR_GRAY_BOLD], Color.yellow);
-		StyleConstants.setBackground(sas[ATTR_RED_BOLD], Color.yellow);
+		StyleConstants.setBackground(a[ATTR_BLACK_BOLD], Color.yellow);
+		StyleConstants.setBackground(a[ATTR_BLUE_BOLD], Color.yellow);
+		StyleConstants.setBackground(a[ATTR_GRAY_BOLD], Color.yellow);
+		StyleConstants.setBackground(a[ATTR_RED_BOLD], Color.yellow);
 
-		return sas;
+		return a;
 	}// SimpleAttributeSet
 
 	private SimpleAttributeSet[] makeAttrsForCategory(int set) {
@@ -266,44 +255,12 @@ public class InLineDisassembler extends JPanel implements Runnable {
 
 		return afc;
 	}// makeAttrsForCategory
+		// -------------------------------------------------
 
-	/*----------------------------------------------------------------*/
-	/**
-	 * Create the panel.
-	 */
-	private void initialize() {
-
-		setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] { 0, 0 };
-		gridBagLayout.rowHeights = new int[] { 0, 0 };
-		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
-		setLayout(gridBagLayout);
-
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setMinimumSize(new Dimension(600, 20));
-		scrollPane.setPreferredSize(new Dimension(600, 100));
-		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane.gridx = 0;
-		gbc_scrollPane.gridy = 0;
-		add(scrollPane, gbc_scrollPane);
-
-		txtInstructions = new JTextPane();
-		txtInstructions.setEditable(false);
-		scrollPane.setViewportView(txtInstructions);
-		JLabel lblNewLabel = new JLabel(
-				" Location             OpCode                   Instruction                                               Function\r\n");
-		lblNewLabel.setForeground(Color.BLUE);
-		scrollPane.setColumnHeaderView(lblNewLabel);
-
-	}// initialize
-
-	/*-------------------CONSTANTS-------------------------------*/
 	private final static String COLON = ":";
 
-	private final static int LINES_TO_DISPLAY = 80; // LTD-> Lines To Display
+	private final static int LINES_TO_DISPLAY = 80
+			; // LTD-> Lines To Display
 	private final static int LINES_OF_HISTORY = 8; // LTT-> Lines to Trail
 
 	private final static int LINE_WIDTH = 54; // calculated by hand for now
@@ -331,6 +288,5 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	private static final int END_INS = START_INS + 19;
 	private static final int START_FUNC = END_INS + 1;
 	private static final int END_FUNC = LINE_WIDTH + 2;
-	/*----------------------------------------------------------------*/
 
 }// class InLineDisassembler

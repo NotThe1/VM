@@ -46,6 +46,7 @@ import javax.swing.JSpinner;
 import javax.swing.JButton;
 
 import disks.DiskDisplay;
+
 import javax.swing.border.BevelBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.UIManager;
@@ -53,6 +54,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.JTabbedPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import utilities.InLineDisassembler;
 
 public class Machine8080 {
 
@@ -287,22 +290,27 @@ private void appInit0(){
 		gbl_tabMemory.rowWeights = new double[]{Double.MIN_VALUE};
 		tabMemory.setLayout(gbl_tabMemory);
 		
-		tabDisassembler = new JScrollPane();
-		tabDisassembler.setViewportBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		tabDisassembler.setPreferredSize(new Dimension(600, 300));
-		tabDisassembler.setMinimumSize(new Dimension(600, 300));
+		tabDisassembler = new JPanel();
 		tabbedPane.addTab("Disassembler", null, tabDisassembler, null);
+//		GridBagLayout gbl_tabDisassembler = new GridBagLayout();
+//		gbl_tabDisassembler.columnWidths = new int[]{0, 0};
+//		gbl_tabDisassembler.rowHeights = new int[]{0, 0};
+//		gbl_tabDisassembler.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+//		gbl_tabDisassembler.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		tabDisassembler.setLayout(new GridLayout(0, 1, 0, 0));
 		
-		JLabel lblNewLabel = new JLabel(" Location             OpCode                   Instruction                                               Function\r\n");
-		lblNewLabel.setForeground(Color.BLUE);
-		tabDisassembler.setColumnHeaderView(lblNewLabel);
-		
-		JTextArea textArea = new JTextArea();
-		textArea.setEditable(false);
-		textArea.setMaximumSize(new Dimension(600, 2147483647));
-		textArea.setMinimumSize(new Dimension(600, 300));
-		textArea.setPreferredSize(new Dimension(600, 300));
-		tabDisassembler.setViewportView(textArea);
+		InLineDisassembler disassembler = InLineDisassembler.getInstance();
+		GridBagConstraints gbc_disassembler = new GridBagConstraints();
+		gbc_disassembler.fill = GridBagConstraints.BOTH;
+		gbc_disassembler.gridx = 0;
+		gbc_disassembler.gridy = 0;
+		tabDisassembler.add(disassembler, gbc_disassembler);
+//		GridBagLayout gbl_disassembler = new GridBagLayout();
+//		gbl_disassembler.columnWidths = new int[]{0};
+//		gbl_disassembler.rowHeights = new int[]{0};
+//		gbl_disassembler.columnWeights = new double[]{1.0,Double.MIN_VALUE};
+//		gbl_disassembler.rowWeights = new double[]{1.0,Double.MIN_VALUE};
+		disassembler.setLayout(new GridLayout(1, 0, 0, 0));
 
 		
 		panelStatus = new JPanel();
@@ -339,8 +347,9 @@ private void appInit0(){
 	private JPanel panelStatus;
 	private JTabbedPane tabbedPane;
 	private JPanel tabMemory;
-	private JScrollPane tabDisassembler;
 	
 	private JMenuItem mnuFileNew;
+	private JPanel tabDisassembler;
+	private InLineDisassembler  disassembler;
 
 }// class Machine8080

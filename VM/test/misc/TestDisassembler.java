@@ -36,6 +36,7 @@ import memory.Core;
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 import utilities.InLineDisassembler;
+import utilities.InLineDisassembler0;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -44,7 +45,12 @@ import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+
 import java.awt.Color;
+import javax.swing.border.LineBorder;
+import javax.swing.JTabbedPane;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 
 public class TestDisassembler {
 
@@ -56,10 +62,14 @@ public class TestDisassembler {
 	private JLabel lblTarget;
 	private HexSpinner hsRun;
 	private JButton btnRun;
-	
+
 	private static WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
 	private JLabel lblNewLabel;
-
+	private InLineDisassembler panelX;
+	private JTabbedPane tabbedPane;
+	private JPanel tab0;
+	private JPanel tab1;
+	private JPanel panelx;
 
 	/**
 	 * Launch the application.
@@ -90,26 +100,29 @@ public class TestDisassembler {
 	}// loadFile
 
 	private void doStart() {
-		InLineDisassembler disass = InLineDisassembler.getInstance();
-
+		InLineDisassembler0 disass = InLineDisassembler0.getInstance();
+		 InLineDisassembler panelX= InLineDisassembler.getInstance();
 		Preferences myPrefs = Preferences.userNodeForPackage(TestDisassembler.class);
 		myPrefs.putInt("startLocation", (int) hsPC.getValue());
 		myPrefs = null;
-		EventQueue.invokeLater(new Runnable(){
-			public void run(){		
-		txtInstructions.setDocument(disass.updateDisplay((int) hsPC.getValue()));
-		txtInstructions.setCaretPosition(0);
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				txtInstructions.setDocument(disass.updateDisplay((int) hsPC.getValue()));
+				txtInstructions.setCaretPosition(0);
+				panelX.updateDisplay((int) hsPC.getValue());
 			}
 		});
 
 	}// doStart
 
 	private void doRun() {
-		wrs.setProgramCounter((int)hsRun.getValue());
-		InLineDisassembler disass = InLineDisassembler.getInstance();
+		wrs.setProgramCounter((int) hsRun.getValue());
+		InLineDisassembler panelX = InLineDisassembler.getInstance();
+		EventQueue.invokeLater(panelX);
+		InLineDisassembler0 disass = InLineDisassembler0.getInstance();
 		EventQueue.invokeLater(disass);
-		EventQueue.invokeLater(new Runnable(){
-			public void run(){
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
 				txtInstructions.setDocument(disass.getDocument());
 				txtInstructions.setCaretPosition(0);
 
@@ -156,6 +169,7 @@ public class TestDisassembler {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		// InLineDisassembler panelILD = panelInLineDisassembler.getInstance();
 		frmTestInlineDisassembler = new JFrame();
 		frmTestInlineDisassembler.setTitle("Test In-line Disassembler");
 		frmTestInlineDisassembler.addWindowListener(new WindowAdapter() {
@@ -168,9 +182,9 @@ public class TestDisassembler {
 		frmTestInlineDisassembler.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0, 600, 0 };
-		gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0 };
+		gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 		gridBagLayout.columnWeights = new double[] { 0.0, 0.0, 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
+		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE };
 		frmTestInlineDisassembler.getContentPane().setLayout(gridBagLayout);
 
 		lblFileName = new JLabel("<no file>");
@@ -221,7 +235,7 @@ public class TestDisassembler {
 		btnStart.setVerticalAlignment(SwingConstants.TOP);
 		GridBagConstraints gbc_btnStart = new GridBagConstraints();
 		gbc_btnStart.anchor = GridBagConstraints.NORTH;
-		gbc_btnStart.insets = new Insets(0, 0, 0, 5);
+		gbc_btnStart.insets = new Insets(0, 0, 5, 5);
 		gbc_btnStart.gridx = 0;
 		gbc_btnStart.gridy = 4;
 		frmTestInlineDisassembler.getContentPane().add(btnStart, gbc_btnStart);
@@ -235,7 +249,7 @@ public class TestDisassembler {
 		btnRun.setVerticalAlignment(SwingConstants.TOP);
 		GridBagConstraints gbc_btnRun = new GridBagConstraints();
 		gbc_btnRun.anchor = GridBagConstraints.NORTH;
-		gbc_btnRun.insets = new Insets(0, 0, 0, 5);
+		gbc_btnRun.insets = new Insets(0, 0, 5, 5);
 		gbc_btnRun.gridx = 1;
 		gbc_btnRun.gridy = 4;
 		frmTestInlineDisassembler.getContentPane().add(btnRun, gbc_btnRun);
@@ -244,6 +258,7 @@ public class TestDisassembler {
 		scrollPane.setPreferredSize(new Dimension(600, 2));
 		scrollPane.setMinimumSize(new Dimension(600, 23));
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
+		gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 2;
 		gbc_scrollPane.gridy = 4;
@@ -251,10 +266,32 @@ public class TestDisassembler {
 
 		txtInstructions = new JTextPane();
 		scrollPane.setViewportView(txtInstructions);
-		
-		lblNewLabel = new JLabel(" Location             OpCode                   Instruction                                               Function\r\n");
+
+		lblNewLabel = new JLabel(
+				" Location             OpCode                   Instruction                                               Function\r\n");
 		lblNewLabel.setForeground(Color.BLUE);
 		scrollPane.setColumnHeaderView(lblNewLabel);
+		
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
+		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
+		gbc_tabbedPane.gridx = 2;
+		gbc_tabbedPane.gridy = 5;
+		frmTestInlineDisassembler.getContentPane().add(tabbedPane, gbc_tabbedPane);
+		
+		tab0 = new JPanel();
+		tab0.setBorder(new LineBorder(new Color(0, 0, 0)));
+		tabbedPane.addTab("tab0", null, tab0, null);
+		
+		tab1 = new JPanel();
+		tab1.setBorder(new LineBorder(Color.RED));
+		tabbedPane.addTab("tab1", null, tab1, null);
+		tab1.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		InLineDisassembler panelx = InLineDisassembler.getInstance();
+		panelx.setBorder(new LineBorder(Color.BLUE));
+		tab1.add(panelx);
+		panelx.setLayout(new GridLayout(1, 0, 0, 0));
 
 		JMenuBar menuBar = new JMenuBar();
 		frmTestInlineDisassembler.setJMenuBar(menuBar);
