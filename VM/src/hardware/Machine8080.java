@@ -78,8 +78,8 @@ public class Machine8080 {
 					window.frmMachine.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
-				}
-			}
+				}//try
+			}//run
 		});
 	}// main
 		// -------------------------------------------------------------------
@@ -267,18 +267,32 @@ private void appInit0(){
 		gbc_panelBottom.gridy = 1;
 		frmMachine.getContentPane().add(panelBottom, gbc_panelBottom);
 		GridBagLayout gbl_panelBottom = new GridBagLayout();
-		gbl_panelBottom.columnWidths = new int[]{547, 0};
+		gbl_panelBottom.columnWidths = new int[]{700, 0, 0};
 		gbl_panelBottom.rowHeights = new int[]{5, 0};
-		gbl_panelBottom.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panelBottom.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 		gbl_panelBottom.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		panelBottom.setLayout(gbl_panelBottom);
+		
+		panelBottomLeft = new JPanel();
+		GridBagConstraints gbc_panelBottomLeft = new GridBagConstraints();
+		gbc_panelBottomLeft.insets = new Insets(0, 0, 0, 5);
+		gbc_panelBottomLeft.fill = GridBagConstraints.BOTH;
+		gbc_panelBottomLeft.gridx = 0;
+		gbc_panelBottomLeft.gridy = 0;
+		panelBottom.add(panelBottomLeft, gbc_panelBottomLeft);
+		GridBagLayout gbl_panelBottomLeft = new GridBagLayout();
+		gbl_panelBottomLeft.columnWidths = new int[]{547, 0};
+		gbl_panelBottomLeft.rowHeights = new int[]{5, 0};
+		gbl_panelBottomLeft.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panelBottomLeft.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		panelBottomLeft.setLayout(gbl_panelBottomLeft);
 		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 0;
 		gbc_tabbedPane.gridy = 0;
-		panelBottom.add(tabbedPane, gbc_tabbedPane);
+		panelBottomLeft.add(tabbedPane, gbc_tabbedPane);
 		
 		tabMemory = new JPanel();
 		tabMemory.setPreferredSize(new Dimension(50, 50));
@@ -351,5 +365,6 @@ private void appInit0(){
 	private JMenuItem mnuFileNew;
 	private JPanel tabDisassembler;
 	private InLineDisassembler  disassembler;
+	private JPanel panelBottomLeft;
 
 }// class Machine8080

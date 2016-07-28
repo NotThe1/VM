@@ -16,6 +16,7 @@ package hardware;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,6 +29,8 @@ import javax.swing.Icon;
 import javax.swing.JFormattedTextField;
 import javax.swing.JRadioButton;
 
+import utilities.InLineDisassembler;
+
 //import javax.swing.text.JTextComponent;
 
 public class StateAdapter implements PropertyChangeListener, FocusListener, ActionListener {
@@ -36,7 +39,7 @@ public class StateAdapter implements PropertyChangeListener, FocusListener, Acti
 	private static RoundIcon1 grayLED = new RoundIcon1(Color.GRAY);
 	ConditionCodeRegister ccr = ConditionCodeRegister.getInstance();
 	WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
-
+	InLineDisassembler	inLineDisassembler = InLineDisassembler.getInstance();
 
 	// ---------- PropertyChangeListener
 
@@ -79,6 +82,7 @@ public class StateAdapter implements PropertyChangeListener, FocusListener, Acti
 		switch (sourceName) {
 		case StateDisplay.FTF_PC:
 			wrs.setProgramCounter((int) propertyChangeEvent.getNewValue());
+			EventQueue.invokeLater(inLineDisassembler);
 			break;
 		case StateDisplay.FTF_SP:
 			wrs.setStackPointer((int) propertyChangeEvent.getNewValue());

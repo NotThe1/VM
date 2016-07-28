@@ -36,7 +36,6 @@ import memory.Core;
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 import utilities.InLineDisassembler;
-import utilities.InLineDisassembler0;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -56,7 +55,6 @@ public class TestDisassembler {
 
 	private JFrame frmTestInlineDisassembler;
 	private JButton btnStart;
-	private JTextPane txtInstructions;
 	private HexSpinner hsPC;
 	private JLabel lblFileName;
 	private JLabel lblTarget;
@@ -64,7 +62,6 @@ public class TestDisassembler {
 	private JButton btnRun;
 
 	private static WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
-	private JLabel lblNewLabel;
 	private InLineDisassembler panelX;
 	private JTabbedPane tabbedPane;
 	private JPanel tab0;
@@ -100,15 +97,12 @@ public class TestDisassembler {
 	}// loadFile
 
 	private void doStart() {
-		InLineDisassembler0 disass = InLineDisassembler0.getInstance();
 		 InLineDisassembler panelX= InLineDisassembler.getInstance();
 		Preferences myPrefs = Preferences.userNodeForPackage(TestDisassembler.class);
 		myPrefs.putInt("startLocation", (int) hsPC.getValue());
 		myPrefs = null;
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				txtInstructions.setDocument(disass.updateDisplay((int) hsPC.getValue()));
-				txtInstructions.setCaretPosition(0);
 				panelX.updateDisplay((int) hsPC.getValue());
 			}
 		});
@@ -119,15 +113,11 @@ public class TestDisassembler {
 		wrs.setProgramCounter((int) hsRun.getValue());
 		InLineDisassembler panelX = InLineDisassembler.getInstance();
 		EventQueue.invokeLater(panelX);
-		InLineDisassembler0 disass = InLineDisassembler0.getInstance();
-		EventQueue.invokeLater(disass);
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				txtInstructions.setDocument(disass.getDocument());
-				txtInstructions.setCaretPosition(0);
-
-			}
-		});
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//
+//			}
+//		});
 
 	}// doTarget
 
@@ -253,24 +243,6 @@ public class TestDisassembler {
 		gbc_btnRun.gridx = 1;
 		gbc_btnRun.gridy = 4;
 		frmTestInlineDisassembler.getContentPane().add(btnRun, gbc_btnRun);
-
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setPreferredSize(new Dimension(600, 2));
-		scrollPane.setMinimumSize(new Dimension(600, 23));
-		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-		gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
-		gbc_scrollPane.fill = GridBagConstraints.BOTH;
-		gbc_scrollPane.gridx = 2;
-		gbc_scrollPane.gridy = 4;
-		frmTestInlineDisassembler.getContentPane().add(scrollPane, gbc_scrollPane);
-
-		txtInstructions = new JTextPane();
-		scrollPane.setViewportView(txtInstructions);
-
-		lblNewLabel = new JLabel(
-				" Location             OpCode                   Instruction                                               Function\r\n");
-		lblNewLabel.setForeground(Color.BLUE);
-		scrollPane.setColumnHeaderView(lblNewLabel);
 		
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();

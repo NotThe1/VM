@@ -115,8 +115,9 @@ public class InLineDisassembler extends JPanel implements Runnable {
 			String history = sbDoc.substring(0, end - firstLineLength);
 			doc.remove(0, doc.getLength());
 			doc.insertString(0, history, categoryAttributes[ATTR_ADDRESS]);
-
+			int cursorPosition  = doc.getLength();
 			processCurrentAndFutureLines(programCounter, lineNumber);
+			txtInstructions.setCaretPosition(cursorPosition);
 		} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
