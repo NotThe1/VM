@@ -57,6 +57,7 @@ public class DiskDisplay extends JPanel {
 		panelDisksAB.add(lblB);
 		
 		txtDiskA = new JTextField();
+		txtDiskA.setEditable(false);
 		txtDiskA.setName(TXT_DISK_A);
 		txtDiskA.addMouseListener(diskDisplayAdapter);
 		txtDiskA.setToolTipText(NO_DISK_HELP);
@@ -67,6 +68,7 @@ public class DiskDisplay extends JPanel {
 		txtDiskA.setColumns(10);
 		
 		txtDiskB = new JTextField();
+		txtDiskB.setEditable(false);
 		txtDiskB.setName(TXT_DISK_B);
 		txtDiskB.addMouseListener(diskDisplayAdapter);
 		txtDiskB.setToolTipText(NO_DISK_HELP);
@@ -95,6 +97,7 @@ public class DiskDisplay extends JPanel {
 		panelDisksCD.add(lblD);
 		
 		txtDiskC = new JTextField();
+		txtDiskC.setEditable(false);
 		txtDiskC.setName(TXT_DISK_C);
 		txtDiskC.addMouseListener(diskDisplayAdapter);
 		txtDiskC.setToolTipText(NO_DISK_HELP);
@@ -105,6 +108,7 @@ public class DiskDisplay extends JPanel {
 		panelDisksCD.add(txtDiskC);
 		
 		txtDiskD = new JTextField();
+		txtDiskD.setEditable(false);
 		txtDiskD.setName(TXT_DISK_D);
 		txtDiskD.addMouseListener(diskDisplayAdapter);
 		txtDiskD.setToolTipText(NO_DISK_HELP);

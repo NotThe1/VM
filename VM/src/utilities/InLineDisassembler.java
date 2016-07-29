@@ -13,9 +13,9 @@ import javax.swing.JTextPane;
 
 import java.awt.GridBagConstraints;
 
-import javax.swing.JTextArea;
-import javax.swing.border.BevelBorder;
-import javax.swing.UIManager;
+//import javax.swing.JTextArea;
+//import javax.swing.border.BevelBorder;
+//import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -28,8 +28,14 @@ import memory.Core;
 import java.awt.Dimension;
 
 public class InLineDisassembler extends JPanel implements Runnable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private static InLineDisassembler instance = new InLineDisassembler();
 
+	@SuppressWarnings("unused")
 	private static OpCodeMap opCodeMap = new OpCodeMap();
 	private static Core core = Core.getInstance();
 	private static WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
@@ -62,10 +68,14 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	/*----------------------------------------------------------------*/
 	
 	public void run(){
-		updateDisplay(wrs.getProgramCounter());
+		updateDisplay();
 	}//run()
 	
-	public void updateDisplay(int programCounter) {
+	public void updateDisplay() {
+		int programCounter = wrs.getProgramCounter();
+		if(programCounter ==priorProgramCounter){
+			return;
+		}// if nothing changes
 		if (newDisplay) {
 			try {
 				doc.remove(0, doc.getLength());
@@ -85,7 +95,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		return;
 	}// updateDisplay()
 
-	public void processCurrentAndFutureLines(int programCounter, int lineNumber) {
+	private void processCurrentAndFutureLines(int programCounter, int lineNumber) {
 		int workingProgramCounter = programCounter;
 		categoryAttributes = makeAttrsForCategory(1); // current line
 
@@ -95,7 +105,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		}// for
 	}// processCurrentAndFutureLines
 
-	public Document updateTheDisplay(int programCounter) {
+	private Document updateTheDisplay(int programCounter) {
 		try {
 			StringBuilder sbDoc = new StringBuilder(doc.getText(0, doc.getLength()));
 			// find the limit of the history:

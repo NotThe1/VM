@@ -1,5 +1,6 @@
 package hardware;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -26,22 +27,24 @@ public class Machine8080MenuAdapter implements ActionListener {
 		default:
 			assert false : sourceName + " is not a valid menu item\n";
 		}// Switch sourceName
-
 	}// actionPerformed
 
 	private void doMemoryLoadFromFile(ActionEvent actionEvent) {
-		JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
-		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
-			System.out.println("Bailed out of the open");
-			return;
-		}// if - open
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
+				if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+					System.out.println("Bailed out of the open");
+					return;
+				}// if - open
+				String fileName = MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
+				System.out.printf("FileName: %s%n", fileName);
 
-		String fileName = MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
-		System.out.printf("FileName: %s%n", fileName);
+				JMenuItem sourceMenu = (JMenuItem) actionEvent.getSource();
+				appendMenuItem(fileName, (JPopupMenu) sourceMenu.getParent());
+			}// run
+		});
 
-		JMenuItem sourceMenu = (JMenuItem) actionEvent.getSource();
-
-		appendMenuItem(fileName, (JPopupMenu) sourceMenu.getParent());
 	}// doMemoryLoadFromFile
 		// ----------------------------------
 

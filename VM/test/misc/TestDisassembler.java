@@ -103,7 +103,7 @@ public class TestDisassembler {
 		myPrefs = null;
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				panelX.updateDisplay((int) hsPC.getValue());
+				panelX.updateDisplay();
 			}
 		});
 

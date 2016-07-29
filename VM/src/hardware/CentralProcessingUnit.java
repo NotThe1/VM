@@ -10,7 +10,7 @@ import memory.CpuBuss;
  *
  */
 
-public class CentralProcessingUnit {
+public class CentralProcessingUnit implements Runnable{
 	private static CentralProcessingUnit instance = new CentralProcessingUnit();
 	CpuBuss cpuBuss;
 	ConditionCodeRegister ccr;
@@ -31,10 +31,20 @@ public class CentralProcessingUnit {
 
 		this.error = ErrorType.NONE;
 	}// Constructor
-
+/**
+ * Executes instruction found at the location contained in the Program Counter
+ * @return true if successful, false if error (accessed vis getError)
+ */
+	
+	public void run(){
+		while (!isError()){
+			startInstruction();
+		}//while
+	}//run
+	
 	public boolean startInstruction() {
 		executeInstruction(wrs.getProgramCounter());
-		return isError();
+		return !isError();
 	}// startInstruction
 
 	public void executeInstruction(int currentAddress) {
@@ -580,7 +590,7 @@ public class CentralProcessingUnit {
 	 * @param error
 	 *            type of error to record
 	 */
-	private void setError(ErrorType error) {
+	public void setError(ErrorType error) {
 		this.error = error;
 	}// setErrorFlag
 
