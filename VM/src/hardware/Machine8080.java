@@ -8,7 +8,7 @@ import java.awt.Point;
 import javax.swing.JFrame;
 
 import java.awt.GridLayout;
-import java.lang.reflect.InvocationTargetException;
+//import java.lang.reflect.InvocationTargetException;
 import java.util.prefs.Preferences;
 
 import javax.swing.Icon;
@@ -17,14 +17,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.SpinnerNumberModel;
 
-import codeSupport.TableMaker;
+//import codeSupport.TableMaker;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JMenuItem;
 
-import memory.Core;
+//import memory.Core;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -35,33 +35,32 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
-import javax.swing.border.TitledBorder;
+//import javax.swing.border.TitledBorder;
 import javax.swing.border.LineBorder;
 
 import java.awt.Color;
 
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+//import javax.swing.JLabel;
+//import javax.swing.SwingConstants;
 
-import java.awt.Font;
+//import java.awt.Font;
 
-import javax.swing.JTextField;
+//import javax.swing.JTextField;
 import javax.swing.JSpinner;
 import javax.swing.JButton;
 
 import disks.DiskDisplay;
 
 import javax.swing.border.BevelBorder;
-import javax.swing.border.MatteBorder;
+//import javax.swing.border.MatteBorder;
 import javax.swing.UIManager;
-import javax.swing.border.EtchedBorder;
+//import javax.swing.border.EtchedBorder;
 import javax.swing.JTabbedPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
+//import javax.swing.JScrollPane;
+//import javax.swing.JTextArea;
 
 import utilities.InLineDisassembler;
 
-import org.eclipse.wb.swing.FocusTraversalOnArray;
 
 public class Machine8080 implements ActionListener {
 
@@ -362,7 +361,7 @@ public class Machine8080 implements ActionListener {
 		gbc_disassembler.gridy = 0;
 		tabDisassembler.setLayout(new GridLayout(0, 1, 0, 0));
 		tabDisassembler.add(disassembler, gbc_disassembler);
-		tabbedPane.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tabDisassembler, tabMemory }));
+//		tabbedPane.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tabDisassembler, tabMemory }));
 
 		tabMemory = new JPanel();
 		tabMemory.setPreferredSize(new Dimension(50, 50));
