@@ -43,7 +43,9 @@ public class CentralProcessingUnit implements Runnable{
 	}//run
 	
 	public boolean startInstruction() {
+		long origin = System.nanoTime();
 		executeInstruction(wrs.getProgramCounter());
+		long elapsedTIme = System.nanoTime()-origin;
 		return !isError();
 	}// startInstruction
 

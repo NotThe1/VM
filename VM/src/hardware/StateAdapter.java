@@ -35,7 +35,7 @@ import utilities.InLineDisassembler;
 
 public class StateAdapter implements PropertyChangeListener, FocusListener, ActionListener {
 
-	private static RoundIcon1 redLED = new RoundIcon1(Color.RED);
+	private static RoundIcon1 redLED = new RoundIcon1(Color.GREEN);
 	private static RoundIcon1 grayLED = new RoundIcon1(Color.GRAY);
 	ConditionCodeRegister ccr = ConditionCodeRegister.getInstance();
 	WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();

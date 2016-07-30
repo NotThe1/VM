@@ -3,6 +3,8 @@ package hardware;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Dimension;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
 
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
@@ -16,6 +18,8 @@ import javax.swing.border.BevelBorder;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.JTextComponent;
 
+import java.io.IOException;
+import java.net.URL;
 import java.text.ParseException;
 
 //import memory.Core;
@@ -149,6 +153,18 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	 * Create the panel.
 	 */
 	public StateDisplay() {
+		
+		Font fontDigital = null;
+		URL fontUrl = StateDisplay.class.getResource("/hardware/resources/Digit.ttf");
+		try {
+			 fontDigital = Font.createFont(Font.TRUETYPE_FONT,fontUrl.openStream());
+			 fontDigital = fontDigital.deriveFont(Font.BOLD,DIGITAL_FONT_SIZE);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		ge.registerFont(fontDigital);
+		} catch (FontFormatException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//try
 
 		stateAdapter = new StateAdapter();
 		HexFormatter format2HexDigits = new HexFormatter(2);
@@ -182,15 +198,17 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		lblPc.setFont(new Font("Tahoma", Font.PLAIN, 22));
 
 		ftfPC = new JFormattedTextField(format4HexDigits);
+		ftfPC.setForeground(new Color(220, 20, 60));
 		ftfPC.setInputVerifier(registerLimitVerifierWord);
 		ftfPC.addPropertyChangeListener("value", stateAdapter);
 		ftfPC.addFocusListener(stateAdapter);
 		ftfPC.setName(FTF_PC);
-		ftfPC.setHorizontalAlignment(SwingConstants.RIGHT);
+		ftfPC.setHorizontalAlignment(SwingConstants.LEFT);
 		ftfPC.setBounds(52, 2, 110, 52);
 		panelPC.add(ftfPC);
 		ftfPC.setValue(0000);
-		ftfPC.setFont(new Font("Tahoma", Font.PLAIN, 38));
+//		ftfPC.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfPC.setFont(fontDigital);
 
 		JPanel panelSP = new JPanel();
 		panelSP.setBounds(235, 18, 165, 56);
@@ -204,25 +222,27 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		lblSp.setFont(new Font("Tahoma", Font.PLAIN, 22));
 
 		ftfSP = new JFormattedTextField(format4HexDigits);
+		ftfSP.setForeground(new Color(220, 20, 60));
 		ftfSP.setInputVerifier(registerLimitVerifierWord);
 		ftfSP.addPropertyChangeListener("value", stateAdapter);
 		ftfSP.addFocusListener(stateAdapter);
 		ftfSP.setName(FTF_SP);
-		ftfSP.setHorizontalAlignment(SwingConstants.RIGHT);
+		ftfSP.setHorizontalAlignment(SwingConstants.LEFT);
 		ftfSP.setBounds(52, 2, 110, 52);
 		panelSP.add(ftfSP);
 		ftfSP.setValue(0000);
-		ftfSP.setFont(new Font("Tahoma", Font.PLAIN, 38));
+//		ftfSP.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfSP.setFont(fontDigital);
 
 		JPanel panelGeneralPurposeRegisters = new JPanel();
-		panelGeneralPurposeRegisters.setBounds(45, 110, 510, 105);
+		panelGeneralPurposeRegisters.setBounds(45, 100, 510, 115);
 		panelGeneralPurposeRegisters.setBorder(new TitledBorder(new BevelBorder(BevelBorder.RAISED, null, null, null,
 				null), "General Purpose Registers", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, Color.BLUE));
 		add(panelGeneralPurposeRegisters);
 		panelGeneralPurposeRegisters.setLayout(null);
 
 		JPanel panelRegA = new JPanel();
-		panelRegA.setBounds(10, 20, 64, 76);
+		panelRegA.setBounds(10, 20, 64, 85);
 		panelRegA.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		panelGeneralPurposeRegisters.add(panelRegA);
 		panelRegA.setLayout(null);
@@ -234,18 +254,20 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		panelRegA.add(lblA);
 
 		ftfRegA = new JFormattedTextField(format2HexDigits);
+		ftfRegA.setForeground(new Color(220, 20, 60));
 		ftfRegA.setInputVerifier(registerLimitVerifierByte);
 		ftfRegA.addPropertyChangeListener("value", stateAdapter);
 		ftfRegA.addFocusListener(stateAdapter);
 		ftfRegA.setName(FTF_REG_A);
-		ftfRegA.setHorizontalAlignment(SwingConstants.CENTER);
-		ftfRegA.setFont(new Font("Tahoma", Font.PLAIN, 38));
-		ftfRegA.setBounds(2, 34, 60, 40);
+		ftfRegA.setHorizontalAlignment(SwingConstants.LEFT);
+//		ftfRegA.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfRegA.setFont(fontDigital);
+		ftfRegA.setBounds(2, 34, 60, 52);
 		ftfRegA.setValue((byte) 00);
 		panelRegA.add(ftfRegA);
 
 		JPanel panelRegB = new JPanel();
-		panelRegB.setBounds(81, 20, 64, 76);
+		panelRegB.setBounds(81, 20, 64, 85);
 		panelRegB.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		panelGeneralPurposeRegisters.add(panelRegB);
 		panelRegB.setLayout(null);
@@ -257,18 +279,20 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		panelRegB.add(lblB);
 
 		ftfRegB = new JFormattedTextField(format2HexDigits);
+		ftfRegB.setForeground(new Color(220, 20, 60));
 		ftfRegB.setInputVerifier(registerLimitVerifierByte);
 		ftfRegB.addPropertyChangeListener("value", stateAdapter);
 		ftfRegB.addFocusListener(stateAdapter);
 		ftfRegB.setName(FTF_REG_B);
-		ftfRegB.setHorizontalAlignment(SwingConstants.CENTER);
-		ftfRegB.setFont(new Font("Tahoma", Font.PLAIN, 38));
-		ftfRegB.setBounds(2, 34, 60, 40);
+		ftfRegB.setHorizontalAlignment(SwingConstants.LEFT);
+//		ftfRegB.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfRegB.setFont(fontDigital);
+		ftfRegB.setBounds(2, 34, 60, 52);
 		ftfRegB.setValue((byte) 00);
 		panelRegB.add(ftfRegB);
 
 		JPanel panelRegC = new JPanel();
-		panelRegC.setBounds(152, 20, 64, 76);
+		panelRegC.setBounds(152, 20, 64, 85);
 		panelRegC.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		panelGeneralPurposeRegisters.add(panelRegC);
 		panelRegC.setLayout(null);
@@ -280,18 +304,20 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		panelRegC.add(lblC);
 
 		ftfRegC = new JFormattedTextField(format2HexDigits);
+		ftfRegC.setForeground(new Color(220, 20, 60));
 		ftfRegC.setInputVerifier(registerLimitVerifierByte);
 		ftfRegC.addPropertyChangeListener("value", stateAdapter);
 		ftfRegC.addFocusListener(stateAdapter);
 		ftfRegC.setName(FTF_REG_C);
-		ftfRegC.setHorizontalAlignment(SwingConstants.CENTER);
-		ftfRegC.setFont(new Font("Tahoma", Font.PLAIN, 38));
-		ftfRegC.setBounds(2, 34, 60, 40);
+		ftfRegC.setHorizontalAlignment(SwingConstants.LEFT);
+//		ftfRegC.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfRegC.setFont(fontDigital);
+		ftfRegC.setBounds(2, 34, 60, 52);
 		ftfRegC.setValue((byte) 00);
 		panelRegC.add(ftfRegC);
 
 		JPanel panelRegD = new JPanel();
-		panelRegD.setBounds(223, 20, 64, 76);
+		panelRegD.setBounds(223, 20, 64, 85);
 		panelRegD.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		panelGeneralPurposeRegisters.add(panelRegD);
 		panelRegD.setLayout(null);
@@ -303,18 +329,20 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		panelRegD.add(lblD);
 
 		ftfRegD = new JFormattedTextField(format2HexDigits);
+		ftfRegD.setForeground(new Color(220, 20, 60));
 		ftfRegD.setInputVerifier(registerLimitVerifierByte);
 		ftfRegD.addPropertyChangeListener("value", stateAdapter);
 		ftfRegD.addFocusListener(stateAdapter);
 		ftfRegD.setName(FTF_REG_D);
-		ftfRegD.setHorizontalAlignment(SwingConstants.CENTER);
-		ftfRegD.setFont(new Font("Tahoma", Font.PLAIN, 38));
-		ftfRegD.setBounds(2, 34, 60, 40);
+		ftfRegD.setHorizontalAlignment(SwingConstants.LEFT);
+//		ftfRegD.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfRegD.setFont(fontDigital);
+		ftfRegD.setBounds(2, 34, 60, 52);
 		ftfRegD.setValue((byte) 00);
 		panelRegD.add(ftfRegD);
 
 		JPanel panelRegE = new JPanel();
-		panelRegE.setBounds(294, 20, 64, 76);
+		panelRegE.setBounds(294, 20, 64, 85);
 		panelRegE.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		panelGeneralPurposeRegisters.add(panelRegE);
 		panelRegE.setLayout(null);
@@ -326,18 +354,20 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		panelRegE.add(lblE);
 
 		ftfRegE = new JFormattedTextField(format2HexDigits);
+		ftfRegE.setForeground(new Color(220, 20, 60));
 		ftfRegE.setInputVerifier(registerLimitVerifierByte);
 		ftfRegE.addPropertyChangeListener("value", stateAdapter);
 		ftfRegE.addFocusListener(stateAdapter);
 		ftfRegE.setName(FTF_REG_E);
-		ftfRegE.setHorizontalAlignment(SwingConstants.CENTER);
-		ftfRegE.setFont(new Font("Tahoma", Font.PLAIN, 38));
-		ftfRegE.setBounds(2, 34, 60, 40);
+		ftfRegE.setHorizontalAlignment(SwingConstants.LEFT);
+//		ftfRegE.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfRegE.setFont(fontDigital);
+		ftfRegE.setBounds(2, 34, 60, 52);
 		ftfRegE.setValue((byte) 00);
 		panelRegE.add(ftfRegE);
 
 		JPanel panelRegH = new JPanel();
-		panelRegH.setBounds(365, 20, 64, 76);
+		panelRegH.setBounds(365, 20, 64, 85);
 		panelRegH.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		panelGeneralPurposeRegisters.add(panelRegH);
 		panelRegH.setLayout(null);
@@ -349,18 +379,20 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		panelRegH.add(lblH);
 
 		ftfRegH = new JFormattedTextField(format2HexDigits);
+		ftfRegH.setForeground(new Color(220, 20, 60));
 		ftfRegH.setInputVerifier(registerLimitVerifierByte);
 		ftfRegH.addPropertyChangeListener("value", stateAdapter);
 		ftfRegH.addFocusListener(stateAdapter);
 		ftfRegH.setName(FTF_REG_H);
-		ftfRegH.setHorizontalAlignment(SwingConstants.CENTER);
-		ftfRegH.setFont(new Font("Tahoma", Font.PLAIN, 38));
-		ftfRegH.setBounds(2, 34, 60, 40);
+		ftfRegH.setHorizontalAlignment(SwingConstants.LEFT);
+//		ftfRegH.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfRegH.setFont(fontDigital);
+		ftfRegH.setBounds(2, 34, 60, 52);
 		ftfRegH.setValue((byte) 00);
 		panelRegH.add(ftfRegH);
 
 		JPanel panelRegL = new JPanel();
-		panelRegL.setBounds(436, 20, 64, 76);
+		panelRegL.setBounds(436, 20, 64, 85);
 		panelRegL.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		panelGeneralPurposeRegisters.add(panelRegL);
 		panelRegL.setLayout(null);
@@ -372,13 +404,15 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		panelRegL.add(lblL);
 
 		ftfRegL = new JFormattedTextField(format2HexDigits);
+		ftfRegL.setForeground(new Color(220, 20, 60));
 		ftfRegL.setInputVerifier(registerLimitVerifierByte);
 		ftfRegL.addPropertyChangeListener("value", stateAdapter);
 		ftfRegL.addFocusListener(stateAdapter);
 		ftfRegL.setName(FTF_REG_L);
-		ftfRegL.setHorizontalAlignment(SwingConstants.CENTER);
-		ftfRegL.setFont(new Font("Tahoma", Font.PLAIN, 38));
-		ftfRegL.setBounds(2, 34, 60, 40);
+		ftfRegL.setHorizontalAlignment(SwingConstants.LEFT);
+//		ftfRegL.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		ftfRegL.setFont(fontDigital);
+		ftfRegL.setBounds(2, 34, 60, 52);
 		ftfRegL.setValue((byte) 00);
 		panelRegL.add(ftfRegL);
 
@@ -487,8 +521,8 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	public class RegisterLimitVerifier extends InputVerifier {
 
 		int Kbytes = 1024;
-		private final Color INVALID_COLOR = Color.red;
-		private final Color VALID_COLOR = Color.black;
+		private final Color INVALID_COLOR = Color.BLACK;
+		private final Color VALID_COLOR = new Color(220, 20, 60);
 		private int maxValue; // maximum value
 
 		public RegisterLimitVerifier(int registerSize) {
@@ -560,6 +594,8 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 
 	// ----------------------------- Classes ----------------------------------------
 
+	public final static int DIGITAL_FONT_SIZE = 40;
+	
 	public final static String FTF_PC = "ftfPC";
 	public final static String FTF_SP = "ftfSP";
 	public final static String FTF_REG_A = "ftfRegA";

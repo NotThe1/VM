@@ -70,9 +70,9 @@ public class Machine8080 implements ActionListener {
 	private StateDisplay stateDisplay;
 	// private Core core = Core.getInstance();
 	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
-	InLineDisassembler disassembler = InLineDisassembler.getInstance();
+	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
 	private JFrame frmMachine;
-	Icon runIcon,stopIcon;
+	private Icon runIcon, stopIcon,stepIcon;
 
 	/**
 	 * Launch the application.
@@ -134,8 +134,8 @@ public class Machine8080 implements ActionListener {
 	private void doRun() {
 		cpu.setError(ErrorType.NONE);
 		btnRun.setName(BTN_STOP);
-//		btnRun.setText(BTN_STOP_TEXT);
-//		btnRun.setForeground(Color.RED);
+		// btnRun.setText(BTN_STOP_TEXT);
+		// btnRun.setForeground(Color.RED);
 		btnRun.setIcon(stopIcon);
 		System.out.println("actionPerformed: doRun");
 		Thread t = new Thread(cpu);
@@ -148,8 +148,8 @@ public class Machine8080 implements ActionListener {
 		System.out.println("actionPerformed: doStop");
 		cpu.setError(ErrorType.STOP);
 		btnRun.setName(BTN_RUN);
-//		btnRun.setText(BTN_RUN_TEXT);
-//		btnRun.setForeground(Color.BLACK);
+		// btnRun.setText(BTN_RUN_TEXT);
+		// btnRun.setForeground(Color.BLACK);
 		btnRun.setIcon(runIcon);
 		updateView();
 	}// doStep
@@ -174,18 +174,18 @@ public class Machine8080 implements ActionListener {
 
 	private void appInit0() {
 		menuAdapter = new Machine8080MenuAdapter();
-		 runIcon = new ImageIcon(Machine8080.class.getResource("/hardware/Button-Turn-On-icon-64.png"));
-		 stopIcon = new ImageIcon(Machine8080.class.getResource("/hardware/Button-Turn-Off-icon-64.png"));
-
+		runIcon = new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png"));
+		stopIcon = new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png"));
+		stepIcon = new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png"));
 	}// appInit0
 
 	private void appInit() {
 		// manage preferences
 		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
-		frmMachine.setSize(1115, 730);
+		frmMachine.setSize(948, 730);
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
-//		btnRun.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/Button-Turn-On-icon.png")));
+		// btnRun.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/Button-Turn-On-icon.png")));
 		btnRun.setIcon(runIcon);
 	}// appInit
 
@@ -207,7 +207,7 @@ public class Machine8080 implements ActionListener {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
 				appClose();
-			}//windowClosing
+			}// windowClosing
 		});
 
 		frmMachine.setTitle("CP/M System on Intel 8080 Processor");
@@ -313,36 +313,6 @@ public class Machine8080 implements ActionListener {
 		panelStateDisplay.add(stateDisplay);
 		stateDisplay.setLayout(null);
 
-		panelRun = new JPanel();
-		panelRun.setBounds(930, 0, 160, 310);
-		panelTop.add(panelRun);
-		panelRun.setLayout(null);
-
-		panel = new JPanel();
-		panel.setBounds(5, 5, 160, 300);
-		panelRun.add(panel);
-		panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		panel.setLayout(null);
-
-		spinnerStepCount = new JSpinner();
-		spinnerStepCount.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
-		spinnerStepCount.setBounds(57, 29, 45, 20);
-		panel.add(spinnerStepCount);
-
-		btnStep = new JButton("");
-		btnStep.setBackground(UIManager.getColor("Panel.background"));
-		btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/Button-Next-icon-48.png")));
-		btnStep.setName(BTN_STEP);
-		btnStep.addActionListener(this);
-		btnStep.setBounds(44, 60, 71, 63);
-		panel.add(btnStep);
-
-		btnRun = new JButton("");
-		btnRun.setName(BTN_RUN);
-		btnRun.addActionListener(this);
-		btnRun.setBounds(41, 185, 78, 73);
-		panel.add(btnRun);
-
 		panelBottom = new JPanel();
 		panelBottom.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		GridBagConstraints gbc_panelBottom = new GridBagConstraints();
@@ -354,7 +324,7 @@ public class Machine8080 implements ActionListener {
 		GridBagLayout gbl_panelBottom = new GridBagLayout();
 		gbl_panelBottom.columnWidths = new int[] { 700, 0, 0 };
 		gbl_panelBottom.rowHeights = new int[] { 5, 0 };
-		gbl_panelBottom.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelBottom.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
 		gbl_panelBottom.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		panelBottom.setLayout(gbl_panelBottom);
 
@@ -404,6 +374,39 @@ public class Machine8080 implements ActionListener {
 		gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
 		tabMemory.setLayout(gbl_tabMemory);
 
+		panelRun = new JPanel();
+		GridBagConstraints gbc_panelRun = new GridBagConstraints();
+		gbc_panelRun.fill = GridBagConstraints.BOTH;
+		gbc_panelRun.gridx = 1;
+		gbc_panelRun.gridy = 0;
+		panelBottom.add(panelRun, gbc_panelRun);
+		panelRun.setLayout(null);
+
+		panel = new JPanel();
+		panel.setBounds(10, 10, 160, 300);
+		panelRun.add(panel);
+		panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		panel.setLayout(null);
+
+		spinnerStepCount = new JSpinner();
+		spinnerStepCount.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		spinnerStepCount.setBounds(57, 29, 45, 20);
+		panel.add(spinnerStepCount);
+
+		btnStep = new JButton("");
+		btnStep.setBackground(UIManager.getColor("Panel.background"));
+		btnStep.setIcon(stepIcon);
+		btnStep.setName(BTN_STEP);
+		btnStep.addActionListener(this);
+		btnStep.setBounds(44, 60, 71, 63);
+		panel.add(btnStep);
+
+		btnRun = new JButton("");
+		btnRun.setName(BTN_RUN);
+		btnRun.addActionListener(this);
+		btnRun.setBounds(41, 185, 78, 73);
+		panel.add(btnRun);
+
 		// InLineDisassembler disassembler = InLineDisassembler.getInstance();
 		// GridBagLayout gbl_disassembler = new GridBagLayout();
 		// gbl_disassembler.columnWidths = new int[]{0};
@@ -431,9 +434,9 @@ public class Machine8080 implements ActionListener {
 
 	public static final String BTN_STEP = "btnStep";
 	public static final String BTN_RUN = "btnRun";
-//	public static final String BTN_RUN_TEXT = "Run";
+	// public static final String BTN_RUN_TEXT = "Run";
 	public static final String BTN_STOP = "btnStop";
-//	public static final String BTN_STOP_TEXT = "Stop";
+	// public static final String BTN_STOP_TEXT = "Stop";
 
 	public static final String MNU_FILE_NEW = "mnuFileNew";
 	public static final String MNU_MEMORY_LOAD_FROM_FILE = "mnuMemoryLoadFromFile";
