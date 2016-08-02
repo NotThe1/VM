@@ -97,10 +97,11 @@ public class TestDisassembler {
 	}// loadFile
 
 	private void doStart() {
-		 InLineDisassembler panelX= InLineDisassembler.getInstance();
+		InLineDisassembler panelX = InLineDisassembler.getInstance();
 		Preferences myPrefs = Preferences.userNodeForPackage(TestDisassembler.class);
 		myPrefs.putInt("startLocation", (int) hsPC.getValue());
 		myPrefs = null;
+		wrs.setProgramCounter((int) hsPC.getValue());
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				panelX.updateDisplay();
@@ -113,11 +114,11 @@ public class TestDisassembler {
 		wrs.setProgramCounter((int) hsRun.getValue());
 		InLineDisassembler panelX = InLineDisassembler.getInstance();
 		EventQueue.invokeLater(panelX);
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
-//
-//			}
-//		});
+		// EventQueue.invokeLater(new Runnable() {
+		// public void run() {
+		//
+		// }
+		// });
 
 	}// doTarget
 
@@ -243,23 +244,23 @@ public class TestDisassembler {
 		gbc_btnRun.gridx = 1;
 		gbc_btnRun.gridy = 4;
 		frmTestInlineDisassembler.getContentPane().add(btnRun, gbc_btnRun);
-		
+
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 2;
 		gbc_tabbedPane.gridy = 5;
 		frmTestInlineDisassembler.getContentPane().add(tabbedPane, gbc_tabbedPane);
-		
+
 		tab0 = new JPanel();
 		tab0.setBorder(new LineBorder(new Color(0, 0, 0)));
 		tabbedPane.addTab("tab0", null, tab0, null);
-		
+
 		tab1 = new JPanel();
 		tab1.setBorder(new LineBorder(Color.RED));
 		tabbedPane.addTab("tab1", null, tab1, null);
 		tab1.setLayout(new GridLayout(0, 1, 0, 0));
-		
+
 		InLineDisassembler panelx = InLineDisassembler.getInstance();
 		panelx.setBorder(new LineBorder(Color.BLUE));
 		tab1.add(panelx);

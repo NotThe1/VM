@@ -116,7 +116,7 @@ public class MemFormatter implements IByteArrayToStringFormat {
 	@Override
 	public void setSource(byte[] source) {
 		if ((source.length % SIXTEEN) == 0 & source.length != 0) {
-			this.source = source.clone();
+			this.source = source;
 		} else {
 			String msg = String.format("Mem Formatter: source array needs to be a multiple of 16 (0X10).%n"
 					+ "This source size is %1$d (0X%1$X)", source.length);
