@@ -62,11 +62,11 @@ public class TestDisassembler {
 	private JButton btnRun;
 
 	private static WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
-	private InLineDisassembler panelX;
+//	private InLineDisassembler inLineDisassembler;
 	private JTabbedPane tabbedPane;
 	private JPanel tab0;
 	private JPanel tab1;
-	private JPanel panelx;
+	private JPanel fakePanel;
 
 	/**
 	 * Launch the application.
@@ -111,7 +111,8 @@ public class TestDisassembler {
 	}// doStart
 
 	private void doRun() {
-		wrs.setProgramCounter((int) hsRun.getValue());
+//		wrs.setProgramCounter((int) hsRun.getValue());
+		
 		InLineDisassembler panelX = InLineDisassembler.getInstance();
 		EventQueue.invokeLater(panelX);
 		// EventQueue.invokeLater(new Runnable() {
@@ -146,6 +147,7 @@ public class TestDisassembler {
 			MemoryLoaderFromFile.loadMemoryImage(sourceFile);
 		}// if - use last file and program counter
 		myPrefs = null;
+		//fakePanel = InLineDisassembler.getInstance();
 	}// appInit
 
 	/**
@@ -175,7 +177,7 @@ public class TestDisassembler {
 		gridBagLayout.columnWidths = new int[] { 0, 0, 600, 0 };
 		gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 		gridBagLayout.columnWeights = new double[] { 0.0, 0.0, 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE };
+		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
 		frmTestInlineDisassembler.getContentPane().setLayout(gridBagLayout);
 
 		lblFileName = new JLabel("<no file>");
@@ -254,17 +256,40 @@ public class TestDisassembler {
 
 		tab0 = new JPanel();
 		tab0.setBorder(new LineBorder(new Color(0, 0, 0)));
-		tabbedPane.addTab("tab0", null, tab0, null);
-
+		tabbedPane.addTab("Disassembler", null, tab0, null);
+		GridBagLayout gbl_tab0 = new GridBagLayout();
+		gbl_tab0.columnWidths = new int[]{ 0};
+		gbl_tab0.rowHeights = new int[]{ 0};
+		gbl_tab0.columnWeights = new double[]{ Double.MIN_VALUE};
+		gbl_tab0.rowWeights = new double[]{ Double.MIN_VALUE};
+		tab0.setLayout(gbl_tab0);
+		
+		fakePanel = (JPanel)InLineDisassembler.getInstance();
+		fakePanel.setBorder(new LineBorder(Color.RED, 1, true));
+		GridBagConstraints gbc_fakePanel = new GridBagConstraints();
+		gbc_fakePanel.fill = GridBagConstraints.BOTH;
+		gbc_fakePanel.gridx = 0;
+		gbc_fakePanel.gridy = 0;
+		tab0.add(fakePanel, gbc_fakePanel);
+//		GridBagLayout gbl_fakePanel = new GridBagLayout();
+//		gbl_fakePanel.columnWidths = new int[]{0};
+//		gbl_fakePanel.rowHeights = new int[]{0};
+//		gbl_fakePanel.columnWeights = new double[]{Double.MIN_VALUE};
+//		gbl_fakePanel.rowWeights = new double[]{Double.MIN_VALUE};
+		fakePanel.setLayout(new GridLayout(0, 1, 0, 0));
+		
 		tab1 = new JPanel();
-		tab1.setBorder(new LineBorder(Color.RED));
 		tabbedPane.addTab("tab1", null, tab1, null);
-		tab1.setLayout(new GridLayout(0, 1, 0, 0));
+		GridBagLayout gbl_tab1 = new GridBagLayout();
+		gbl_tab1.columnWidths = new int[]{0};
+		gbl_tab1.rowHeights = new int[]{0};
+		gbl_tab1.columnWeights = new double[]{Double.MIN_VALUE};
+		gbl_tab1.rowWeights = new double[]{Double.MIN_VALUE};
+		tab1.setLayout(gbl_tab1);
 
-		InLineDisassembler panelx = InLineDisassembler.getInstance();
-		panelx.setBorder(new LineBorder(Color.BLUE));
-		tab1.add(panelx);
-		panelx.setLayout(new GridLayout(1, 0, 0, 0));
+//		InLineDisassembler panelx = InLineDisassembler.getInstance();
+//		panelx.setBorder(new LineBorder(Color.BLUE));
+//		panelx.setLayout(new GridLayout(1, 0, 0, 0));
 
 		JMenuBar menuBar = new JMenuBar();
 		frmTestInlineDisassembler.setJMenuBar(menuBar);

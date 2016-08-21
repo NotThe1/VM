@@ -13,14 +13,21 @@ import javax.swing.JTextPane;
 
 import java.awt.GridBagConstraints;
 
+
+
+
 //import javax.swing.JTextArea;
 //import javax.swing.border.BevelBorder;
 //import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 import memory.Core;
@@ -45,6 +52,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	private static SimpleAttributeSet[] categoryAttributes;
 
 	private static int priorProgramCounter; // value of previous update PC
+	private static int currentPosition;
 	private static boolean newDisplay;
 	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 	private JTextPane txtInstructions;
@@ -63,7 +71,72 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		simpleAttributes = makeSimpleAttributes();
 		newDisplay = true;
 		doc = txtInstructions.getStyledDocument();
+		makeStyles(doc);
 	}// appInit
+	private void makeStyles(StyledDocument doc){
+		Color colorLocation = Color.BLUE;
+		Color colorInstruction = Color.RED;
+		Color colorComments = Color.GREEN;
+		
+		String DEFAULT = StyleContext.DEFAULT_STYLE;
+		Style styleDefault = (Style)  doc.getStyle(StyleContext.DEFAULT_STYLE);
+		StyleConstants.setFontFamily(styleDefault, "Courier New");
+		StyleConstants.setFontSize(styleDefault, 16);
+		doc.addStyle(DEFAULT, null);
+		
+		String HISTORY = "History";
+		Style styleHistory = doc.getStyle(DEFAULT);
+		StyleConstants.setForeground(styleHistory,Color.GRAY);
+		doc.addStyle(HISTORY, styleDefault);
+		
+		String CURRENT = "Current";
+		Style styleCurrent = doc.getStyle(DEFAULT);
+		StyleConstants.setBold(styleCurrent, true);
+		StyleConstants.setBackground(styleDefault, Color.YELLOW);
+		doc.addStyle(CURRENT, styleCurrent);
+		
+		String CURRENT_LOCATION = "CurrentLocation";
+		Style styleCurrentLocation = doc.getStyle(CURRENT);
+		StyleConstants.setForeground(styleCurrentLocation, colorLocation);
+		doc.addStyle(CURRENT_LOCATION, styleCurrent);
+		
+		String CURRENT_INSTRUCTION = "CurrentInstruction";
+		Style styleCurrentInstruction = doc.getStyle(CURRENT);
+		StyleConstants.setForeground(styleCurrentLocation, colorInstruction);
+		doc.addStyle(CURRENT_INSTRUCTION, styleCurrent);
+		
+		String CURRENT_COMMENTS = "CurrentComments";
+		Style styleCurrentComments = doc.getStyle(CURRENT);
+		StyleConstants.setForeground(styleCurrentLocation, colorComments);
+		doc.addStyle(CURRENT_COMMENTS, styleCurrent);
+		
+		String FUTURE = "Future";
+		Style styleFuture = doc.getStyle(DEFAULT);
+		doc.addStyle(FUTURE, styleFuture);
+		
+		String FUTURE_LOCATION = "FutureLocation";
+		Style styleFutureLocation = doc.getStyle(FUTURE);
+		StyleConstants.setForeground(styleFutureLocation, colorLocation);
+		doc.addStyle(FUTURE_LOCATION, styleFuture);
+		
+		String FUTURE_INSTRUCTION = "FutureInstruction";
+		Style styleFutureInstruction = doc.getStyle(FUTURE);
+		StyleConstants.setForeground(styleFutureInstruction, colorInstruction);
+		doc.addStyle(FUTURE_INSTRUCTION, styleFuture);
+		
+		String FUTURE_COMMENTS = "FutureComments";
+		Style styleFutureComments = doc.getStyle(FUTURE);
+		StyleConstants.setForeground(styleFutureComments, colorComments);
+		doc.addStyle(FUTURE_COMMENTS, styleFuture);
+		
+		
+		
+		
+//		StyleConstants.setForeground(style,Color.GREEN);
+//		doc.addStyle("styleBlack", null);
+//		Style x = doc.getStyle(BOLD_ITALIC);
+	
+	}//
 
 	/*----------------------------------------------------------------*/
 	
@@ -88,21 +161,33 @@ public class InLineDisassembler extends JPanel implements Runnable {
 			processCurrentAndFutureLines(programCounter, 0);
 			txtInstructions.setCaretPosition(0);
 		} else {
-			updateTheDisplay(programCounter);
+			updateTheView();
+				updateTheDisplay(programCounter);
 		}// if new display
 
 		priorProgramCounter = programCounter; // remember for next update
 		return;
 	}// updateDisplay()
+	
+	private void updateTheView(){
+//			Element rootElement = doc.getDefaultRootElement();
+			Element paragraph = doc.getParagraphElement(currentPosition);
+	
+	}//updateTheView
 
 	private void processCurrentAndFutureLines(int programCounter, int lineNumber) {
 		int workingProgramCounter = programCounter;
+		
+		currentPosition = doc.getLength();
 		categoryAttributes = makeAttrsForCategory(1); // current line
-
-		for (int i = 0; i < LINES_TO_DISPLAY - lineNumber; i++) {
+		workingProgramCounter += insertCode(workingProgramCounter);
+		categoryAttributes = makeAttrsForCategory(2); // future lines
+		
+		for (int i = 0; i < LINES_TO_DISPLAY - (lineNumber +1); i++) {
 			workingProgramCounter += insertCode(workingProgramCounter);
-			categoryAttributes = makeAttrsForCategory(2); // future lines
 		}// for
+		
+		
 	}// processCurrentAndFutureLines
 
 	private Document updateTheDisplay(int programCounter) {

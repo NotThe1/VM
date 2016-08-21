@@ -393,7 +393,8 @@ public class Machine8080 implements ActionListener {
 		panel.add(spinnerStepCount);
 
 		btnStep = new JButton("");
-		btnStep.setBackground(UIManager.getColor("Panel.background"));
+		btnStep.setOpaque(true);
+//		btnStep.setBackground(UIManager.getColor("Panel.background"));
 		btnStep.setIcon(stepIcon);
 		btnStep.setName(BTN_STEP);
 		btnStep.addActionListener(this);
@@ -401,6 +402,7 @@ public class Machine8080 implements ActionListener {
 		panel.add(btnStep);
 
 		btnRun = new JButton("");
+		btnRun.setOpaque(false);
 		btnRun.setName(BTN_RUN);
 		btnRun.addActionListener(this);
 		btnRun.setBounds(41, 185, 78, 73);
