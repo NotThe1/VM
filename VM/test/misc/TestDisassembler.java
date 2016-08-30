@@ -17,7 +17,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSpinner;
 
 import java.awt.GridBagConstraints;
 
@@ -27,12 +26,9 @@ import java.awt.Insets;
 
 import codeSupport.HexSpinner;
 
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 
-import memory.Core;
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 import utilities.InLineDisassembler;
@@ -42,13 +38,10 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 
 import javax.swing.JPanel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 import java.awt.Color;
 import javax.swing.border.LineBorder;
 import javax.swing.JTabbedPane;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 
 public class TestDisassembler {
