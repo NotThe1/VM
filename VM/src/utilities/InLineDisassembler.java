@@ -54,7 +54,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	private static int futureProgramerCounter; // instruction +1 from last displayed
 
 	private static boolean newDisplay;
-//	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
+	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
 	private JTextPane txtInstructions;
 
 	public static InLineDisassembler getInstance() {
@@ -151,7 +151,6 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		int removePoint = currentPosition.getOffset() - 1;
 		try {
 			doc.remove(removePoint, doc.getLength() - removePoint);
-			System.out.printf("lineNumber: %d%n", lineNumber);
 			processFutureLines(programCounter, lineNumber);
 			currentPosition = doc.createPosition(removePoint + 1);
 		} catch (BadLocationException e) {
@@ -252,7 +251,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 			default:
 
 			}// switch opCode Size
-			String functionPart = String.format("    %s%n", OpCodeMap.getFunction(opCode));
+			String functionPart = String.format("    %s", OpCodeMap.getFunction(opCode) + LINE_SEPARATOR);
 			doc.insertString(doc.getLength(), functionPart, functionAttributes1);
 			if (when == LINE_CURRENT) {
 				currentPosition = doc.createPosition(doc.getLength() - 1); // current line position
