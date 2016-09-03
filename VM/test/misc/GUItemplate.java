@@ -27,20 +27,6 @@ public class GUItemplate {
 	private JButton btnTwo;
 	private JButton btnThree;
 	private JButton btnFour;
-	private JMenu mnuFile;
-	private JMenu mnuEdit;
-	private JMenuItem mnuFileNew;
-	private JMenuItem mnuFileOpen;
-	private JSeparator separator;
-	private JMenuItem mnuFileSave;
-	private JMenuItem mnuFileSaveAs;
-	private JSeparator separator_1;
-	private JMenuItem mnuFilePrint;
-	private JSeparator separator_2;
-	private JMenuItem mnuFileExit;
-	private JMenuItem mnuEditCut;
-	private JMenuItem mnuEditCopy;
-	private JMenuItem mnuEditPaste;
 
 	/**
 	 * Launch the application.
@@ -53,8 +39,8 @@ public class GUItemplate {
 					window.frmTemplate.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
-				}
-			}
+				}//try
+			}//run
 		});
 	}// main
 
@@ -76,7 +62,8 @@ public class GUItemplate {
 		
 	}//doFilePrint
 	private void doFileExit(){
-		
+		appClose();
+		System.exit(0);
 	}//doFileExit
 	private void doEditCut(){
 		
@@ -158,10 +145,10 @@ public class GUItemplate {
 		JMenuBar menuBar = new JMenuBar();
 		frmTemplate.setJMenuBar(menuBar);
 		
-		mnuFile = new JMenu("File");
+		JMenu mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
 		
-		mnuFileNew = new JMenuItem("New");
+		JMenuItem mnuFileNew = new JMenuItem("New");
 		mnuFileNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileNew();
@@ -169,7 +156,7 @@ public class GUItemplate {
 		});
 		mnuFile.add(mnuFileNew);
 		
-		mnuFileOpen = new JMenuItem("Open...");
+		JMenuItem mnuFileOpen = new JMenuItem("Open...");
 		mnuFileOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileOpen();
@@ -177,10 +164,10 @@ public class GUItemplate {
 		});
 		mnuFile.add(mnuFileOpen);
 		
-		separator = new JSeparator();
+		JSeparator separator = new JSeparator();
 		mnuFile.add(separator);
 		
-		mnuFileSave = new JMenuItem("Save...");
+		JMenuItem mnuFileSave = new JMenuItem("Save...");
 		mnuFileSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileSave();
@@ -188,7 +175,7 @@ public class GUItemplate {
 		});
 		mnuFile.add(mnuFileSave);
 		
-		mnuFileSaveAs = new JMenuItem("Save As...");
+		JMenuItem mnuFileSaveAs = new JMenuItem("Save As...");
 		mnuFileSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileSaveAs();
@@ -196,10 +183,10 @@ public class GUItemplate {
 		});
 		mnuFile.add(mnuFileSaveAs);
 		
-		separator_2 = new JSeparator();
+		JSeparator separator_2 = new JSeparator();
 		mnuFile.add(separator_2);
 		
-		mnuFilePrint = new JMenuItem("Print...");
+		JMenuItem mnuFilePrint = new JMenuItem("Print...");
 		mnuFilePrint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFilePrint();
@@ -208,10 +195,10 @@ public class GUItemplate {
 		mnuFile.add(mnuFilePrint);
 		
 		
-		separator_1 = new JSeparator();
+		JSeparator separator_1 = new JSeparator();
 		mnuFile.add(separator_1);
 		
-		mnuFileExit = new JMenuItem("Exit");
+		JMenuItem mnuFileExit = new JMenuItem("Exit");
 		mnuFileExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileExit();
@@ -219,10 +206,10 @@ public class GUItemplate {
 		});
 		mnuFile.add(mnuFileExit);
 		
-		mnuEdit = new JMenu("Edit");
+		JMenu mnuEdit = new JMenu("Edit");
 		menuBar.add(mnuEdit);
 		
-		mnuEditCut = new JMenuItem("Cut");
+		JMenuItem mnuEditCut = new JMenuItem("Cut");
 		mnuEditCut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doEditCut();
@@ -230,7 +217,7 @@ public class GUItemplate {
 		});
 		mnuEdit.add(mnuEditCut);
 		
-		mnuEditCopy = new JMenuItem("Copy");
+		JMenuItem mnuEditCopy = new JMenuItem("Copy");
 		mnuEditCopy.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doEditCopy();
@@ -238,7 +225,7 @@ public class GUItemplate {
 		});
 		mnuEdit.add(mnuEditCopy);
 		
-		mnuEditPaste = new JMenuItem("Paste");
+		JMenuItem mnuEditPaste = new JMenuItem("Paste");
 		mnuEditPaste.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doEditPaste();

@@ -12,41 +12,64 @@ import java.util.Random;
 public class PlainTest {
 
 	public static void main(String[] args) {
-		test7();
-//		test6();
-//		test5();
-//		test4();
-//		 test3();
-//		 test2();
-//		 test1();
+		test8();
+		//test7();
+		// test6();
+		// test5();
+		// test4();
+		// test3();
+		// test2();
+		// test1();
 	}// main
-	
-public static void test7(){
-	int ccMaskZeros = 0B1111111111010111;
-	int ccMaskOnes = 0B0000000000000010;
-	
-	int base00 = 0;
-	int base11 = 0XFFFF;
-	
-	int ans00 = base00 & ccMaskZeros;
-	int ans01 = base00 | ccMaskOnes;
-	
-	int ans10 = base11 & ccMaskZeros;
-	int ans11 = base11 | ccMaskOnes;
-	
 
-}//test7
-	public static void test6(){
+	public static void test8() {
+		showValue(1000);
+		showValue(2048);
+		showValue(1048576);
+		showValue(10485760);
+		showValue(60485760-6048576);
+	}//test8
+
+	public static void showValue(long value) {
+		String strFileSize = null;
+		if (value < 1024) {
+			strFileSize = String.format("%,d Bytes", value);
+		} else if (value < 1048576) {
+			strFileSize = String.format("%,.2f KB", (float)(value / 1024));
+		} else {
+			strFileSize = String.format("%,f MB", (float)(value / 1048576));
+		}// if
+		
+		System.out.printf("%d:  %s%n",value,strFileSize);
+
+	}// showValue
+
+	public static void test7() {
+		int ccMaskZeros = 0B1111111111010111;
+		int ccMaskOnes = 0B0000000000000010;
+
+		int base00 = 0;
+		int base11 = 0XFFFF;
+
+		int ans00 = base00 & ccMaskZeros;
+		int ans01 = base00 | ccMaskOnes;
+
+		int ans10 = base11 & ccMaskZeros;
+		int ans11 = base11 | ccMaskOnes;
+
+	}// test7
+
+	public static void test6() {
 		Deque<Integer> myStack = new ArrayDeque<Integer>();
-		for (int i = 0;i <20;i++){
+		for (int i = 0; i < 20; i++) {
 			myStack.push(i);
-		}//for
-		while(!myStack.isEmpty()){
+		}// for
+		while (!myStack.isEmpty()) {
 			System.out.printf("Value = %d%n", myStack.pop());
-		}//while
-	}//test6
-	
-	public static void test5(){
+		}// while
+	}// test6
+
+	public static void test5() {
 		ArithmeticUnit au = ArithmeticUnit.getInstance();
 		ConditionCodeRegister ccr = ConditionCodeRegister.getInstance();
 		byte value1 = (byte) 0X1E;
@@ -54,9 +77,9 @@ public static void test7(){
 		ccr.setCarryFlag(false);
 		byte result = au.add(value1, value2);
 		result = (byte) (value1 & value2);
-		byte  a = result;
+		byte a = result;
 		boolean auxC = CalculateCC.isAuxCarry(value1, value2, false);
-	}//test5
+	}// test5
 
 	public static void test4() {
 		ArithmeticUnit au = ArithmeticUnit.getInstance();
@@ -69,13 +92,13 @@ public static void test7(){
 		byte[] valueSource = new byte[] { (byte) 0X60, (byte) 0X61, (byte) 0X20, (byte) 0X21, (byte) 0X00, (byte) 0X01 };
 		// byte[] valueAns = new byte[] { (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF
 		// };
-		
+
 		for (int i = 0; i < valueAcc.length; i++) {
 			isFlagSet = CalculateCC.isAuxCarrySub(valueAcc[i], valueSource[i], carryIn);
 			valueAns = au.subtract(valueAcc[i], valueSource[i]);
-			System.out.printf("au says %s.%n",ccr.isAuxilaryCarryFlagSet() );
+			System.out.printf("au says %s.%n", ccr.isAuxilaryCarryFlagSet());
 			msg = String.format("AuxCarry %s, Acc: %02X, Source: %02X, Result: %02X .%n",
-					isFlagSet, valueAcc[i], valueSource[i],valueAns);
+					isFlagSet, valueAcc[i], valueSource[i], valueAns);
 			System.out.println(msg);
 		}// for i
 

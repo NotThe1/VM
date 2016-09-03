@@ -45,7 +45,7 @@ import utilities.FilePicker;
 
 
 
-public class GUItest extends Observable{
+public class GUItest1 extends Observable{
 	static class menuAdapter implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
@@ -56,7 +56,7 @@ public class GUItest extends Observable{
 	private JFrame frmTest;
 	DefaultComboBoxModel baseInstructionModel;
 	static ButtonsWatch watchButtons;
-	static GUItest window;
+	static GUItest1 window;
 	/**
 	 * Launch the application.
 	 */
@@ -64,7 +64,7 @@ public class GUItest extends Observable{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUItest window = new GUItest();
+					GUItest1 window = new GUItest1();
 					watchButtons = new ButtonsWatch();
 
 //					window.addObserver(watchButtons);
@@ -78,7 +78,7 @@ public class GUItest extends Observable{
 		
 	}// main
 	private void doIt(){
-		window = new GUItest();
+		window = new GUItest1();
 		window.frmTest.setVisible(true);
 	}
 	private void stuff(JFileChooser c){
@@ -87,7 +87,7 @@ public class GUItest extends Observable{
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(GUItest.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(GUItest1.class);
 		Dimension dim = frmTest.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -99,7 +99,7 @@ public class GUItest extends Observable{
 
 	@SuppressWarnings("unchecked")
 	private void appInit() {
-		Preferences myPrefs = Preferences.userNodeForPackage(GUItest.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(GUItest1.class);
 		frmTest.setSize(318, 395);
 		frmTest.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
@@ -114,7 +114,7 @@ public class GUItest extends Observable{
 	/**
 	 * Create the application.
 	 */
-	public GUItest() {
+	public GUItest1() {
 		initialize();
 		appInit();
 	}
