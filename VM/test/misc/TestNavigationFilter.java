@@ -8,42 +8,60 @@ import javax.swing.text.StyledDocument;
 public class TestNavigationFilter extends NavigationFilter {
 
 	private int dataStart = 0;
-	private int dataEnd = 0;
+//	private int dataEnd = 0;
 	private int asciiStart = 0;
-	private int asciiEnd = 0;
+//	private int asciiEnd = 0;
 	private StyledDocument doc;
+	private int[] columnTable;
+//	private int firstDataColumn;
+	private int lastData,lastAscii;
 
-	public TestNavigationFilter(StyledDocument doc) {
+	public TestNavigationFilter(StyledDocument doc,int lastData) {
+		this.lastData = lastData;
 		this.doc = doc;
+		this.lastAscii = doc.getLength();
 		Element paragraphElement = doc.getParagraphElement(0);
 
 		Element dataElement = paragraphElement.getElement(1);
 		this.dataStart = dataElement.getStartOffset() + 1;
-		this.dataEnd = dataElement.getEndOffset()-1;
-
 		dataElement = paragraphElement.getElement(2);
-		this.asciiStart = dataElement.getStartOffset();
-		this.asciiEnd = dataElement.getEndOffset();
+		this.asciiStart = dataElement.getStartOffset() + 2;
+
+		columnTable = makeColumnTable(this.dataStart, paragraphElement.getEndOffset());
 
 	}// Constructor
 
 	public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
 		Element paragraphElement = doc.getParagraphElement(dot);
-		System.out.printf("[setDot] paragraphElement - start %d, end %d%n", paragraphElement.getStartOffset(),
-				paragraphElement.getEndOffset());
-
-		int limit = paragraphElement.getStartOffset() + dataStart;
-		int limitWrap = paragraphElement.getStartOffset() + dataEnd;
+		int column = dot - paragraphElement.getStartOffset();
+		int columnType = columnTable[column];
+		int position = dot;
+		switch (columnType) {
+		case ADDR:
+			position=paragraphElement.getStartOffset() + this.dataStart;
+			break;
+		case NORMAL:
+			position = dot;
+			break;
+		case BLANK_1:
+			position = dot+1;
+			break;
+		case BLANK_2:
+			position = dot+2;
+			break;
+		case DATA_WRAP:
+			position = paragraphElement.getEndOffset() + this.dataStart;
+			break;
+		case ASCII_WRAP:
+			System.out.printf("%s%n", "ASCII Wrap");
+			position = paragraphElement.getEndOffset() + this.asciiStart;
+			break;
+		default:
+			 position = dot;
+		}// switch
 		
-		if (dot < limit) {
-			fb.setDot(limit, bias);
-		}else if(dot >= limitWrap){
-			fb.setDot(paragraphElement.getEndOffset()+ dataStart, bias);
-		} else {
-			fb.setDot(dot, bias);
-		}//
-		System.out.printf("[setDot] dot: %d, limit: %d%n", dot, limit);
-	}//
+		fb.setDot(position, bias);
+	}//setDot
 
 	public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
 		if (dot < dataStart) {
@@ -52,7 +70,56 @@ public class TestNavigationFilter extends NavigationFilter {
 			fb.setDot(dot, bias);
 		}//
 		System.out.printf("[moveDot] **** dot: %d, dataStart: %d%n", dot, dataStart);
-
 	}// moveDot
+		// -----------------------------------------------------------
+
+	private int[] makeColumnTable(int dataStart, int lineSize) {
+		int[] ans = new int[lineSize];
+		int columnPosition = 0;
+		for (; columnPosition < dataStart; columnPosition++) {
+			ans[columnPosition] = ADDR;
+		}// Address
+		int[] dataPattern = new int[] { NORMAL, NORMAL, BLANK_1 };
+		int dataPatternLength = dataPattern.length;
+		for (int i = 0; i < 8; i++) {
+			System.arraycopy(dataPattern, 0, ans, columnPosition, dataPatternLength);
+			columnPosition += dataPatternLength;
+		}// first 8 data
+
+		// adjust for extra space
+		columnPosition -= 2;
+		ans[columnPosition++] = NORMAL;
+		ans[columnPosition++] = BLANK_2;
+		ans[columnPosition++] = BLANK_2;
+
+		for (int i = 0; i < 8; i++) {
+			System.arraycopy(dataPattern, 0, ans, columnPosition, dataPatternLength);
+			columnPosition += dataPatternLength;
+		}// second 8 data
+
+		// adjust for end of data
+		columnPosition -= 2;
+		ans[columnPosition++] = NORMAL;
+		ans[columnPosition++] = DATA_WRAP;
+		ans[columnPosition++] = BLANK_2;
+
+		for (int i = 0; i < 17; i++) {
+			ans[columnPosition++] = NORMAL;
+		}// ASCII
+			// End of Line
+		ans[columnPosition++] = ASCII_WRAP;
+		ans[columnPosition++] = ASCII_WRAP;
+
+		return ans;
+	}// makeColumnTable
+
+	private static final int ADDR = 0;
+	private static final int NORMAL = 1;
+	
+	private static final int DATA_WRAP = 3;
+	private static final int ASCII_WRAP = 4;
+
+	private static final int BLANK_1 = 7;
+	private static final int BLANK_2 = 8;
 
 }// class TestNavigationFilter
