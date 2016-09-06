@@ -166,6 +166,7 @@ public class HexEditorPrototype {
 		String asciiStr = null;
 		
 		resetDocumentFilter(doc);		
+		resetNavigationFilter();		
 		clearDocument(doc);
 		while (bytesRead == 16) {
 			sbData.setLength(0);
@@ -200,10 +201,21 @@ public class HexEditorPrototype {
 			}// try read
 		}// while
 		setDocumentFilter(doc);
+		setNavigationFilter(doc);
 		textPane.setCaretPosition(0);
 		System.out.printf("bytesRead: %d  ", bytesRead);
 
 	}// loadDocument
+	private void resetNavigationFilter(){
+		textPane.setNavigationFilter(null);
+	}//resetDocumentFilter
+	
+	private void setNavigationFilter(StyledDocument doc){
+		TestNavigationFilter testNavigationFilter = new TestNavigationFilter(doc);
+		textPane.setNavigationFilter(testNavigationFilter);
+	}//resetDocumentFilter
+	
+	
 	
 	private void resetDocumentFilter(StyledDocument doc){
 		((AbstractDocument) doc).setDocumentFilter(null);
@@ -225,7 +237,9 @@ public class HexEditorPrototype {
 //		System.out.printf("[setDocumentFilter]\t1 data end = %d %n", dataEnd);
 //		System.out.printf("[setDocumentFilter]\t1 ascii end = %d %n", asciiEnd);
 		
-		TestFilter testFilter = new TestFilter(doc,addressEnd,dataEnd,asciiEnd);
+		TestDocumentFilter testFilter = new TestDocumentFilter(doc,addressEnd,dataEnd,asciiEnd);
+		testFilter.setAsciiAttributes(asciiAttributes);
+		testFilter.setDataAttributes(dataAttributes);
 		((AbstractDocument) doc).setDocumentFilter(testFilter);
 	}//setDocumentFilter
 
