@@ -8,18 +8,20 @@ import javax.swing.text.StyledDocument;
 public class TestNavigationFilter extends NavigationFilter {
 
 	private int dataStart = 0;
-//	private int dataEnd = 0;
+	// private int dataEnd = 0;
 	private int asciiStart = 0;
-//	private int asciiEnd = 0;
+	// private int asciiEnd = 0;
 	private StyledDocument doc;
 	private int[] columnTable;
-//	private int firstDataColumn;
-	private int lastData,lastAscii;
+	// private int firstDataColumn;
+	private int lastDataEnd = 0;
+	private int lastAsciiStart = 0;
+	private int lastAsciiEnd = 0;
 
-	public TestNavigationFilter(StyledDocument doc,int lastData) {
-		this.lastData = lastData;
+	public TestNavigationFilter(StyledDocument doc, int lastDataCount) {
+		// this.lastData = lastData;
 		this.doc = doc;
-		this.lastAscii = doc.getLength();
+		// this.lastAscii = doc.getLength();
 		Element paragraphElement = doc.getParagraphElement(0);
 
 		Element dataElement = paragraphElement.getElement(1);
@@ -29,25 +31,45 @@ public class TestNavigationFilter extends NavigationFilter {
 
 		columnTable = makeColumnTable(this.dataStart, paragraphElement.getEndOffset());
 
+		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		Element lastElement = doc.getParagraphElement(doc.getLength() - 1);
+		int lastDataStart = lastElement.getElement(1).getStartOffset();
+		int index = lastDataCount > 7 ? -1 : 1;
+		index += (lastDataCount * 3);
+
+		lastDataEnd = lastDataStart + index;
+
+		lastAsciiStart = lastElement.getElement(2).getStartOffset() + 2;
+		lastAsciiEnd = lastAsciiStart + lastDataCount - 1;
+
+		int a = 0;
+
 	}// Constructor
 
 	public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+		//check if past end of document
+		if(dot >lastAsciiEnd){
+			return; //past the ASCII
+		}//if
+		if ((dot > lastDataEnd) & ( dot < lastAsciiStart)){
+			return;
+		}//past the last data , before the ASCII
 		Element paragraphElement = doc.getParagraphElement(dot);
 		int column = dot - paragraphElement.getStartOffset();
 		int columnType = columnTable[column];
 		int position = dot;
 		switch (columnType) {
 		case ADDR:
-			position=paragraphElement.getStartOffset() + this.dataStart;
+			position = paragraphElement.getStartOffset() + this.dataStart;
 			break;
 		case NORMAL:
 			position = dot;
 			break;
 		case BLANK_1:
-			position = dot+1;
+			position = dot + 1;
 			break;
 		case BLANK_2:
-			position = dot+2;
+			position = dot + 2;
 			break;
 		case DATA_WRAP:
 			position = paragraphElement.getEndOffset() + this.dataStart;
@@ -57,11 +79,11 @@ public class TestNavigationFilter extends NavigationFilter {
 			position = paragraphElement.getEndOffset() + this.asciiStart;
 			break;
 		default:
-			 position = dot;
+			position = dot;
 		}// switch
-		
+
 		fb.setDot(position, bias);
-	}//setDot
+	}// setDot
 
 	public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
 		if (dot < dataStart) {
@@ -115,7 +137,7 @@ public class TestNavigationFilter extends NavigationFilter {
 
 	private static final int ADDR = 0;
 	private static final int NORMAL = 1;
-	
+
 	private static final int DATA_WRAP = 3;
 	private static final int ASCII_WRAP = 4;
 

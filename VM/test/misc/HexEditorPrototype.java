@@ -212,8 +212,8 @@ public class HexEditorPrototype {
 		textPane.setNavigationFilter(null);
 	}//resetDocumentFilter
 	
-	private void setNavigationFilter(StyledDocument doc,int lastData){
-		TestNavigationFilter testNavigationFilter = new TestNavigationFilter(doc,lastData);
+	private void setNavigationFilter(StyledDocument doc,int lastDataCount){
+		TestNavigationFilter testNavigationFilter = new TestNavigationFilter(doc,lastDataCount);
 		textPane.setNavigationFilter(testNavigationFilter);
 	}//resetDocumentFilter
 	
