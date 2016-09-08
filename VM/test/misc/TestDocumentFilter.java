@@ -21,10 +21,6 @@ public class TestDocumentFilter extends DocumentFilter {
 	AttributeSet attrData;
 	AttributeSet attrASCII;
 
-	public TestDocumentFilter() {
-		// TODO Auto-generated constructor stub
-	}// Constructor
-
 	public TestDocumentFilter(StyledDocument doc, int addressEnd, int dataEnd, int asciiEnd) {
 		this.doc = doc;
 		this.attrData = null;
@@ -63,8 +59,7 @@ public class TestDocumentFilter extends DocumentFilter {
 
 	public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
 			throws BadLocationException {
-		System.out.printf("[replace]\toffset: %d ,length: %d, text: %s %n", offset, length, text);
-		// setCoordinates(fb, offset);
+//		System.out.printf("[replace]\toffset: %d ,length: %d, text: %s %n", offset, length, text);
 
 		int netLength = length == 0 ? 1 : length;// length of 0 equals a insert; length of 1 equals a replace
 
@@ -96,7 +91,7 @@ public class TestDocumentFilter extends DocumentFilter {
 
 		fb.replace(offset, netLength, text, attrs);
 
-		// handle simultaneous change of data/ascii display
+		// handle simultaneous change of data/ASCII display
 		if (newCharacterIndex != null) {
 			int targetOffset = (columnType == HEX1) ? offset : offset - 1;
 			String newChar = convertToPrintable(targetOffset);

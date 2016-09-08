@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 
 import java.awt.Insets;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -105,6 +106,17 @@ public class HexEditorPrototype {
 			}// run
 		});
 	}// main
+	
+	private void addFileToMenu(JMenu menu,File file){
+		int componentCount = menu.getMenuComponentCount();
+		int fileIndex = 1;
+		if (menu.getMenuComponent(componentCount-1).equals(mnuFileExit)){ //if need a separator
+			JSeparator separator = new JSeparator();
+			menu.add(separator);
+			componentCount+=1;
+		}// add separator
+//		menu.get
+	}//
 
 	/* Standard Stuff */
 
@@ -142,6 +154,7 @@ public class HexEditorPrototype {
 		activeFile = fc.getSelectedFile();
 		setFileProfile(activeFile);
 		loadDocument(activeFile);
+		addFileToMenu( mnuFile,activeFile);
 		// MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
 	}// doFileOpen
 
@@ -173,6 +186,9 @@ public class HexEditorPrototype {
 			sbData.setLength(0);
 			try {
 				bytesRead = sourceChannel.read(sourceBuffer);
+				if (bytesRead==-1){
+					break;
+				}// no need to add to the doc
 
 				for (int i = 0; i < bytesRead; i++) {
 					if ((i % 8) == 0) {
@@ -205,7 +221,7 @@ public class HexEditorPrototype {
 		setDocumentFilter(doc);
 		setNavigationFilter(doc,bytesRead);
 		textPane.setCaretPosition(0);
-		System.out.printf("bytesRead: %d  ", bytesRead);
+//		System.out.printf("bytesRead: %d  ", bytesRead);
 
 	}// loadDocument
 	private void resetNavigationFilter(){
@@ -556,7 +572,7 @@ public class HexEditorPrototype {
 		JMenuBar menuBar = new JMenuBar();
 		frmTemplate.setJMenuBar(menuBar);
 
-		JMenu mnuFile = new JMenu("File");
+		mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
 
 		JMenuItem mnuFileNew = new JMenuItem("New");
@@ -608,7 +624,7 @@ public class HexEditorPrototype {
 		JSeparator separator_1 = new JSeparator();
 		mnuFile.add(separator_1);
 
-		JMenuItem mnuFileExit = new JMenuItem("Exit");
+		mnuFileExit = new JMenuItem("Exit");
 		mnuFileExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileExit();
@@ -617,6 +633,7 @@ public class HexEditorPrototype {
 		mnuFile.add(mnuFileExit);
 
 		JMenu mnuEdit = new JMenu("Edit");
+		mnuEdit.setVisible(false);
 		menuBar.add(mnuEdit);
 
 		mnuEditCut = new JMenuItem("Cut");
@@ -673,5 +690,7 @@ public class HexEditorPrototype {
 	private JMenuItem mnuEditCut;
 	private JMenuItem mnuEditCopy;
 	private JMenuItem mnuEditPaste;
+	private JMenuItem mnuFileExit;
+	private JMenu mnuFile;
 
 }// class GUItemplate

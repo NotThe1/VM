@@ -19,9 +19,7 @@ public class TestNavigationFilter extends NavigationFilter {
 	private int lastAsciiEnd = 0;
 
 	public TestNavigationFilter(StyledDocument doc, int lastDataCount) {
-		// this.lastData = lastData;
 		this.doc = doc;
-		// this.lastAscii = doc.getLength();
 		Element paragraphElement = doc.getParagraphElement(0);
 
 		Element dataElement = paragraphElement.getElement(1);
@@ -32,9 +30,10 @@ public class TestNavigationFilter extends NavigationFilter {
 		columnTable = makeColumnTable(this.dataStart, paragraphElement.getEndOffset());
 
 		// ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 		Element lastElement = doc.getParagraphElement(doc.getLength() - 1);
 		int lastDataStart = lastElement.getElement(1).getStartOffset();
-		int index = lastDataCount > 7 ? -1 : 1;
+		int index = lastDataCount <= 7 ? 0 : 1;
 		index += (lastDataCount * 3);
 
 		lastDataEnd = lastDataStart + index;
@@ -42,18 +41,22 @@ public class TestNavigationFilter extends NavigationFilter {
 		lastAsciiStart = lastElement.getElement(2).getStartOffset() + 2;
 		lastAsciiEnd = lastAsciiStart + lastDataCount - 1;
 
-		int a = 0;
+		if (lastDataCount == -1) {
+			lastAsciiEnd = Integer.MAX_VALUE;
+			lastDataEnd = Integer.MAX_VALUE;
+		}// if
 
 	}// Constructor
 
 	public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
-		//check if past end of document
-		if(dot >lastAsciiEnd){
-			return; //past the ASCII
-		}//if
-		if ((dot > lastDataEnd) & ( dot < lastAsciiStart)){
+		// check if past end of document
+		if (dot > lastAsciiEnd) {
+			return; // past the ASCII
+		}// if
+		if ((dot >= lastDataEnd) & (dot < lastAsciiStart - 1)) {
 			return;
-		}//past the last data , before the ASCII
+		}// past the last data , before the ASCII
+
 		Element paragraphElement = doc.getParagraphElement(dot);
 		int column = dot - paragraphElement.getStartOffset();
 		int columnType = columnTable[column];
@@ -86,11 +89,12 @@ public class TestNavigationFilter extends NavigationFilter {
 	}// setDot
 
 	public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
-		if (dot < dataStart) {
-			fb.setDot(dataStart, bias);
-		} else {
-			fb.setDot(dot, bias);
-		}//
+
+		// if (dot < dataStart) {
+		// fb.setDot(dataStart, bias);
+		// } else {
+		// fb.setDot(dot, bias);
+		// }//
 		System.out.printf("[moveDot] **** dot: %d, dataStart: %d%n", dot, dataStart);
 	}// moveDot
 		// -----------------------------------------------------------
