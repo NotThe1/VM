@@ -42,6 +42,7 @@ import javax.swing.JEditorPane;
 
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
+import utilities.MenuUtility;
 
 import java.awt.FlowLayout;
 import java.io.File;
@@ -108,13 +109,7 @@ public class HexEditorPrototype {
 	}// main
 	
 	private void addFileToMenu(JMenu menu,File file){
-		int componentCount = menu.getMenuComponentCount();
-		int fileIndex = 1;
-		if (menu.getMenuComponent(componentCount-1).equals(mnuFileExit)){ //if need a separator
-			JSeparator separator = new JSeparator();
-			menu.add(separator);
-			componentCount+=1;
-		}// add separator
+		MenuUtility.addFile(mnuFile, file);
 //		menu.get
 	}//
 
@@ -181,7 +176,7 @@ public class HexEditorPrototype {
 		resetDocumentFilter(doc);		
 		resetNavigationFilter();		
 		clearDocument(doc);
-		int lastData = 0;
+//		int lastData = 0;
 		while (bytesRead == 16) {
 			sbData.setLength(0);
 			try {
@@ -204,7 +199,7 @@ public class HexEditorPrototype {
 
 				doc.insertString(doc.getLength(), bufferAddressStr, addressAttributes);
 				doc.insertString(doc.getLength(), dataStr, dataAttributes);
-				lastData = doc.getLength();
+//				lastData = doc.getLength();
 				doc.insertString(doc.getLength(), asciiStr, asciiAttributes);
 
 //				System.out.printf("%s", bufferAddressStr);
@@ -620,6 +615,17 @@ public class HexEditorPrototype {
 			}
 		});
 		mnuFile.add(mnuFilePrint);
+		
+		separatorFileStart = new JSeparator();
+		separatorFileStart.setName(MenuUtility.RECENT_FILES_START);
+		mnuFile.add(separatorFileStart);
+		
+		separatorFileEnd = new JSeparator();
+		separatorFileEnd.setName(MenuUtility.RECENT_FILES_END);
+		mnuFile.add(separatorFileEnd);
+		
+		mnuRemoveRecentFiles = new JMenuItem("Remove Recent Files");
+		mnuFile.add(mnuRemoveRecentFiles);
 
 		JSeparator separator_1 = new JSeparator();
 		mnuFile.add(separator_1);
@@ -692,5 +698,8 @@ public class HexEditorPrototype {
 	private JMenuItem mnuEditPaste;
 	private JMenuItem mnuFileExit;
 	private JMenu mnuFile;
+	private JSeparator separatorFileStart;
+	private JSeparator separatorFileEnd;
+	private JMenuItem mnuRemoveRecentFiles;
 
 }// class GUItemplate
