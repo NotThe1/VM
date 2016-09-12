@@ -2,26 +2,22 @@ package utilities;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JToolBar.Separator;
 
 /**
- * handles the adding and removing of files on the "File" menu. It will place them between the two separators named
- * respectively : "separatorFiles" ( originally not visible) and "separatorExit" usuallly placed just above the Exit
- * menu item
+ * handles the adding and removing of files on a menu, usually the "File" menu. It will place them between the two
+ * separators with attribute "name"  respectively : "separatorFiles" ( originally not visible) and "separatorExit"
+ * usuallly placed just above the Exit menu item. See String definitions below 
  * 
  * @author Frank Martyn September 2016
  *
  */
 
 public class MenuUtility {
-	static Separator exitSeparator;
-	static Separator fileSeparator;
-
-	// public static final String SEPARATOR_EXIT = "separatorExit";
 	public static final String RECENT_FILES_START = "recentFilesStart";
 	public static final String RECENT_FILES_END = "recentFilesEnd";
 	private static final String NUMBER_DELIM = ":";
@@ -68,7 +64,7 @@ public class MenuUtility {
 			if (menuActionCommand.equals(file.getAbsolutePath())) {
 				removeIndex = j; // remember for later
 				break;
-			}//if remove ?
+			}
 			menuText = String.format("%2d%s  %s", fileIndex++, NUMBER_DELIM, menuActionCommand);
 			((AbstractButton) menu.getMenuComponent(j)).setText(menuText);
 		}// for
@@ -100,22 +96,31 @@ public class MenuUtility {
 			if (menu.getMenuComponent(i).getName() == RECENT_FILES_START) {
 				menu.getMenuComponent(i).setVisible(false); // Separator start
 				filesMenuStart = i + 1;
-			}// if start
+			}// if
 			if (menu.getMenuComponent(i).getName() == RECENT_FILES_END) {
 				menu.getMenuComponent(i).setVisible(false);// Separator end
 				menu.getMenuComponent(i + 1).setVisible(false);// menu Empty
 
 				filesMenuEnd = i - 1;
 				break;
-			}// if end
+			}// if
 		}// for
 
 		for (int j = filesMenuEnd; j >= filesMenuStart; j--) {
 			menu.remove(j);
-		}//for remove
-	}//clearList
-	
-	public static ArrayList<String> getFilePaths(JMenu menu){
+		}//
+			// int k = filesMenuEnd;
+		// menu.remove(k--);
+	}// clearList
+
+	/**
+	 * returns an ArrayList with all the file paths currently on the Recent File List
+	 * 
+	 * @param menu
+	 *            the menu that contains the recent File List
+	 * @return an ArrayList<String> of the full paths of the files on the Recent File List
+	 */
+	public static ArrayList<String> getFilePaths(JMenu menu) {
 		ArrayList<String> filePaths = new ArrayList<String>();
 		int menuCount = menu.getItemCount();
 		boolean isFile = false;
@@ -123,17 +128,64 @@ public class MenuUtility {
 		for (int i = 0; i < menuCount; i++) {
 			if (menu.getMenuComponent(i).getName() == RECENT_FILES_START) {
 				isFile = true;
-				continue; //start collecting paths
+				continue; // start collecting paths
 			}// if
 			if (menu.getMenuComponent(i).getName() == RECENT_FILES_END) {
-				break;	// all done
+				break; // all done
 			}// if
-			if (isFile){
-				
-			filePaths.add(((AbstractButton) menu.getMenuComponent(i)).getActionCommand()+ System.lineSeparator());	
-			}//if isFile
+			if (isFile) {
+
+				filePaths.add(((AbstractButton) menu.getMenuComponent(i)).getActionCommand() + System.lineSeparator());
+			}// if isFile
 		}// for
 		return filePaths;
-	}//getFilePaths
+	}// getFilePaths
+
+	/**
+	 * save to the calling class' Preference fiel the count of file on the File List and the fullPaths of the fiels
+	 * 
+	 * @param myPrefs
+	 *            A node in a hierarchical collection of preference data used by the calling class
+	 * @param menu
+	 *            where the Recent File List are listed
+	 */
+	public static void saveRecentFileList(Preferences myPrefs, JMenu menu) {
+		ArrayList<String> filePaths = MenuUtility.getFilePaths(menu);
+		myPrefs.putInt("RecentFileCount", filePaths.size());
+		if (filePaths.isEmpty()) {
+			return; // nothing to save;
+		}// if is there any?
+
+		int listIndex = 0;
+		String key;
+		for (int i = filePaths.size()-1; i >= 0; i--) {
+			key = String.format("RecentFile_%02d", listIndex++);
+			myPrefs.put(key, filePaths.get(i));
+		}// for each path
+		
+	}// saveRecentFileList
+
+	/**
+	 * Uses the calling class'sPreference loads the saved file onto the Receent File List
+	 * 
+	 * @param myPrefs
+	 *            A node in a hierarchical collection of preference data used by the calling class
+	 * @param menu
+	 *            where the Recent File List is to be listed
+	 */
+	public static void loadRecentFileList(Preferences myPrefs, JMenu menu) {
+		int fileCount = myPrefs.getInt("RecentFileCount", 0);
+		if (fileCount == 0) {
+			return; // no recentFiles saved
+		}// if any ?
+
+		String key;
+
+		for (int i = 0; i < fileCount; i++) {
+			key = String.format("RecentFile_%02d", i);
+			addFile(menu, new File(myPrefs.get(key, "NO FILE")));
+		}// for each path
+
+	}// loadRecentFileList
 
 }// class MenuFilesUtility

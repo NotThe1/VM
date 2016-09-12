@@ -20,10 +20,7 @@ import javax.swing.JPanel;
 
 import java.awt.Insets;
 
-import javax.swing.AbstractButton;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -31,20 +28,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JSplitPane;
 import javax.swing.JScrollPane;
-import javax.swing.JEditorPane;
 
-import memory.MemoryLoaderFromFile;
-import utilities.FilePicker;
+//import utilities.FilePicker;
 import utilities.MenuUtility;
 
-import java.awt.FlowLayout;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -54,8 +47,6 @@ import java.nio.channels.FileChannel;
 
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
 
 import java.awt.Color;
 
@@ -63,9 +54,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Document;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -408,6 +396,7 @@ public class HexEditorPrototype {
 
 		myPrefs.putInt("addressSize", addressSize);
 		myPrefs.putInt("addressBias", addressBias);
+		MenuUtility.saveRecentFileList(myPrefs, mnuFile);
 		myPrefs = null;
 	}// appClose
 
@@ -418,6 +407,7 @@ public class HexEditorPrototype {
 
 		addressSize = myPrefs.getInt("addressSize", DEFAULT_ADDRESS_SIZE);
 		addressBias = myPrefs.getInt("addressBias", 0);
+		MenuUtility.loadRecentFileList(myPrefs, mnuFile);
 		myPrefs = null;
 
 		makeStyles();
@@ -625,6 +615,11 @@ public class HexEditorPrototype {
 		mnuFile.add(separatorFileEnd);
 		
 		mnuRemoveRecentFiles = new JMenuItem("Remove Recent Files");
+		mnuRemoveRecentFiles.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				MenuUtility.clearList(mnuFile);
+			}
+		});
 		mnuFile.add(mnuRemoveRecentFiles);
 
 		JSeparator separator_1 = new JSeparator();
