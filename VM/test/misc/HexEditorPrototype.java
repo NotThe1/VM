@@ -223,6 +223,11 @@ public class HexEditorPrototype {
 	}//resetDocumentFilter
 	
 	private void setDocumentFilter(StyledDocument doc){
+		if(doc ==null){
+			((AbstractDocument) doc).setDocumentFilter(null);
+			return;
+		}//if null
+		
 		Element rootElement = doc.getDefaultRootElement();
 		Element paragraphElement = rootElement.getElement(0);
 		Element element = paragraphElement.getElement(0);
@@ -606,15 +611,15 @@ public class HexEditorPrototype {
 		});
 		mnuFile.add(mnuFilePrint);
 		
-		separatorFileStart = new JSeparator();
+		JSeparator separatorFileStart = new JSeparator();
 		separatorFileStart.setName(MenuUtility.RECENT_FILES_START);
 		mnuFile.add(separatorFileStart);
 		
-		separatorFileEnd = new JSeparator();
+		JSeparator separatorFileEnd = new JSeparator();
 		separatorFileEnd.setName(MenuUtility.RECENT_FILES_END);
 		mnuFile.add(separatorFileEnd);
 		
-		mnuRemoveRecentFiles = new JMenuItem("Remove Recent Files");
+		JMenuItem mnuRemoveRecentFiles = new JMenuItem("Remove Recent Files");
 		mnuRemoveRecentFiles.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				MenuUtility.clearList(mnuFile);
@@ -693,8 +698,8 @@ public class HexEditorPrototype {
 	private JMenuItem mnuEditPaste;
 	private JMenuItem mnuFileExit;
 	private JMenu mnuFile;
-	private JSeparator separatorFileStart;
-	private JSeparator separatorFileEnd;
-	private JMenuItem mnuRemoveRecentFiles;
+//	private JSeparator separatorFileStart;
+//	private JSeparator separatorFileEnd;
+//	private JMenuItem mnuRemoveRecentFiles;
 
 }// class GUItemplate

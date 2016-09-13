@@ -1,5 +1,7 @@
 package utilities;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
@@ -7,11 +9,41 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 
 /**
  * handles the adding and removing of files on a menu, usually the "File" menu. It will place them between the two
- * separators with attribute "name"  respectively : "separatorFiles" ( originally not visible) and "separatorExit"
- * usuallly placed just above the Exit menu item. See String definitions below 
+ * separators with attribute "name" respectively : "separatorFiles" ( originally not visible) and "separatorExit"
+ * followed by a menu Item used to clear the Recent File list. These are usually placed just above the Exit menu item.
+ * See code below:
+ * <p>
+ * JSeparator separatorFileStart = new JSeparator();
+ * <p>
+ * separatorFileStart.setName(MenuUtility.RECENT_FILES_START);
+ * <p>
+ * mnuFile.add(separatorFileStart);
+ * <p>
+ * <p>
+ * JSeparator separatorFileEnd = new JSeparator();
+ * <p>
+ * separatorFileEnd.setName(MenuUtility.RECENT_FILES_END);
+ * <p>
+ * mnuFile.add(separatorFileEnd);
+ * <p>
+ * <p>
+ * JMenuItem mnuRemoveRecentFiles = new JMenuItem("Remove Recent Files");
+ * <p>
+ * mnuRemoveRecentFiles.addActionListener(new ActionListener() {
+ * <p>
+ * public void actionPerformed(ActionEvent arg0) {
+ * <p>
+ * MenuUtility.clearList(mnuFile);
+ * <p>
+ * <p>
+ * );
+ * <p>
+ * mnuFile.add(mnuRemoveRecentFiles);
+ * 
  * 
  * @author Frank Martyn September 2016
  *
@@ -158,11 +190,11 @@ public class MenuUtility {
 
 		int listIndex = 0;
 		String key;
-		for (int i = filePaths.size()-1; i >= 0; i--) {
+		for (int i = filePaths.size() - 1; i >= 0; i--) {
 			key = String.format("RecentFile_%02d", listIndex++);
 			myPrefs.put(key, filePaths.get(i));
 		}// for each path
-		
+
 	}// saveRecentFileList
 
 	/**
