@@ -63,7 +63,7 @@ public class HexEditDocumentFilter extends DocumentFilter{
 
 	public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
 			throws BadLocationException {
-//		System.out.printf("[replace]\toffset: %d ,length: %d, text: %s %n", offset, length, text);
+		System.out.printf("[replace]\toffset: %d ,length: %d, text: %s %n", offset, length, text);
 
 		int netLength = length == 0 ? 1 : length;// length of 0 equals a insert; length of 1 equals a replace
 
