@@ -2,27 +2,22 @@ package misc;
 
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Point;
-
-import javax.swing.JFrame;
-
 import java.awt.GridBagLayout;
-import java.util.Set;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.prefs.Preferences;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
-import javax.swing.JMenuBar;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 public class GUItestMemoryLoaderFromFile {
 
@@ -46,8 +41,8 @@ public class GUItestMemoryLoaderFromFile {
 		});
 	}//main
 	private void doOpen(){
-//		JFileChooser fc = FilePicker.getDataPicker("Memory Files", "mem","hex");
-		JFileChooser fc = FilePicker.getDiskPicker("Data Files", "xxx","yyy");
+		JFileChooser fc = FilePicker.getDataPicker("Memory Files", "mem","hex");
+//		JFileChooser fc = FilePicker.getDiskPicker("Data Files", "xxx","yyy");
 		if ( fc.showOpenDialog(null)== JFileChooser.CANCEL_OPTION){
 			System.out.println("Bailed out of the open");
 			return;

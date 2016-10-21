@@ -1,66 +1,39 @@
 package hardware;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Point;
-
-import javax.swing.JFrame;
-
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 //import java.lang.reflect.InvocationTargetException;
 import java.util.prefs.Preferences;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JMenuBar;
+import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.SpinnerNumberModel;
-
-//import codeSupport.TableMaker;
-
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-
-//import memory.Core;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
 import javax.swing.JPanel;
-
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-//import javax.swing.border.TitledBorder;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
-import java.awt.Color;
-
-//import javax.swing.JLabel;
-//import javax.swing.SwingConstants;
-
-//import java.awt.Font;
-
-//import javax.swing.JTextField;
-import javax.swing.JSpinner;
-import javax.swing.JButton;
+//------------------------
 
 import disks.DiskDisplay;
-
-import javax.swing.border.BevelBorder;
-//import javax.swing.border.MatteBorder;
-import javax.swing.UIManager;
-//import javax.swing.border.EtchedBorder;
-import javax.swing.JTabbedPane;
-//import javax.swing.JScrollPane;
-//import javax.swing.JTextArea;
-
 import utilities.InLineDisassembler;
-
 
 public class Machine8080 implements ActionListener {
 
@@ -71,7 +44,6 @@ public class Machine8080 implements ActionListener {
 	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
 	private JFrame frmMachine;
-	private Icon runIcon, stopIcon,stepIcon;
 
 	/**
 	 * Launch the application.
@@ -84,7 +56,7 @@ public class Machine8080 implements ActionListener {
 					window.frmMachine.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
-				}// try
+				} // try
 			}// run
 		});
 	}// main
@@ -99,10 +71,6 @@ public class Machine8080 implements ActionListener {
 			break;
 		case BTN_RUN:
 			doRun();
-
-			break;
-		case BTN_STOP:
-			doStop();
 			break;
 		default:
 			assert false : name + " is not a valid button name";
@@ -118,8 +86,8 @@ public class Machine8080 implements ActionListener {
 				for (int i = 0; i < stepCount; i++) {
 					if (!cpu.startInstruction()) {
 						break;
-					}// if
-				}// for step count
+					} // if
+				} // for step count
 				updateView();
 			}// run
 		});
@@ -131,27 +99,17 @@ public class Machine8080 implements ActionListener {
 	}//
 
 	private void doRun() {
-		cpu.setError(ErrorType.NONE);
-		btnRun.setName(BTN_STOP);
-		// btnRun.setText(BTN_STOP_TEXT);
-		// btnRun.setForeground(Color.RED);
-		btnRun.setIcon(stopIcon);
-		System.out.println("actionPerformed: doRun");
-		Thread t = new Thread(cpu);
-		t.start();
-
-		// EventQueue.invokeLater(cpu);
-	}// doStep
-
-	private void doStop() {
-		System.out.println("actionPerformed: doStop");
-		cpu.setError(ErrorType.STOP);
-		btnRun.setName(BTN_RUN);
-		// btnRun.setText(BTN_RUN_TEXT);
-		// btnRun.setForeground(Color.BLACK);
-		btnRun.setIcon(runIcon);
-		updateView();
-	}// doStep
+		if (btnRun1.isSelected()) {
+			cpu.setError(ErrorType.NONE);
+			System.out.println("actionPerformed: doRun");
+			Thread t = new Thread(cpu);
+			t.start();
+		} else {
+			System.out.println("actionPerformed: doStop");
+			cpu.setError(ErrorType.STOP);
+			updateView();
+		} // if
+	}// doRun
 
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
@@ -173,9 +131,6 @@ public class Machine8080 implements ActionListener {
 
 	private void appInit0() {
 		menuAdapter = new Machine8080MenuAdapter();
-		runIcon = new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png"));
-		stopIcon = new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png"));
-		stepIcon = new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png"));
 	}// appInit0
 
 	private void appInit() {
@@ -184,8 +139,6 @@ public class Machine8080 implements ActionListener {
 		frmMachine.setSize(948, 730);
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
-		// btnRun.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/Button-Turn-On-icon.png")));
-		btnRun.setIcon(runIcon);
 	}// appInit
 
 	/**
@@ -353,7 +306,8 @@ public class Machine8080 implements ActionListener {
 		// GridBagLayout gbl_tabDisassembler = new GridBagLayout();
 		// gbl_tabDisassembler.columnWidths = new int[]{0, 0};
 		// gbl_tabDisassembler.rowHeights = new int[]{0, 0};
-		// gbl_tabDisassembler.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		// gbl_tabDisassembler.columnWeights = new double[]{1.0,
+		// Double.MIN_VALUE};
 		// gbl_tabDisassembler.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		GridBagConstraints gbc_disassembler = new GridBagConstraints();
 		gbc_disassembler.fill = GridBagConstraints.BOTH;
@@ -361,7 +315,8 @@ public class Machine8080 implements ActionListener {
 		gbc_disassembler.gridy = 0;
 		tabDisassembler.setLayout(new GridLayout(0, 1, 0, 0));
 		tabDisassembler.add(disassembler, gbc_disassembler);
-//		tabbedPane.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[] { tabDisassembler, tabMemory }));
+		// tabbedPane.setFocusTraversalPolicy(new FocusTraversalOnArray(new
+		// Component[] { tabDisassembler, tabMemory }));
 
 		tabMemory = new JPanel();
 		tabMemory.setPreferredSize(new Dimension(50, 50));
@@ -392,21 +347,26 @@ public class Machine8080 implements ActionListener {
 		spinnerStepCount.setBounds(57, 29, 45, 20);
 		panel.add(spinnerStepCount);
 
-		btnStep = new JButton("");
+		btnStep = new JButton();
+		btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
+		btnStep.setBorder(null);
+		btnStep.setContentAreaFilled(false);
 		btnStep.setOpaque(true);
-//		btnStep.setBackground(UIManager.getColor("Panel.background"));
-		btnStep.setIcon(stepIcon);
 		btnStep.setName(BTN_STEP);
 		btnStep.addActionListener(this);
 		btnStep.setBounds(44, 60, 71, 63);
 		panel.add(btnStep);
 
-		btnRun = new JButton("");
-		btnRun.setOpaque(false);
-		btnRun.setName(BTN_RUN);
-		btnRun.addActionListener(this);
-		btnRun.setBounds(41, 185, 78, 73);
-		panel.add(btnRun);
+		btnRun1 = new JToggleButton();
+		btnRun1.setName(BTN_RUN);
+		btnRun1.addActionListener(this);
+		btnRun1.setContentAreaFilled(false);
+		btnRun1.setBorder(null);
+		btnRun1.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
+		btnRun1.setSelectedIcon(
+				new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
+		btnRun1.setBounds(44, 181, 71, 71);
+		panel.add(btnRun1);
 
 		// InLineDisassembler disassembler = InLineDisassembler.getInstance();
 		// GridBagLayout gbl_disassembler = new GridBagLayout();
@@ -436,7 +396,7 @@ public class Machine8080 implements ActionListener {
 	public static final String BTN_STEP = "btnStep";
 	public static final String BTN_RUN = "btnRun";
 	// public static final String BTN_RUN_TEXT = "Run";
-	public static final String BTN_STOP = "btnStop";
+//	public static final String BTN_STOP = "btnStop";
 	// public static final String BTN_STOP_TEXT = "Stop";
 
 	public static final String MNU_FILE_NEW = "mnuFileNew";
@@ -449,7 +409,6 @@ public class Machine8080 implements ActionListener {
 	private JPanel panelStateDisplay;
 	private JPanel panel;
 	private JButton btnStep;
-	private JButton btnRun;
 	private JPanel panelRun;
 	private JPanel panelTop;
 	private JPanel panelBottom;
@@ -462,5 +421,5 @@ public class Machine8080 implements ActionListener {
 	// private InLineDisassembler disassembler;
 	private JPanel panelBottomLeft;
 	private JSpinner spinnerStepCount;
-
+	private JToggleButton btnRun1;
 }// class Machine8080
