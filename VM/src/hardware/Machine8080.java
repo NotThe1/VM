@@ -33,6 +33,8 @@ import javax.swing.border.LineBorder;
 //------------------------
 
 import disks.DiskDisplay;
+import hexEdit.HexEditPanelConcurrent;
+import memory.Core;
 import utilities.InLineDisassembler;
 
 public class Machine8080 implements ActionListener {
@@ -43,6 +45,7 @@ public class Machine8080 implements ActionListener {
 	// private Core core = Core.getInstance();
 	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
+	private HexEditPanelConcurrent hexEditPanelConcurrent= new HexEditPanelConcurrent();
 	private JFrame frmMachine;
 
 	/**
@@ -114,7 +117,6 @@ public class Machine8080 implements ActionListener {
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
 		disassembler.updateDisplay();
-
 	}// updateView
 
 	// -------------------------------------------------------------------
@@ -136,9 +138,12 @@ public class Machine8080 implements ActionListener {
 	private void appInit() {
 		// manage preferences
 		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
-		frmMachine.setSize(948, 730);
+		frmMachine.setSize(myPrefs.getInt("Width", 1352), myPrefs.getInt("Height", 730));
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
+		hexEditPanelConcurrent.loadData(Core.getInstance().getStorage());
+//		disassembler.updateDisplay();
+		
 	}// appInit
 
 	/**
@@ -288,7 +293,7 @@ public class Machine8080 implements ActionListener {
 		gbc_panelBottomLeft.gridy = 0;
 		panelBottom.add(panelBottomLeft, gbc_panelBottomLeft);
 		GridBagLayout gbl_panelBottomLeft = new GridBagLayout();
-		gbl_panelBottomLeft.columnWidths = new int[] { 547, 0 };
+		gbl_panelBottomLeft.columnWidths = new int[] { 850, 0 };
 		gbl_panelBottomLeft.rowHeights = new int[] { 5, 0 };
 		gbl_panelBottomLeft.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
 		gbl_panelBottomLeft.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
@@ -321,12 +326,18 @@ public class Machine8080 implements ActionListener {
 		tabMemory = new JPanel();
 		tabMemory.setPreferredSize(new Dimension(50, 50));
 		tabbedPane.addTab("Memory", null, tabMemory, null);
-		GridBagLayout gbl_tabMemory = new GridBagLayout();
-		gbl_tabMemory.columnWidths = new int[] { 0 };
-		gbl_tabMemory.rowHeights = new int[] { 0 };
-		gbl_tabMemory.columnWeights = new double[] { Double.MIN_VALUE };
-		gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
-		tabMemory.setLayout(gbl_tabMemory);
+		GridBagConstraints gbc_hexPanel = new GridBagConstraints();
+		gbc_hexPanel.fill = GridBagConstraints.BOTH;
+		gbc_hexPanel.gridx = 0;
+		gbc_hexPanel.gridy = 0;
+		tabMemory.setLayout(new GridLayout(0, 1, 0, 0));
+//		GridBagLayout gbl_tabMemory = new GridBagLayout();
+//		gbl_tabMemory.columnWidths = new int[] { 0 };
+//		gbl_tabMemory.rowHeights = new int[] { 0 };
+//		gbl_tabMemory.columnWeights = new double[] { Double.MIN_VALUE };
+//		gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
+//		tabMemory.setLayout(gbl_tabMemory);
+		tabMemory.add(hexEditPanelConcurrent,gbc_hexPanel);
 
 		panelRun = new JPanel();
 		GridBagConstraints gbc_panelRun = new GridBagConstraints();

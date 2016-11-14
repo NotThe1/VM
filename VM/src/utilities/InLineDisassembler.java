@@ -1,10 +1,9 @@
 package utilities;
 
-import hardware.WorkingRegisterSet;
-
 import java.awt.Color;
-import java.awt.GridBagLayout;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,9 +19,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
+import hardware.WorkingRegisterSet;
 import memory.Core;
-
-import java.awt.Dimension;
 
 public class InLineDisassembler extends JPanel implements Runnable {
 
@@ -70,7 +68,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	private void appInit() {
 		newDisplay = true;
 		doc = txtInstructions.getStyledDocument();
-		priorProgramCounter = 0;
+		priorProgramCounter  = Integer.MAX_VALUE;//= 0;
 		makeStyles();
 	}// appInit
 

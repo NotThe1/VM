@@ -48,12 +48,6 @@ public class Core extends Observable implements ICore {
 	}// getInstance
 
 
-	/**
-	 * 
-	 * 
-	 * @param size
-	 *            n/u
-	 */
 	private Core() {
 		int size = 64 * 1024;
 		storage = new byte[size];
@@ -61,6 +55,10 @@ public class Core extends Observable implements ICore {
 //		System.out.println("In core constructor");
 	}// Constructor
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+	
+	public  byte[] getStorage(){
+		return this.storage;
+	}//getStorage
 
 	/**
 	 * Gets memory size
