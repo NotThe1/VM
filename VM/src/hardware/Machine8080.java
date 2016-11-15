@@ -23,6 +23,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
@@ -142,6 +143,7 @@ public class Machine8080 implements ActionListener {
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 		hexEditPanelConcurrent.loadData(Core.getInstance().getStorage());
+		EventQueue.invokeLater(disassembler);
 //		disassembler.updateDisplay();
 		
 	}// appInit
@@ -190,6 +192,19 @@ public class Machine8080 implements ActionListener {
 		mnuMemoryLoadFromFile.setName(MNU_MEMORY_LOAD_FROM_FILE);
 		mnuMemoryLoadFromFile.addActionListener(menuAdapter);
 		mnuMemory.add(mnuMemoryLoadFromFile);
+		
+		JSeparator separator = new JSeparator();
+		mnuMemory.add(separator);
+		
+		JMenuItem mnuMemoryClearAllFiles = new JMenuItem("Clear All Files");
+		mnuMemoryClearAllFiles.setName(MNU_CLEAR_ALL_FILES);
+		mnuMemoryClearAllFiles.addActionListener(menuAdapter);
+		mnuMemory.add(mnuMemoryClearAllFiles);
+		
+		JMenuItem mnuClearSelectedFiles = new JMenuItem("Clear Selected Files");
+		mnuClearSelectedFiles.setName(MNU_CLEAR_SELECTED_FILES);
+		mnuClearSelectedFiles.addActionListener(menuAdapter);
+		mnuMemory.add(mnuClearSelectedFiles);
 
 		JMenu mnuDisks = new JMenu("Disks");
 		menuBar.add(mnuDisks);
@@ -385,7 +400,7 @@ public class Machine8080 implements ActionListener {
 		// gbl_disassembler.rowHeights = new int[]{0};
 		// gbl_disassembler.columnWeights = new double[]{1.0,Double.MIN_VALUE};
 		// gbl_disassembler.rowWeights = new double[]{1.0,Double.MIN_VALUE};
-		disassembler.setLayout(new GridLayout(1, 0, 0, 0));
+		// disassembler.setLayout(new GridLayout(1, 0, 0, 0));
 
 		panelStatus = new JPanel();
 		panelStatus.setPreferredSize(new Dimension(10, 25));
@@ -411,7 +426,11 @@ public class Machine8080 implements ActionListener {
 	// public static final String BTN_STOP_TEXT = "Stop";
 
 	public static final String MNU_FILE_NEW = "mnuFileNew";
+	
 	public static final String MNU_MEMORY_LOAD_FROM_FILE = "mnuMemoryLoadFromFile";
+	
+	public static final String MNU_CLEAR_ALL_FILES = "mnuClearAllFiles";
+	public static final String MNU_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
 
 	private JPanel panelMiddle;
 	private JPanel panelDisks;

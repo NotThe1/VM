@@ -47,8 +47,8 @@ public class InLineDisassembler extends JPanel implements Runnable {
 
 	private static Position currentPosition;
 
-	private static int priorProgramCounter; // value of previous update PC
-	private static int nextProgramCounter; // value of future update PC if straight line code
+	private static int priorProgramCounter = Integer.MAX_VALUE; // value of previous update PC
+	private static int nextProgramCounter = Integer.MIN_VALUE; // value of future update PC if straight line code
 	private static int futureProgramerCounter; // instruction +1 from last displayed
 
 	private static boolean newDisplay;
@@ -68,7 +68,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	private void appInit() {
 		newDisplay = true;
 		doc = txtInstructions.getStyledDocument();
-		priorProgramCounter  = Integer.MAX_VALUE;//= 0;
+		priorProgramCounter = 0;
 		makeStyles();
 	}// appInit
 
