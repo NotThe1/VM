@@ -9,11 +9,17 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
+import hexEdit.HexEditPanelConcurrent;
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 import utilities.InLineDisassembler;
 
 public class Machine8080MenuAdapter implements ActionListener {
+	private HexEditPanelConcurrent hexEditPanelConcurrent;
+
+	public void setHexPanel(HexEditPanelConcurrent hexEditPanelConcurrent) {
+		this.hexEditPanelConcurrent = hexEditPanelConcurrent;
+	}//
 
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
@@ -28,8 +34,11 @@ public class Machine8080MenuAdapter implements ActionListener {
 
 		switch (sourceName) {
 		case Machine8080.MNU_MEMORY_LOAD_FROM_FILE:
-			InLineDisassembler.getInstance().updateDisplay();
 			doMemoryLoadFromFile(actionEvent);
+			
+			
+			EventQueue.invokeLater(this.hexEditPanelConcurrent);
+			 InLineDisassembler.getInstance().refreshDisplay();
 			break;
 		case Machine8080.MNU_CLEAR_ALL_FILES:
 			removeAllFileItems((JPopupMenu) sourceMenu.getParent());
@@ -43,20 +52,18 @@ public class Machine8080MenuAdapter implements ActionListener {
 	}// actionPerformed
 
 	private void doMemoryLoadFromFile(ActionEvent actionEvent) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
-				if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
-					System.out.println("Bailed out of the open");
-					return;
-				} // if - open
-				String fileName = MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
-				System.out.printf("FileName: %s%n", fileName);
+		JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
+		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+			System.out.println("Bailed out of the open");
+			return;
+		} // if - open
+		String fileName = MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
+		System.out.printf("FileName: %s%n", fileName);
 
-				JMenuItem sourceMenu = (JMenuItem) actionEvent.getSource();
-				appendMenuItem(fileName, (JPopupMenu) sourceMenu.getParent());
-			}// run
-		});
+		JMenuItem sourceMenu = (JMenuItem) actionEvent.getSource();
+		appendMenuItem(fileName, (JPopupMenu) sourceMenu.getParent());
+
+	//	InLineDisassembler.getInstance().updateDisplay();
 
 	}// doMemoryLoadFromFile
 		// ----------------------------------
@@ -69,8 +76,8 @@ public class Machine8080MenuAdapter implements ActionListener {
 			} // if right type
 			if (((JCheckBoxMenuItem) parentMenu.getComponent(i)).getName().equals(name)) {
 				return;
-			} // if 
-		}//for	do we already have it?
+			} // if
+		} // for do we already have it?
 
 		JCheckBoxMenuItem mnuNew = new JCheckBoxMenuItem(name);
 		mnuNew.setName(name);

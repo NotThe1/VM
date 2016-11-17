@@ -46,7 +46,7 @@ public class Machine8080 implements ActionListener {
 	// private Core core = Core.getInstance();
 	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
-	private HexEditPanelConcurrent hexEditPanelConcurrent= new HexEditPanelConcurrent();
+	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
 	private JFrame frmMachine;
 
 	/**
@@ -143,9 +143,10 @@ public class Machine8080 implements ActionListener {
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 		hexEditPanelConcurrent.loadData(Core.getInstance().getStorage());
+		menuAdapter.setHexPanel( hexEditPanelConcurrent);
 		EventQueue.invokeLater(disassembler);
-//		disassembler.updateDisplay();
-		
+		// disassembler.updateDisplay();
+
 	}// appInit
 
 	/**
@@ -192,15 +193,15 @@ public class Machine8080 implements ActionListener {
 		mnuMemoryLoadFromFile.setName(MNU_MEMORY_LOAD_FROM_FILE);
 		mnuMemoryLoadFromFile.addActionListener(menuAdapter);
 		mnuMemory.add(mnuMemoryLoadFromFile);
-		
+
 		JSeparator separator = new JSeparator();
 		mnuMemory.add(separator);
-		
+
 		JMenuItem mnuMemoryClearAllFiles = new JMenuItem("Clear All Files");
 		mnuMemoryClearAllFiles.setName(MNU_CLEAR_ALL_FILES);
 		mnuMemoryClearAllFiles.addActionListener(menuAdapter);
 		mnuMemory.add(mnuMemoryClearAllFiles);
-		
+
 		JMenuItem mnuClearSelectedFiles = new JMenuItem("Clear Selected Files");
 		mnuClearSelectedFiles.setName(MNU_CLEAR_SELECTED_FILES);
 		mnuClearSelectedFiles.addActionListener(menuAdapter);
@@ -346,13 +347,13 @@ public class Machine8080 implements ActionListener {
 		gbc_hexPanel.gridx = 0;
 		gbc_hexPanel.gridy = 0;
 		tabMemory.setLayout(new GridLayout(0, 1, 0, 0));
-//		GridBagLayout gbl_tabMemory = new GridBagLayout();
-//		gbl_tabMemory.columnWidths = new int[] { 0 };
-//		gbl_tabMemory.rowHeights = new int[] { 0 };
-//		gbl_tabMemory.columnWeights = new double[] { Double.MIN_VALUE };
-//		gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
-//		tabMemory.setLayout(gbl_tabMemory);
-		tabMemory.add(hexEditPanelConcurrent,gbc_hexPanel);
+		// GridBagLayout gbl_tabMemory = new GridBagLayout();
+		// gbl_tabMemory.columnWidths = new int[] { 0 };
+		// gbl_tabMemory.rowHeights = new int[] { 0 };
+		// gbl_tabMemory.columnWeights = new double[] { Double.MIN_VALUE };
+		// gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
+		// tabMemory.setLayout(gbl_tabMemory);
+		tabMemory.add(hexEditPanelConcurrent, gbc_hexPanel);
 
 		panelRun = new JPanel();
 		GridBagConstraints gbc_panelRun = new GridBagConstraints();
@@ -422,13 +423,13 @@ public class Machine8080 implements ActionListener {
 	public static final String BTN_STEP = "btnStep";
 	public static final String BTN_RUN = "btnRun";
 	// public static final String BTN_RUN_TEXT = "Run";
-//	public static final String BTN_STOP = "btnStop";
+	// public static final String BTN_STOP = "btnStop";
 	// public static final String BTN_STOP_TEXT = "Stop";
 
 	public static final String MNU_FILE_NEW = "mnuFileNew";
-	
+
 	public static final String MNU_MEMORY_LOAD_FROM_FILE = "mnuMemoryLoadFromFile";
-	
+
 	public static final String MNU_CLEAR_ALL_FILES = "mnuClearAllFiles";
 	public static final String MNU_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
 

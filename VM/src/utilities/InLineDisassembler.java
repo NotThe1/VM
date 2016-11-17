@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -42,14 +44,20 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	SimpleAttributeSet functionAttributes1;
 
 	SimpleAttributeSet boldAttributes;
-//	SimpleAttributeSet boldNotAttributes;
-
+	// SimpleAttributeSet boldNotAttributes;
 
 	private static Position currentPosition;
 
-	private static int priorProgramCounter = Integer.MAX_VALUE; // value of previous update PC
-	private static int nextProgramCounter = Integer.MIN_VALUE; // value of future update PC if straight line code
-	private static int futureProgramerCounter; // instruction +1 from last displayed
+	private static int priorProgramCounter = Integer.MAX_VALUE; // value of
+																// previous
+																// update PC
+	private static int nextProgramCounter = Integer.MIN_VALUE; // value of
+																// future update
+																// PC if
+																// straight line
+																// code
+	private static int futureProgramerCounter; // instruction +1 from last
+												// displayed
 
 	private static boolean newDisplay;
 	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
@@ -75,16 +83,16 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	public StyledDocument getDoc() {
 		return doc;
 	}// getDoc
-	
-	public Element getCurrentElement(){
+
+	public Element getCurrentElement() {
 		return doc.getParagraphElement(currentPosition.getOffset());
-	}//getCurrentElement
+	}// getCurrentElement
 
 	private void makeStyles() {
 		SimpleAttributeSet baseAttributes = new SimpleAttributeSet();
 		StyleConstants.setFontFamily(baseAttributes, "Courier New");
 		StyleConstants.setFontSize(baseAttributes, 16);
-		
+
 		historyAttributes = new SimpleAttributeSet(baseAttributes);
 		StyleConstants.setForeground(historyAttributes, Color.GRAY);
 
@@ -108,8 +116,16 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	/*----------------------------------------------------------------*/
 
 	public void run() {
-		updateDisplay();
+		// updateDisplay();
+		refreshDisplay();
 	}// run()
+
+	public void refreshDisplay() {
+		priorProgramCounter = Integer.MAX_VALUE;
+		nextProgramCounter = Integer.MIN_VALUE;
+		newDisplay = true;
+		updateDisplay();
+	}//
 
 	public void updateDisplay() {
 		int programCounter = wrs.getProgramCounter();
@@ -136,7 +152,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 			processCurrentLine();
 			txtInstructions.setCaretPosition(0);
 
-		}// if new display
+		} // if new display
 
 		priorProgramCounter = programCounter; // remember for next update
 		return;
@@ -152,7 +168,6 @@ public class InLineDisassembler extends JPanel implements Runnable {
 			processFutureLines(programCounter, lineNumber);
 			currentPosition = doc.createPosition(removePoint + 1);
 		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		processCurrentLine();
@@ -178,11 +193,10 @@ public class InLineDisassembler extends JPanel implements Runnable {
 				Element paragraphZero = doc.getParagraphElement(0);
 				doc.remove(0, paragraphZero.getEndOffset());
 				futureProgramerCounter = processFutureLines(futureProgramerCounter, LINES_TO_DISPLAY);
-			}// if need to remove
+			} // if need to remove
 		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}// try
+		} // try
 
 		return;
 	}// processHistoryLine
@@ -202,7 +216,7 @@ public class InLineDisassembler extends JPanel implements Runnable {
 
 		for (int i = 0; i < LINES_TO_DISPLAY - (lineNumber); i++) {
 			workingProgramCounter += insertCode(workingProgramCounter, LINE_FUTURE);
-		}// for
+		} // for
 		return workingProgramCounter; // futureProgramCounter.
 	}// processCurrentLine
 
@@ -212,7 +226,10 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		return programCounter + opCodeSize;
 	}// getNextProgramCounter
 
-	private int insertCode(int workingProgramCounter, int when) {// int thisLineNumber, int workingProgramCounter
+	private int insertCode(int workingProgramCounter, int when) {// int
+																	// thisLineNumber,
+																	// int
+																	// workingProgramCounter
 		// int workingPosition = thisLineNumber * LINE_WIDTH;
 		byte opCode = core.read(workingProgramCounter);
 		byte value1 = core.read(workingProgramCounter + 1);
@@ -225,7 +242,8 @@ public class InLineDisassembler extends JPanel implements Runnable {
 
 		try {
 			locationPart = makeLocationPart(workingProgramCounter);
-//			doc.insertString(doc.getLength(), locationPart, locationAttributes[when]);
+			// doc.insertString(doc.getLength(), locationPart,
+			// locationAttributes[when]);
 			doc.insertString(doc.getLength(), locationPart, locationAttributes1);
 			switch (opCodeSize) {
 			case 1:
@@ -252,12 +270,14 @@ public class InLineDisassembler extends JPanel implements Runnable {
 			String functionPart = String.format("    %s", OpCodeMap.getFunction(opCode) + LINE_SEPARATOR);
 			doc.insertString(doc.getLength(), functionPart, functionAttributes1);
 			if (when == LINE_CURRENT) {
-				currentPosition = doc.createPosition(doc.getLength() - 1); // current line position
-			}//
+				currentPosition = doc.createPosition(doc.getLength() - 1); // current
+																			// line
+																			// position
+			} //if
 
 		} catch (Exception e) {
-			// TODO: handle exception
-		}// try
+			e.printStackTrace();
+		} // try
 
 		return opCodeSize;
 	}// insertCode
@@ -291,6 +311,14 @@ public class InLineDisassembler extends JPanel implements Runnable {
 		add(scrollPane, gbc_scrollPane);
 
 		txtInstructions = new JTextPane();
+		txtInstructions.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent mouseEvent) {
+				if (mouseEvent.getClickCount() > 1){
+					refreshDisplay();
+				}
+			}
+		});
 		txtInstructions.setEditable(false);
 		scrollPane.setViewportView(txtInstructions);
 		JLabel lblNewLabel = new JLabel(
@@ -310,7 +338,6 @@ public class InLineDisassembler extends JPanel implements Runnable {
 
 	private final static int LINES_TO_DISPLAY = 64; // LTD-> Lines To Display
 	private final static int LINES_OF_HISTORY = 5; // LTT-> Lines to Trail
-
 
 	private static final int LINE_CURRENT = 1;
 	private static final int LINE_FUTURE = 2;

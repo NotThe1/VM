@@ -44,7 +44,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-public abstract class HexEditPanelBase extends JPanel implements AdjustmentListener, ComponentListener, ChangeListener {
+public abstract class HexEditPanelBase extends JPanel 
+implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 	private static final long serialVersionUID = 1L;
 
 	protected ByteBuffer source;
@@ -83,6 +84,10 @@ public abstract class HexEditPanelBase extends JPanel implements AdjustmentListe
 	public SortedMap<Integer, Byte> getChangedData() {
 		return changes;
 	}// getChangedData
+	
+	public void run(){
+		fillPane();
+	}//run
 
 	// -----------------------------------------------------------------------------------------------
 	HexEditDocumentFilter loadDataCommon(int sourceSize) {
