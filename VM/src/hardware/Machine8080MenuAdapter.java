@@ -9,10 +9,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-import hexEdit.HexEditPanelConcurrent;
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 import utilities.InLineDisassembler;
+import utilities.hexEdit.HexEditPanelConcurrent;
 
 public class Machine8080MenuAdapter implements ActionListener {
 	private HexEditPanelConcurrent hexEditPanelConcurrent;

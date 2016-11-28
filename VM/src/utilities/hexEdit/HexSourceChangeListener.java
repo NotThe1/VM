@@ -1,4 +1,4 @@
-package hexEdit;
+package utilities.hexEdit;
 
 import java.util.EventListener;
 

@@ -27,6 +27,9 @@ import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 
+import utilities.hexEdit.HexEditMetrics;
+import utilities.hexEdit.HexEditPanelConcurrent;
+
 public class HexEditPaneConcurrentlDriver {
 
 	int sourceSize = (3 * 16) - 6;

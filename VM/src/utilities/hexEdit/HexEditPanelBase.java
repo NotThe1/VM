@@ -1,4 +1,4 @@
-package hexEdit;
+package utilities.hexEdit;
 
 // Known problem - if last line has more than two bytes displayed,
 

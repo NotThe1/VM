@@ -1,4 +1,4 @@
-package hexEdit;
+package utilities.hexEdit;
 
 import java.nio.ByteBuffer;
 import java.util.SortedMap;

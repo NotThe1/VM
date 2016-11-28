@@ -1,4 +1,4 @@
-package hexEdit;
+package utilities.hexEdit;
 
 /**
  * Source of the positions of the various components of the display line in the

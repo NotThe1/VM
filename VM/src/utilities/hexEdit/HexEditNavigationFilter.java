@@ -1,4 +1,4 @@
-package hexEdit;
+package utilities.hexEdit;
 
 import javax.swing.text.Element;
 import javax.swing.text.NavigationFilter;

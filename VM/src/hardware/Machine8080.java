@@ -34,9 +34,9 @@ import javax.swing.border.LineBorder;
 //------------------------
 
 import disks.DiskDisplay;
-import hexEdit.HexEditPanelConcurrent;
 import memory.Core;
 import utilities.InLineDisassembler;
+import utilities.hexEdit.HexEditPanelConcurrent;
 
 public class Machine8080 implements ActionListener {
 
