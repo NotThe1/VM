@@ -31,7 +31,7 @@ import javax.swing.SwingConstants;
 
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
-import utilities.InLineDisassembler;
+import utilities.inLineDissembler.InLineDisassembler;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

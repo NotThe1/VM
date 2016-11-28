@@ -1,4 +1,4 @@
-package utilities;
+package utilities.memoryFormatter;
 
 import javax.swing.JOptionPane;
 

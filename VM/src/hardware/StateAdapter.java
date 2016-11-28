@@ -29,7 +29,7 @@ import javax.swing.Icon;
 import javax.swing.JFormattedTextField;
 import javax.swing.JRadioButton;
 
-import utilities.InLineDisassembler;
+import utilities.inLineDissembler.InLineDisassembler;
 
 //import javax.swing.text.JTextComponent;
 

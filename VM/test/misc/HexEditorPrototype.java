@@ -35,9 +35,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.JSplitPane;
 import javax.swing.JScrollPane;
 
-//import utilities.FilePicker;
-import utilities.MenuUtility;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -58,6 +55,8 @@ import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+
+import utilities.menus.MenuUtility;
 
 public class HexEditorPrototype {
 

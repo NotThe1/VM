@@ -11,8 +11,8 @@ import javax.swing.JPopupMenu;
 
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
-import utilities.InLineDisassembler;
 import utilities.hexEdit.HexEditPanelConcurrent;
+import utilities.inLineDissembler.InLineDisassembler;
 
 public class Machine8080MenuAdapter implements ActionListener {
 	private HexEditPanelConcurrent hexEditPanelConcurrent;

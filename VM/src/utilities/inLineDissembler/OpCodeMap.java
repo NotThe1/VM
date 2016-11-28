@@ -1,4 +1,4 @@
-package utilities;
+package utilities.inLineDissembler;
 
 import java.util.HashMap;
 
