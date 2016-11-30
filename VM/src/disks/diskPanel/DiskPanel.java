@@ -1,4 +1,4 @@
-package disks;
+package disks.diskPanel;
 
 import java.awt.GridBagLayout;
 
@@ -12,7 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.JTextField;
 
-public class DiskDisplay extends JPanel {
+public class DiskPanel extends JPanel {
 	private JPanel panelDisksAB;
 	private JLabel lblA;
 	private JLabel lblB;
@@ -28,8 +28,8 @@ public class DiskDisplay extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public DiskDisplay() {
-		DiskDisplayAdapter diskDisplayAdapter = new DiskDisplayAdapter();
+	public DiskPanel() {
+		DiskPanelAdapter diskDisplayAdapter = new DiskPanelAdapter();
 		
 		
 		

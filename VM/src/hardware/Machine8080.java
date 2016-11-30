@@ -31,9 +31,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
-//------------------------
-
-import disks.DiskDisplay;
+import disks.diskPanel.DiskPanel;
 import memory.Core;
 import utilities.hexEdit.HexEditPanelConcurrent;
 import utilities.inLineDissembler.InLineDisassembler;
@@ -41,7 +39,7 @@ import utilities.inLineDissembler.InLineDisassembler;
 public class Machine8080 implements ActionListener {
 
 	private Machine8080MenuAdapter menuAdapter;
-	private DiskDisplay diskDisplay;
+	private DiskPanel diskDisplay;
 	private StateDisplay stateDisplay;
 	// private Core core = Core.getInstance();
 	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
@@ -252,7 +250,7 @@ public class Machine8080 implements ActionListener {
 		gbc_panelDisks.gridy = 0;
 		panelMiddle.add(panelDisks, gbc_panelDisks);
 
-		diskDisplay = new DiskDisplay();
+		diskDisplay = new DiskPanel();
 		diskDisplay.setPreferredSize(new Dimension(275, 300));
 		diskDisplay.setBounds(5, 5, 275, 300);
 		panelDisks.add(diskDisplay);

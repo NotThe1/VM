@@ -1,11 +1,11 @@
-package disks;
+package disks.diskPanel;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.JTextField;
 
-public class DiskDisplayAdapter implements MouseListener {
+public class DiskPanelAdapter implements MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent mouseEvent) {
@@ -13,12 +13,12 @@ public class DiskDisplayAdapter implements MouseListener {
 //			System.out.printf(" %s: two or more clicks%n", Thread.currentThread().getName());
 			JTextField source = (JTextField) mouseEvent.getComponent();
 			String msg;
-			if (source.getText().equals(DiskDisplay.NO_DISK)){
+			if (source.getText().equals(DiskPanel.NO_DISK)){
 				msg = "Just mounted a disk";
 				source.setText("Fake Disk");
 			}else{
 				msg = "Disk has been dismounted";
-				source.setText(DiskDisplay.NO_DISK);
+				source.setText(DiskPanel.NO_DISK);
 			}//if no disk
 			System.out.printf("%s %n", msg);
 		}//if 2 or more

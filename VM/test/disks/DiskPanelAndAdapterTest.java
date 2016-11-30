@@ -11,18 +11,19 @@ import java.awt.GridBagLayout;
 import javax.swing.JPanel;
 
 import codeSupport.TableMaker;
+import disks.diskPanel.DiskPanel;
 
 import java.awt.GridBagConstraints;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.prefs.Preferences;
 
-public class DiskDisplayAndAdapterTest {
+public class DiskPanelAndAdapterTest {
 
 	private JFrame frameDisks;
 	private JPanel panelDiskDisplay;
 	
-	private DiskDisplay diskDisplay;
+	private DiskPanel diskDisplay;
 //	private JPanel panel;
 
 	/**
@@ -32,7 +33,7 @@ public class DiskDisplayAndAdapterTest {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					DiskDisplayAndAdapterTest window = new DiskDisplayAndAdapterTest();
+					DiskPanelAndAdapterTest window = new DiskPanelAndAdapterTest();
 					window.frameDisks.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -42,7 +43,7 @@ public class DiskDisplayAndAdapterTest {
 	}//main
 	
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskDisplayAndAdapterTest.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskPanelAndAdapterTest.class);
 		Dimension dim = frameDisks.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -55,20 +56,20 @@ public class DiskDisplayAndAdapterTest {
 
 	private void appInit() {
 		// manage preferences
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskDisplayAndAdapterTest.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskPanelAndAdapterTest.class);
 		frameDisks.setSize(341, 345);
 		frameDisks.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 }
 		
 	private void appInit0(){
-		diskDisplay = new DiskDisplay();
+		diskDisplay = new DiskPanel();
 	}//appInit
 
 	/**
 	 * Create the application.
 	 */
-	public DiskDisplayAndAdapterTest() {
+	public DiskPanelAndAdapterTest() {
 		appInit0();
 		initialize();
 		appInit();
