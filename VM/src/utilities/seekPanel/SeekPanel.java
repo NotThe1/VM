@@ -27,7 +27,7 @@ import javax.swing.text.PlainDocument;
 
 public class SeekPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
-	
+
 	SpinnerNumberModel numberModel;
 	int currentValue, priorValue;
 	private JFormattedTextField txtValueDisplay;
@@ -37,7 +37,7 @@ public class SeekPanel extends JPanel {
 	String hexDisplayFormat = "%X";
 	boolean showDecimal = true;
 	SeekDocument displayDoc;
-	
+
 	public void setNumberModel(SpinnerNumberModel numberModel) {
 		this.numberModel = numberModel;
 		int newValue = (int) numberModel.getValue();
@@ -62,6 +62,10 @@ public class SeekPanel extends JPanel {
 		setNewValue(newValue);
 		return;
 	}// setValue
+
+	public void setMaxValue(int newMaxValue) {
+		numberModel.setMaximum(newMaxValue);
+	}// setMaxValue
 
 	public void setDecimalDisplay() {
 		showDecimal = true;
@@ -275,7 +279,7 @@ public class SeekPanel extends JPanel {
 	// ---------------------------
 	class SeekDocument extends PlainDocument {
 		private static final long serialVersionUID = 1L;
-		
+
 		private String inputPattern;
 
 		SeekDocument(boolean decimalDisplay) {

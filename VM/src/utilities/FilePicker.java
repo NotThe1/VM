@@ -18,6 +18,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *         handles the identification of various files used by the VM application. All the file are found in the user's
  *         directory, or path passed on the constructor, in a directory called VMdata. Virtual disks are in a sub
  *         directory called "Disks". Each type of file is identified by its suffix.
+ *         
+ *         examples:
+ *         JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
  */
 
 public class FilePicker {

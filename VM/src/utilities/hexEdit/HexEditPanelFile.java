@@ -1,5 +1,6 @@
 package utilities.hexEdit;
 
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -8,6 +9,10 @@ import java.nio.channels.FileChannel;
 import java.util.SortedMap;
 
 public class HexEditPanelFile extends HexEditPanelBase {
+	public HexEditPanelFile() {
+		setPreferredSize(new Dimension(825, 400));
+		setMinimumSize(new Dimension(825, 400));
+	}
 
 	private static final long serialVersionUID = 1L;
 	private FileChannel fileChannel;
