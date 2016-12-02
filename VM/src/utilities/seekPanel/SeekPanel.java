@@ -4,9 +4,6 @@ import java.awt.Color;
 //import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
@@ -128,6 +125,7 @@ public class SeekPanel extends JPanel {
 
 	public SeekPanel() {
 		this(new SpinnerNumberModel(12, Integer.MIN_VALUE, Integer.MAX_VALUE, 1), true);
+		setPreferredSize(new Dimension(500, 23));
 	}// Constructor
 
 	public SeekPanel(boolean decimalDisplay) {
@@ -177,39 +175,30 @@ public class SeekPanel extends JPanel {
 			}// mouseClicked
 		});
 
-		setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] { 0, 0, 59, 0, 0, 0 };
-		gridBagLayout.rowHeights = new int[] { 0, 0 };
-		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0, 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
-		setLayout(gridBagLayout);
+		setBorder(new LineBorder(Color.RED, 1, true));
 
 		JButton btnNewButton = new JButton("<<");
+		btnNewButton.setBounds(1, 1, 65, 23);
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setNewValue((int) numberModel.getMinimum());
 			}
 		});
-		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.insets = new Insets(0, 0, 0, 5);
-		gbc_btnNewButton.gridx = 0;
-		gbc_btnNewButton.gridy = 0;
-		add(btnNewButton, gbc_btnNewButton);
+		setLayout(null);
+		add(btnNewButton);
 
 		JButton btnNewButton_1 = new JButton("<");
+		btnNewButton_1.setBounds(71, 1, 65, 23);
 		btnNewButton_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				stepValue(DOWN);
 			}
 		});
-		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
-		gbc_btnNewButton_1.insets = new Insets(0, 0, 0, 5);
-		gbc_btnNewButton_1.gridx = 1;
-		gbc_btnNewButton_1.gridy = 0;
-		add(btnNewButton_1, gbc_btnNewButton_1);
+		add(btnNewButton_1);
 
 		txtValueDisplay = new JFormattedTextField();
+		txtValueDisplay.setBackground(Color.GRAY);
+		txtValueDisplay.setBounds(141, 1, 100, 23);
 		txtValueDisplay.setFont(new Font("Courier New", Font.PLAIN, 13));
 		txtValueDisplay.addFocusListener(new FocusAdapter() {
 			@Override
@@ -224,34 +213,25 @@ public class SeekPanel extends JPanel {
 
 		txtValueDisplay.setHorizontalAlignment(SwingConstants.CENTER);
 		txtValueDisplay.setPreferredSize(new Dimension(50, 23));
-		GridBagConstraints gbc_txtValueDisplay = new GridBagConstraints();
-		gbc_txtValueDisplay.insets = new Insets(0, 0, 0, 5);
-		gbc_txtValueDisplay.gridx = 2;
-		gbc_txtValueDisplay.gridy = 0;
-		add(txtValueDisplay, gbc_txtValueDisplay);
+		add(txtValueDisplay);
 
 		JButton btnNewButton_2 = new JButton(">");
+		btnNewButton_2.setBounds(246, 1, 65, 23);
 		btnNewButton_2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				stepValue(UP);
 			}
 		});
-		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
-		gbc_btnNewButton_2.insets = new Insets(0, 0, 0, 5);
-		gbc_btnNewButton_2.gridx = 3;
-		gbc_btnNewButton_2.gridy = 0;
-		add(btnNewButton_2, gbc_btnNewButton_2);
+		add(btnNewButton_2);
 
 		JButton btnNewButton_3 = new JButton(">>");
+		btnNewButton_3.setBounds(316, 1, 70, 23);
 		btnNewButton_3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setNewValue((int) numberModel.getMaximum());
 			}
 		});
-		GridBagConstraints gbc_btnNewButton_3 = new GridBagConstraints();
-		gbc_btnNewButton_3.gridx = 4;
-		gbc_btnNewButton_3.gridy = 0;
-		add(btnNewButton_3, gbc_btnNewButton_3);
+		add(btnNewButton_3);
 	}// Constructor
 
 	// ---------------------------

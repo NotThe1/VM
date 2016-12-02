@@ -67,12 +67,12 @@ public class DiskUtility {
 	// private String diskType;
 	// private DiskMetrics diskMetrics;
 
-//	private FileChannel fileChannel;
-//	private MappedByteBuffer fileMap;
-	
+	// private FileChannel fileChannel;
+	// private MappedByteBuffer fileMap;
+
 	private int absoluteSector;
 	private int currentAbsoluteSector;
-	
+
 	private RawDiskDrive diskDrive;
 
 	private void loadFile(File file) {
@@ -83,33 +83,35 @@ public class DiskUtility {
 		lblFileName.setToolTipText(file.getAbsolutePath());
 		setHeadTrackSectorSizes(diskDrive);
 		seekPanel.setMaxValue(diskDrive.getTotalSectorsOnDisk());
-		
+
 		displayPhysicalSector(absoluteSector);
-//		try {
-//			fileChannel = new RandomAccessFile(file,"rw").getChannel();
-//			fileMap = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, fileChannel.size());
-//		} catch (Exception e) {
-//			// TODO: handle exception
-//		}
-		
+		setDisplayRadix();
+		// try {
+		// fileChannel = new RandomAccessFile(file,"rw").getChannel();
+		// fileMap = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0,
+		// fileChannel.size());
+		// } catch (Exception e) {
+		// // TODO: handle exception
+		// }
+
 		// panelHexFile.loadData(file);
 		// diskType = setDiskType(file);
 		// diskMetrics = DiskMetrics.getDiskMetric(diskType);
 	}// loadFile
 
 	private void closeFile(File file) {
-//		if(fileChannel!=null){
-//			try {
-//				fileChannel.close();
-//				fileChannel = null;
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}//try
-//		}//if
-		
+		// if(fileChannel!=null){
+		// try {
+		// fileChannel.close();
+		// fileChannel = null;
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }//try
+		// }//if
+
 		absoluteSector = 0;
-		
+
 		currentFile = null;
 		diskDrive = null;
 		setHeadTrackSectorSizes(diskDrive);
@@ -119,21 +121,21 @@ public class DiskUtility {
 		// diskMetrics = null;
 	}// closeFile
 
-	private String setDiskType(File file) {
-		String ans = null;
-		if (file.getAbsolutePath().matches("[^\\.]+?\\.[^\\.]+?")) {
-			String stuff[] = file.getName().split("\\.");
-			ans = stuff[1];
-		} // if
-		System.out.printf("[setFileType] file type: %s%n", ans);
-		return ans;
-	}// setFileType
+//	private String setDiskType(File file) {
+//		String ans = null;
+//		if (file.getAbsolutePath().matches("[^\\.]+?\\.[^\\.]+?")) {
+//			String stuff[] = file.getName().split("\\.");
+//			ans = stuff[1];
+//		} // if
+//		System.out.printf("[setFileType] file type: %s%n", ans);
+//		return ans;
+//	}// setFileType
 
 	private void setHeadTrackSectorSizes(RawDiskDrive diskDrive) {
-			((SpinnerNumberModel) spinnerHead.getModel()).setValue(0);
-			((SpinnerNumberModel) spinnerTrack.getModel()).setValue(0);
-			((SpinnerNumberModel) spinnerSector.getModel()).setValue(0);
-		if (diskDrive == null) {	
+		((SpinnerNumberModel) spinnerHead.getModel()).setValue(0);
+		((SpinnerNumberModel) spinnerTrack.getModel()).setValue(0);
+		((SpinnerNumberModel) spinnerSector.getModel()).setValue(0);
+		if (diskDrive == null) {
 			((SpinnerNumberModel) spinnerHead.getModel()).setMaximum(0);
 			((SpinnerNumberModel) spinnerTrack.getModel()).setMaximum(0);
 			((SpinnerNumberModel) spinnerSector.getModel()).setMaximum(0);
@@ -141,7 +143,7 @@ public class DiskUtility {
 			((SpinnerNumberModel) spinnerHead.getModel()).setMaximum(diskDrive.getHeads() - 1);
 			((SpinnerNumberModel) spinnerTrack.getModel()).setMaximum(diskDrive.getTracksPerHead() - 1);
 			((SpinnerNumberModel) spinnerSector.getModel()).setMaximum(diskDrive.getSectorsPerTrack() - 1);
-		}//if
+		} // if
 	}// setHeadTrackSectorSizes
 
 	private void haveDisk(boolean yes) {
@@ -151,28 +153,35 @@ public class DiskUtility {
 
 		} //
 	}// haveDisk
-	
+
 	private void displayPhysicalSector(int absoluteSector) {
 		if ((0 > absoluteSector) | (diskDrive.getTotalSectorsOnDisk() < absoluteSector)) {
 			absoluteSector = 0;
-		}// if
+		} // if
 		currentAbsoluteSector = absoluteSector;
 		diskDrive.setCurrentAbsoluteSector(currentAbsoluteSector);
-		//diskDrive.read();
+		// diskDrive.read();
 		panelSectorDisplay.loadData(diskDrive.read());
-		//displayPhysicalSector();
+		// displayPhysicalSector();
 	}// displayPhysicalSector
-	
-	
-
 
 	// .............................................................
 
 	public void setDisplayRadix() {
-		AbstractFormatterFactory factory = tbHexDisplay.isSelected() ? hexFormatterFactory : decimalFormatterFactory;
+		AbstractFormatterFactory factory;
+		if (tbHexDisplay.isSelected()) {
+			factory = hexFormatterFactory;
+			seekPanel.setHexDisplay();
+		} else {
+			factory = decimalFormatterFactory;
+			seekPanel.setDecimalDisplay();
+		} // if
+
+		// AbstractFormatterFactory factory = tbHexDisplay.isSelected() ?
+		// hexFormatterFactory : decimalFormatterFactory;
 		for (JFormattedTextField ftf : formattedTextFields) {
 			ftf.setFormatterFactory(factory);
-		} // for
+		} // for seekPanel
 	}// setDisplayRadix
 
 	// -------------------------------------------------------------------
@@ -374,9 +383,9 @@ public class DiskUtility {
 		tabbedPane.addTab("Physical View", null, tabPhysical, null);
 		GridBagLayout gbl_tabPhysical = new GridBagLayout();
 		gbl_tabPhysical.columnWidths = new int[] { 0, 0 };
-		gbl_tabPhysical.rowHeights = new int[] { 0, 0, 30, 0 };
+		gbl_tabPhysical.rowHeights = new int[] { 0, 0, 40, 10, 0 };
 		gbl_tabPhysical.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_tabPhysical.rowWeights = new double[] { 0.0, 1.0, 0.0, Double.MIN_VALUE };
+		gbl_tabPhysical.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE };
 		tabPhysical.setLayout(gbl_tabPhysical);
 
 		JPanel panelHeadTrackSector = new JPanel();
@@ -462,14 +471,27 @@ public class DiskUtility {
 		gbc_panelSectorDisplay.gridy = 0;
 		panelHexDisplay0.add(panelSectorDisplay, gbc_panelSectorDisplay);
 
+		JPanel panel_1 = new JPanel();
+		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+		gbc_panel_1.insets = new Insets(0, 0, 5, 0);
+		gbc_panel_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panel_1.gridx = 0;
+		gbc_panel_1.gridy = 2;
+		tabPhysical.add(panel_1, gbc_panel_1);
+		GridBagLayout gbl_panel_1 = new GridBagLayout();
+		gbl_panel_1.columnWidths = new int[] { 0, 0 };
+		gbl_panel_1.rowHeights = new int[] { 0, 0 };
+		gbl_panel_1.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_panel_1.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panel_1.setLayout(gbl_panel_1);
+
 		seekPanel = new SeekPanel(new SpinnerNumberModel(0, 0, 0, 1));
+		GridBagConstraints gbc_seekPanel = new GridBagConstraints();
+		gbc_seekPanel.gridx = 0;
+		gbc_seekPanel.gridy = 0;
+		panel_1.add(seekPanel, gbc_seekPanel);
 		// seekPanel.setValue(0);
 		seekPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		GridBagConstraints gbc_seekPanel = new GridBagConstraints();
-		gbc_seekPanel.anchor = GridBagConstraints.NORTH;
-		gbc_seekPanel.gridx = 0;
-		gbc_seekPanel.gridy = 2;
-		tabPhysical.add(seekPanel, gbc_seekPanel);
 		GridBagLayout gbl_seekPanel = new GridBagLayout();
 		gbl_seekPanel.columnWidths = new int[] { 0 };
 		gbl_seekPanel.rowHeights = new int[] { 0 };
