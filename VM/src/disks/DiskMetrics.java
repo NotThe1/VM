@@ -1,10 +1,8 @@
-package disks.utility;
+package disks;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import disks.Disk;
 
 public class DiskMetrics {
 
@@ -45,27 +43,7 @@ public class DiskMetrics {
 		setSectorsPerBlock(sectorsPerBlock);
 		setBootDisk(bootDisk);
 	}// Constructor
-
-	public static String[] getDiskTypes() {
-		String[] fileTypes = new String[allFileTypes.length];
-		Object[] fileType;
-		for (int i = 0; i < allFileTypes.length; i++) {
-			fileType = (Object[]) allFileTypes[i];
-			fileTypes[i] = (String) fileType[7];
-		}//
-		return fileTypes;
-	}//
-
-	public static String[] getDiskDescriptionss() {
-		String[] fileTypes = new String[allFileTypes.length];
-		Object[] fileType;
-		for (int i = 0; i < allFileTypes.length; i++) {
-			fileType = (Object[]) allFileTypes[i];
-			fileTypes[i] = (String) fileType[8];
-		}//
-		return fileTypes;
-	}//
-
+	
 	public static DiskMetrics getDiskMetric(String diskType) {
 		Object[] setupValues;
 		switch (diskType.trim().toUpperCase()) {
@@ -93,17 +71,39 @@ public class DiskMetrics {
 		default:
 			return null;
 		}// switch
-		int in0 = (int) setupValues[0];
-		int in1 = (int) setupValues[1];
-		int in2 = (int) setupValues[2];
-		int in3 = (int) setupValues[3];
-		int in4 = (int) setupValues[4];
-		int in5 = (int) setupValues[5];
+//		int in0 = (int) setupValues[0];
+//		int in1 = (int) setupValues[1];
+//		int in2 = (int) setupValues[2];
+//		int in3 = (int) setupValues[3];
+//		int in4 = (int) setupValues[4];
+//		int in5 = (int) setupValues[5];
 
 		return new DiskMetrics((int) setupValues[0], (int) setupValues[1], (int) setupValues[2], (int) setupValues[3],
 				(int) setupValues[4], (int) setupValues[5], (boolean) setupValues[6],
 				(String) setupValues[7], (String) setupValues[8]);
-	}//diskMetric
+	}//getDiskMetric
+
+
+
+	public static String[] getDiskTypes() {
+		String[] fileTypes = new String[allFileTypes.length];
+		Object[] fileType;
+		for (int i = 0; i < allFileTypes.length; i++) {
+			fileType = (Object[]) allFileTypes[i];
+			fileTypes[i] = (String) fileType[7];
+		}//
+		return fileTypes;
+	}//
+
+	public static String[] getDiskDescriptionss() {
+		String[] fileTypes = new String[allFileTypes.length];
+		Object[] fileType;
+		for (int i = 0; i < allFileTypes.length; i++) {
+			fileType = (Object[]) allFileTypes[i];
+			fileTypes[i] = (String) fileType[8];
+		}//
+		return fileTypes;
+	}//
 
 	public long getTotalBytes() {
 		return getTotalSectorsOnDisk() * bytesPerSector;
