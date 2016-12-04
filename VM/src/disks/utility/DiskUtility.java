@@ -10,6 +10,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
@@ -59,7 +62,12 @@ public class DiskUtility {
 	private JLabel lblFileName;
 	// ....
 	private DiskUtilityAdapter diskUtilityAdapter;
-	private ArrayList<JFormattedTextField> formattedTextFields;
+
+	private int spinnerCount;
+	// private ArrayList<JFormattedTextField> formattedTextFields;
+	// private ArrayList<HexFormatterFactory> hexFormatterFactories;
+	// private ArrayList<JSpinner> spinners;
+	private ArrayList<SpinnerFormatSet> spinnerFormatSets;
 	private JFormattedTextField.AbstractFormatterFactory decimalFormatterFactory;
 	private HexFormatterFactory hexFormatterFactory;
 	private SeekPanel seekPanel;
@@ -121,20 +129,21 @@ public class DiskUtility {
 		// diskMetrics = null;
 	}// closeFile
 
-//	private String setDiskType(File file) {
-//		String ans = null;
-//		if (file.getAbsolutePath().matches("[^\\.]+?\\.[^\\.]+?")) {
-//			String stuff[] = file.getName().split("\\.");
-//			ans = stuff[1];
-//		} // if
-//		System.out.printf("[setFileType] file type: %s%n", ans);
-//		return ans;
-//	}// setFileType
+	// private String setDiskType(File file) {
+	// String ans = null;
+	// if (file.getAbsolutePath().matches("[^\\.]+?\\.[^\\.]+?")) {
+	// String stuff[] = file.getName().split("\\.");
+	// ans = stuff[1];
+	// } // if
+	// System.out.printf("[setFileType] file type: %s%n", ans);
+	// return ans;
+	// }// setFileType
 
 	private void setHeadTrackSectorSizes(RawDiskDrive diskDrive) {
 		((SpinnerNumberModel) spinnerHead.getModel()).setValue(0);
 		((SpinnerNumberModel) spinnerTrack.getModel()).setValue(0);
 		((SpinnerNumberModel) spinnerSector.getModel()).setValue(0);
+
 		if (diskDrive == null) {
 			((SpinnerNumberModel) spinnerHead.getModel()).setMaximum(0);
 			((SpinnerNumberModel) spinnerTrack.getModel()).setMaximum(0);
@@ -168,20 +177,19 @@ public class DiskUtility {
 	// .............................................................
 
 	public void setDisplayRadix() {
-		AbstractFormatterFactory factory;
+
 		if (tbHexDisplay.isSelected()) {
-			factory = hexFormatterFactory;
 			seekPanel.setHexDisplay();
+			for (SpinnerFormatSet sfs : spinnerFormatSets) {
+				sfs.formattedTextField.setFormatterFactory(sfs.hexFormatterFactory);
+			} // for seekPanel
 		} else {
-			factory = decimalFormatterFactory;
 			seekPanel.setDecimalDisplay();
+			for (SpinnerFormatSet sfs : spinnerFormatSets) {
+				sfs.formattedTextField.setFormatterFactory(sfs.decimalFormatterFactory);
+			} // for seekPanel
 		} // if
 
-		// AbstractFormatterFactory factory = tbHexDisplay.isSelected() ?
-		// hexFormatterFactory : decimalFormatterFactory;
-		for (JFormattedTextField ftf : formattedTextFields) {
-			ftf.setFormatterFactory(factory);
-		} // for seekPanel
 	}// setDisplayRadix
 
 	// -------------------------------------------------------------------
@@ -232,26 +240,34 @@ public class DiskUtility {
 		// splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
 		myPrefs = null;
 
-		ArrayList<JSpinner> spinners = new ArrayList<JSpinner>();
-		spinners.add(spinnerHead);
-		spinners.add(spinnerSector);
-		spinners.add(spinnerTrack);
+		spinnerCount = 0;
 
-		formattedTextFields = new ArrayList<JFormattedTextField>();
-		JFormattedTextField ftf = null;
-		JSpinner.DefaultEditor editor = null;
-		;
-		for (JSpinner s : spinners) {
-			editor = (DefaultEditor) s.getEditor();
-			ftf = editor.getTextField();
-			formattedTextFields.add(ftf);
-		} // for
-		decimalFormatterFactory = ftf.getFormatterFactory();
-		hexFormatterFactory = new HexFormatterFactory();
+		spinnerFormatSets = new ArrayList<SpinnerFormatSet>();
+		spinnerFormatSets.add(makeSpinnerFormatSet(spinnerHead));
+		spinnerFormatSets.add(makeSpinnerFormatSet(spinnerSector));
+		spinnerFormatSets.add(makeSpinnerFormatSet(spinnerTrack));
 
 		setDisplayRadix();
-		ftf.setFormatterFactory(hexFormatterFactory);
+
 	}// appInit
+
+	private SpinnerFormatSet makeSpinnerFormatSet(JSpinner spinner) {
+		DefaultEditor editor = (DefaultEditor) spinner.getEditor();
+		JFormattedTextField ftf = editor.getTextField();
+		AbstractFormatterFactory decimalFormatterFactory = ftf.getFormatterFactory();
+		hexFormatterFactory = new HexFormatterFactory();
+		
+		ftf.addFocusListener(diskUtilityAdapter);
+
+//		ftf.setFormatterFactory(hexFormatterFactory);
+
+		return new SpinnerFormatSet(spinner, ftf, decimalFormatterFactory, hexFormatterFactory);
+
+	}//
+	
+	private void appInitX(){
+		
+	}
 
 	/**
 	 * Create the application.
@@ -301,10 +317,22 @@ public class DiskUtility {
 		toolBar.add(horizontalStrut);
 
 		tbHexDisplay = new JToggleButton("Display Hex");
-		tbHexDisplay.setSelected(true);
 		tbHexDisplay.setName(TB_HEX_DISPLAY);
 		tbHexDisplay.addActionListener(diskUtilityAdapter);
 		toolBar.add(tbHexDisplay);
+		
+		JButton btnNewButton = new JButton("New button");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				SpinnerNumberModel snm = (SpinnerNumberModel) spinnerHead.getModel();
+				int max = (int) snm.getMaximum();
+				int headValue = (int) spinnerHead.getModel().getValue();
+				System.out.printf("[actionPerformed] headValue %d%n", headValue);
+				System.out.printf("[actionPerformed] max %d%n", max);
+				spinnerHead.setValue(max);
+			}
+		});
+		toolBar.add(btnNewButton);
 
 		JPanel panelTitle = new JPanel();
 		GridBagConstraints gbc_panelTitle = new GridBagConstraints();
@@ -411,6 +439,8 @@ public class DiskUtility {
 		panelHeadTrackSector.add(lblHead, gbc_lblHead);
 
 		spinnerHead = new JSpinner();
+		spinnerHead.setName(SPINNER_HEAD);
+		spinnerHead.addFocusListener(diskUtilityAdapter);
 		spinnerHead.setModel(new SpinnerNumberModel(0, 0, 0, 1));
 		spinnerHead.setPreferredSize(new Dimension(50, 20));
 		GridBagConstraints gbc_spinnerHead = new GridBagConstraints();
@@ -573,16 +603,29 @@ public class DiskUtility {
 			// .................................................
 
 	}// class MyFormatterFactory
-		// ----------------------------------------------------------------------------------------------------------
-		// ---------------------------------------------------------------
+		// --------------------------------------------------------------
 
-	public class DiskUtilityAdapter implements ActionListener {
-		// DiskUtility diskUtility;
+	public class SpinnerFormatSet {
+		public JSpinner spinner;
+		public JFormattedTextField formattedTextField;
+		public AbstractFormatterFactory decimalFormatterFactory;
+		public HexFormatterFactory hexFormatterFactory;
 
-		// public DiskUtilityAdapter1(DiskUtility diskUtility){
-		// //this.diskUtility =diskUtility;
-		// }//Constructor
+		public SpinnerFormatSet(JSpinner spinner, JFormattedTextField formattedTextField,
+				AbstractFormatterFactory abstractFormatterFactory, HexFormatterFactory hexFormatterFactory) {
+			this.spinner = spinner;
+			this.formattedTextField = formattedTextField;
+			this.decimalFormatterFactory = abstractFormatterFactory;
+			this.hexFormatterFactory = hexFormatterFactory;
+		}// Constructor
 
+	}// class SpinnerFormatSets
+
+	// ---------------------------------------------------------------
+
+	public class DiskUtilityAdapter implements ActionListener, FocusListener {
+		
+		// ------ActionListener
 		@Override
 		public void actionPerformed(ActionEvent actionEvent) {
 			Object source = actionEvent.getSource();
@@ -622,11 +665,46 @@ public class DiskUtility {
 			}// switch
 
 		}// actionPerformed
+		// ------ActionListener
+		// ------FocusListener
+		@Override
+		public void focusLost(FocusEvent focusEvent) {
+			Object source = focusEvent.getSource();
+			String name = ((JComponent) source).getName();
+			
+			if(((Component) source).getParent() instanceof JSpinner){
+				JSpinner spinner = (JSpinner) ((JFormattedTextField)(focusEvent.getSource())).getParent();
+				
+				System.out.printf("[DiskUtilityAdapter.focusLost] value %d%n", spinner.getValue());
+			}
+			switch(name){
+			case SPINNER_HEAD:
+			case SPINNER_TRACK:
+			case SPINNER_SECTOR:
+				JSpinner spinner = (JSpinner)focusEvent.getSource();
+//				if ((int) spinner.getValue()> spinner.getModel().)
+			break;
+			}//switch
+
+
+		}//focusLost
+		@Override
+		public void focusGained(FocusEvent arg0) {
+			// TODO Auto-generated method stub
+
+		}//focusGained
+		// ------FocusListener
 
 	}// class DiskUtilityAdapter
-		// ---------------------------------------------------------------
+
+	// ---------------------------------------------------------------
 
 	public static final String NO_ACTIVE_FILE = "<No Active File>";
+
+	public static final String SPINNER_HEAD = "spinnerHead";
+	public static final String SPINNER_TRACK = "spinnerTrack";
+	public static final String SPINNER_SECTOR = "spinnerSector";
+
 	public static final String TB_HEX_DISPLAY = "tbHexDisplay";
 	public static final String TB_BOOTABLE = "tbBootable";
 
@@ -636,6 +714,7 @@ public class DiskUtility {
 	public static final String MNU_FILE_SAVE = "mnuFileSave";
 	public static final String MNU_FILE_SAVE_AS = "mnuFileSaveAs";
 	public static final String MNU_FILE_EXIT = "mnuFileExit";
+
 	private JPanel panelDirectory;
 	private JPanel panelHexDisplay0;
 	private HexEditPanelSimple panelSectorDisplay;

@@ -1,31 +1,28 @@
-package utilities.seekPanel;
+package utilities.hexDecimalNumberPanel;
 
-import java.awt.Color;
-//import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
-import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
+import javax.swing.UIManager;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
-public class SeekPanel extends JPanel {
+import utilities.seekPanel.SeekValueChangeEvent;
+import utilities.seekPanel.SeekValueChangeListener;
+//import utilities.seekPanel.SeekPanel.SeekDocument;
+
+public class HexDecimalNumberPanel extends JPanel {
+
 	private static final long serialVersionUID = 1L;
 
 	SpinnerNumberModel numberModel;
@@ -109,37 +106,22 @@ public class SeekPanel extends JPanel {
 		} // if
 	}// newValue
 
-	private void stepValue(int direction) {
-		int changeAmount = (int) numberModel.getStepSize() * direction;
-
-		long newValue = currentValue;
-		newValue += changeAmount;
-
-		if (newValue > (int) numberModel.getMaximum()) {
-			setNewValue((int) numberModel.getMaximum());
-		} else if (newValue < (int) numberModel.getMinimum()) {
-			setNewValue((int) numberModel.getMinimum());
-		} else {
-			setNewValue((int) newValue);
-		} // if
-	}//
-
 	// -------------------------------------------------------
 
-	public SeekPanel() {
+	public HexDecimalNumberPanel() {
 		this(new SpinnerNumberModel(12, Integer.MIN_VALUE, Integer.MAX_VALUE, 1), true);
-		setPreferredSize(new Dimension(500, 23));
+
 	}// Constructor
 
-	public SeekPanel(boolean decimalDisplay) {
+	public HexDecimalNumberPanel(boolean decimalDisplay) {
 		this(new SpinnerNumberModel(12, Integer.MIN_VALUE, Integer.MAX_VALUE, 1), decimalDisplay);
 	}// Constructor
 
-	public SeekPanel(SpinnerNumberModel numberModel) {
+	public HexDecimalNumberPanel(SpinnerNumberModel numberModel) {
 		this(numberModel, true);
 	}// Constructor
 
-	public SeekPanel(SpinnerNumberModel numberModel, boolean decimalDisplay) {
+	public HexDecimalNumberPanel(SpinnerNumberModel numberModel, boolean decimalDisplay) {
 		this.numberModel = numberModel;
 
 		appInit0();
@@ -153,76 +135,31 @@ public class SeekPanel extends JPanel {
 		} // if
 	}// Constructor
 
-	public void appInit0() {
+	private void appInit0() {
 		displayDoc = new SeekDocument(true);
 	}// appInit0
 
-	public void appInit() {
+	private void appInit() {
 		currentValue = (int) numberModel.getValue();
 		txtValueDisplay.setDocument(displayDoc);
 		txtValueDisplay.setPreferredSize(new Dimension(100, 23));
 		seekValueChangedListenerList = new EventListenerList();
 	}// appInit
 
-	public void Initialize() {
-		addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent mouseEvent) {
-				if (mouseEvent.getClickCount() > 1) {
-					if (showDecimal) {
-						setHexDisplay();
-					} else {
-						setDecimalDisplay();
-					} // if inner
-				} // if click count
-			}// mouseClicked
-		});
-
-		setBorder(new LineBorder(Color.RED, 1, true));
+	private void Initialize() {
+		setPreferredSize(new Dimension(601, 35));
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] { 65, 65, 100, 65, 70, 0 };
+		gridBagLayout.columnWidths = new int[] { 100, 0 };
 		gridBagLayout.rowHeights = new int[] { 23, 0 };
-		gridBagLayout.columnWeights = new double[] { 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gridBagLayout.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		setLayout(gridBagLayout);
 
-		JButton btnNewButton = new JButton("<<");
-		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setNewValue((int) numberModel.getMinimum());
-			}
-		});
-		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.anchor = GridBagConstraints.NORTH;
-		gbc_btnNewButton.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnNewButton.insets = new Insets(0, 0, 0, 5);
-		gbc_btnNewButton.gridx = 0;
-		gbc_btnNewButton.gridy = 0;
-		add(btnNewButton, gbc_btnNewButton);
-
-		JButton btnNewButton_3 = new JButton(">>");
-		btnNewButton_3.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setNewValue((int) numberModel.getMaximum());
-			}
-		});
-
-		JButton btnNewButton_1 = new JButton("<");
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				stepValue(DOWN);
-			}
-		});
-		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
-		gbc_btnNewButton_1.anchor = GridBagConstraints.NORTH;
-		gbc_btnNewButton_1.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnNewButton_1.insets = new Insets(0, 0, 0, 5);
-		gbc_btnNewButton_1.gridx = 1;
-		gbc_btnNewButton_1.gridy = 0;
-		add(btnNewButton_1, gbc_btnNewButton_1);
+		setBorder(UIManager.getBorder("TextField.border"));
 
 		txtValueDisplay = new JFormattedTextField();
-		txtValueDisplay.setBackground(Color.GRAY);
+		txtValueDisplay.setMinimumSize(new Dimension(50, 20));
+		txtValueDisplay.setBackground(UIManager.getColor("TextArea.background"));
 		txtValueDisplay.setFont(new Font("Courier New", Font.PLAIN, 13));
 		txtValueDisplay.addFocusListener(new FocusAdapter() {
 			@Override
@@ -235,34 +172,13 @@ public class SeekPanel extends JPanel {
 			}
 		});
 
-		txtValueDisplay.setHorizontalAlignment(SwingConstants.CENTER);
+		txtValueDisplay.setHorizontalAlignment(SwingConstants.RIGHT);
 		txtValueDisplay.setPreferredSize(new Dimension(50, 23));
 		GridBagConstraints gbc_txtValueDisplay = new GridBagConstraints();
-		gbc_txtValueDisplay.anchor = GridBagConstraints.NORTHWEST;
-		gbc_txtValueDisplay.insets = new Insets(0, 0, 0, 5);
-		gbc_txtValueDisplay.gridx = 2;
+		gbc_txtValueDisplay.fill = GridBagConstraints.BOTH;
+		gbc_txtValueDisplay.gridx = 0;
 		gbc_txtValueDisplay.gridy = 0;
 		add(txtValueDisplay, gbc_txtValueDisplay);
-
-		JButton btnNewButton_2 = new JButton(">");
-		btnNewButton_2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				stepValue(UP);
-			}
-		});
-		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
-		gbc_btnNewButton_2.anchor = GridBagConstraints.NORTH;
-		gbc_btnNewButton_2.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnNewButton_2.insets = new Insets(0, 0, 0, 5);
-		gbc_btnNewButton_2.gridx = 3;
-		gbc_btnNewButton_2.gridy = 0;
-		add(btnNewButton_2, gbc_btnNewButton_2);
-		GridBagConstraints gbc_btnNewButton_3 = new GridBagConstraints();
-		gbc_btnNewButton_3.anchor = GridBagConstraints.NORTH;
-		gbc_btnNewButton_3.fill = GridBagConstraints.HORIZONTAL;
-		gbc_btnNewButton_3.gridx = 4;
-		gbc_btnNewButton_3.gridy = 0;
-		add(btnNewButton_3, gbc_btnNewButton_3);
 	}// Constructor
 
 	// ---------------------------
@@ -327,4 +243,4 @@ public class SeekPanel extends JPanel {
 	private static final int UP = 1;
 	private static final int DOWN = -1;
 
-}// class SeekPanel
+}// class HexDecimalNumberDisplay
