@@ -1,4 +1,4 @@
-package utilities.hexDecimalNumberPanel;
+package utilities.hdNumberBox;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -17,23 +17,39 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
 
-import utilities.seekPanel.SeekValueChangeEvent;
-import utilities.seekPanel.SeekValueChangeListener;
-//import utilities.seekPanel.SeekPanel.SeekDocument;
+//import utilities.seekPanel.SeekValueChangeListener;
 
-public class HexDecimalNumberPanel extends JPanel {
-
+/**
+ * 
+ * @author Frank Martyn This is a text box that only accepts either decimal or
+ *         hexadecimal numbers. It supports a JSpinnerNumberModel to manage the
+ *         values range of input data. The value input is limited byte the
+ *         NumberModel. if value is greater than Max the value will be fixed to
+ *         Max Value. Similarly if less than Min the value will be fixed at Min
+ *         Value.
+ * 
+ *         The range of the value is Integer.Min to Integer.MAX.
+ * 
+ *         This class supports a HDNumberValueChangeListener that will fire a
+ *         HDNumberValueChangeEvent when the value changes
+ * 
+ *         the method mute(boolean state) disables/enables the
+ *         fireSeekValueChanged() method, so values can be changed without
+ *         triggering events
+ *
+ */
+public class HDNumberBox extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	SpinnerNumberModel numberModel;
 	int currentValue, priorValue;
-	private JFormattedTextField txtValueDisplay;
-	EventListenerList seekValueChangedListenerList;
-
+	JFormattedTextField txtValueDisplay;
+	EventListenerList hdNumberValueChangeListenerList;
 	String decimalDisplayFormat = "%d";
 	String hexDisplayFormat = "%X";
 	boolean showDecimal = true;
 	SeekDocument displayDoc;
+	boolean muteNumberChangeEvent;
 
 	public void setNumberModel(SpinnerNumberModel numberModel) {
 		this.numberModel = numberModel;
@@ -65,22 +81,34 @@ public class HexDecimalNumberPanel extends JPanel {
 	}// setMaxValue
 
 	public void setDecimalDisplay() {
-		showDecimal = true;
-		displayDoc.displayDecimal();
-		displayValue();
-		txtValueDisplay.setToolTipText("Display is Decimal");
+		setDecimalDisplay(true);
 	}// setDecimalDisplay
 
 	public void setHexDisplay() {
-		showDecimal = false;
-		displayDoc.displayHex();
+		setDecimalDisplay(false);
+	}// setHexDisplay
+
+	public void setDecimalDisplay(boolean displayDecimal) {
+		String tipText = "";
+		showDecimal = displayDecimal;
+		if (displayDecimal) {
+			displayDoc.displayDecimal();
+			tipText = "Display is Decimal";
+		} else {
+			displayDoc.displayHex();
+			tipText = "Display is Hex";
+		} // if
 		displayValue();
-		txtValueDisplay.setToolTipText("Display is Hex");
+		txtValueDisplay.setToolTipText(tipText);
 	}// setHexDisplay
 
 	public boolean isDecimalDisplay() {
 		return showDecimal;
 	}// isDecimalDisplay
+
+	public void mute(boolean state) {
+		muteNumberChangeEvent = state;
+	}// mute
 
 	// ---------------------------------------
 
@@ -93,7 +121,7 @@ public class HexDecimalNumberPanel extends JPanel {
 		txtValueDisplay.repaint();
 	}// showValue
 
-	private void setNewValue(int newValue) {
+	void setNewValue(int newValue) {
 		newValue = Math.min(newValue, (int) numberModel.getMaximum()); // upper
 		newValue = Math.max(newValue, (int) numberModel.getMinimum()); // lower
 
@@ -101,6 +129,9 @@ public class HexDecimalNumberPanel extends JPanel {
 		currentValue = (newValue);
 		numberModel.setValue(newValue);
 		displayValue();
+		if (muteNumberChangeEvent) {
+			return;
+		} // if
 		if (priorValue != currentValue) {
 			fireSeekValueChanged();
 		} // if
@@ -108,20 +139,20 @@ public class HexDecimalNumberPanel extends JPanel {
 
 	// -------------------------------------------------------
 
-	public HexDecimalNumberPanel() {
-		this(new SpinnerNumberModel(12, Integer.MIN_VALUE, Integer.MAX_VALUE, 1), true);
+	public HDNumberBox() {
+		this(new SpinnerNumberModel(0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1), true);
 
 	}// Constructor
 
-	public HexDecimalNumberPanel(boolean decimalDisplay) {
-		this(new SpinnerNumberModel(12, Integer.MIN_VALUE, Integer.MAX_VALUE, 1), decimalDisplay);
+	public HDNumberBox(boolean decimalDisplay) {
+		this(new SpinnerNumberModel(0, Integer.MIN_VALUE, Integer.MAX_VALUE, 1), decimalDisplay);
 	}// Constructor
 
-	public HexDecimalNumberPanel(SpinnerNumberModel numberModel) {
+	public HDNumberBox(SpinnerNumberModel numberModel) {
 		this(numberModel, true);
 	}// Constructor
 
-	public HexDecimalNumberPanel(SpinnerNumberModel numberModel, boolean decimalDisplay) {
+	public HDNumberBox(SpinnerNumberModel numberModel, boolean decimalDisplay) {
 		this.numberModel = numberModel;
 
 		appInit0();
@@ -143,11 +174,12 @@ public class HexDecimalNumberPanel extends JPanel {
 		currentValue = (int) numberModel.getValue();
 		txtValueDisplay.setDocument(displayDoc);
 		txtValueDisplay.setPreferredSize(new Dimension(100, 23));
-		seekValueChangedListenerList = new EventListenerList();
+		hdNumberValueChangeListenerList = new EventListenerList();
+		muteNumberChangeEvent = false;
 	}// appInit
 
 	private void Initialize() {
-		setPreferredSize(new Dimension(601, 35));
+		setPreferredSize(new Dimension(286, 35));
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 100, 0 };
 		gridBagLayout.rowHeights = new int[] { 23, 0 };
@@ -158,7 +190,7 @@ public class HexDecimalNumberPanel extends JPanel {
 		setBorder(UIManager.getBorder("TextField.border"));
 
 		txtValueDisplay = new JFormattedTextField();
-		txtValueDisplay.setMinimumSize(new Dimension(50, 20));
+		txtValueDisplay.setMinimumSize(new Dimension(75, 20));
 		txtValueDisplay.setBackground(UIManager.getColor("TextArea.background"));
 		txtValueDisplay.setFont(new Font("Courier New", Font.PLAIN, 13));
 		txtValueDisplay.addFocusListener(new FocusAdapter() {
@@ -173,7 +205,7 @@ public class HexDecimalNumberPanel extends JPanel {
 		});
 
 		txtValueDisplay.setHorizontalAlignment(SwingConstants.RIGHT);
-		txtValueDisplay.setPreferredSize(new Dimension(50, 23));
+		txtValueDisplay.setPreferredSize(new Dimension(100, 23));
 		GridBagConstraints gbc_txtValueDisplay = new GridBagConstraints();
 		gbc_txtValueDisplay.fill = GridBagConstraints.BOTH;
 		gbc_txtValueDisplay.gridx = 0;
@@ -182,22 +214,23 @@ public class HexDecimalNumberPanel extends JPanel {
 	}// Constructor
 
 	// ---------------------------
-	public void addSeekValueChangedListener(SeekValueChangeListener seekValueChangeListener) {
-		seekValueChangedListenerList.add(SeekValueChangeListener.class, seekValueChangeListener);
+	public void addHDNumberValueChangedListener(HDNumberValueChangeListener seekValueChangeListener) {
+		hdNumberValueChangeListenerList.add(HDNumberValueChangeListener.class, seekValueChangeListener);
 	}// addSeekValueChangedListener
 
-	public void removeSeekValueChangedListener(SeekValueChangeListener seekValueChangeListener) {
-		seekValueChangedListenerList.remove(SeekValueChangeListener.class, seekValueChangeListener);
+	public void removeHDNumberValueChangedListener(HDNumberValueChangeListener seekValueChangeListener) {
+		hdNumberValueChangeListenerList.remove(HDNumberValueChangeListener.class, seekValueChangeListener);
 	}// addSeekValueChangedListener
 
 	protected void fireSeekValueChanged() {
-		Object[] listeners = seekValueChangedListenerList.getListenerList();
+		Object[] listeners = hdNumberValueChangeListenerList.getListenerList();
 		// process
-		SeekValueChangeEvent seekValueChangeEvent = new SeekValueChangeEvent(this, priorValue, currentValue);
+		HDNumberValueChangeEvent hdNumberValueChangeEvent = new HDNumberValueChangeEvent(this, priorValue,
+				currentValue);
 
 		for (int i = listeners.length - 2; i >= 0; i -= 2) {
-			if (listeners[i] == SeekValueChangeListener.class) {
-				((SeekValueChangeListener) listeners[i + 1]).valueChanged(seekValueChangeEvent);
+			if (listeners[i] == HDNumberValueChangeListener.class) {
+				((HDNumberValueChangeListener) listeners[i + 1]).valueChanged(hdNumberValueChangeEvent);
 			} // if
 		} // for
 
@@ -240,7 +273,4 @@ public class HexDecimalNumberPanel extends JPanel {
 	}// class SeekDocument
 		// ______________________________
 
-	private static final int UP = 1;
-	private static final int DOWN = -1;
-
-}// class HexDecimalNumberDisplay
+}// class HDNumberBox

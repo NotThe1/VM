@@ -108,6 +108,7 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 		
 		return hexDocumentFilter;
 	}//loadDataCommon
+	
 
 	void fillPane() {
 		if (currentExtent == 0) {

@@ -34,49 +34,40 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
-import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 import disks.RawDiskDrive;
 import utilities.FilePicker;
+import utilities.hdNumberBox.HDNumberBox;
+import utilities.hdNumberBox.HDNumberValueChangeEvent;
+import utilities.hdNumberBox.HDNumberValueChangeListener;
+import utilities.hdNumberBox.HDSeekPanel;
 import utilities.hexEdit.HexEditPanelSimple;
-import utilities.seekPanel.SeekPanel;
 
 public class DiskUtility {
 
 	private JFrame frmDiskUtility;
-	private JSpinner spinnerSector;
-	private JSpinner spinnerTrack;
-	private JSpinner spinnerHead;
+	private HDNumberBox hdnSector;
+	private HDNumberBox hdnTrack;
+	private HDNumberBox hdnHead;
 	private JToggleButton tbBootable;
-	private JToggleButton tbHexDisplay;
+	private JToggleButton tbDecimalDisplay;
 	private JTabbedPane tabbedPane;
 	private File currentFile;
 	private JLabel lblFileName;
 	// ....
 	private DiskUtilityAdapter diskUtilityAdapter;
 
-	private int spinnerCount;
-	// private ArrayList<JFormattedTextField> formattedTextFields;
-	// private ArrayList<HexFormatterFactory> hexFormatterFactories;
-	// private ArrayList<JSpinner> spinners;
-	private ArrayList<SpinnerFormatSet> spinnerFormatSets;
-	private JFormattedTextField.AbstractFormatterFactory decimalFormatterFactory;
-	private HexFormatterFactory hexFormatterFactory;
-	private SeekPanel seekPanel;
+	private ArrayList<HDNumberBox> hdNumberBoxs;
+	private HDSeekPanel hdSeekPanel;
 
-	// private String diskType;
-	// private DiskMetrics diskMetrics;
-
-	// private FileChannel fileChannel;
-	// private MappedByteBuffer fileMap;
+	boolean changeSectorInProgress = false;
 
 	private int absoluteSector;
 	private int currentAbsoluteSector;
@@ -90,68 +81,43 @@ public class DiskUtility {
 		lblFileName.setText(file.getName());
 		lblFileName.setToolTipText(file.getAbsolutePath());
 		setHeadTrackSectorSizes(diskDrive);
-		seekPanel.setMaxValue(diskDrive.getTotalSectorsOnDisk());
-
 		displayPhysicalSector(absoluteSector);
 		setDisplayRadix();
-		// try {
-		// fileChannel = new RandomAccessFile(file,"rw").getChannel();
-		// fileMap = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0,
-		// fileChannel.size());
-		// } catch (Exception e) {
-		// // TODO: handle exception
-		// }
-
-		// panelHexFile.loadData(file);
-		// diskType = setDiskType(file);
-		// diskMetrics = DiskMetrics.getDiskMetric(diskType);
 	}// loadFile
 
 	private void closeFile(File file) {
-		// if(fileChannel!=null){
-		// try {
-		// fileChannel.close();
-		// fileChannel = null;
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }//try
-		// }//if
-
 		absoluteSector = 0;
 
 		currentFile = null;
-		diskDrive = null;
-		setHeadTrackSectorSizes(diskDrive);
+		diskDrive.dismount();
+//		setHeadTrackSectorSizes(diskDrive);
+		currentFile = null;
+		byte[] mtArray = new byte[16];
+		panelSectorDisplay.loadData(mtArray);
 		lblFileName.setText(NO_ACTIVE_FILE);
 		lblFileName.setToolTipText(NO_ACTIVE_FILE);
-		// diskType = null;
-		// diskMetrics = null;
 	}// closeFile
 
-	// private String setDiskType(File file) {
-	// String ans = null;
-	// if (file.getAbsolutePath().matches("[^\\.]+?\\.[^\\.]+?")) {
-	// String stuff[] = file.getName().split("\\.");
-	// ans = stuff[1];
-	// } // if
-	// System.out.printf("[setFileType] file type: %s%n", ans);
-	// return ans;
-	// }// setFileType
-
 	private void setHeadTrackSectorSizes(RawDiskDrive diskDrive) {
-		((SpinnerNumberModel) spinnerHead.getModel()).setValue(0);
-		((SpinnerNumberModel) spinnerTrack.getModel()).setValue(0);
-		((SpinnerNumberModel) spinnerSector.getModel()).setValue(0);
+
+		((SpinnerNumberModel) hdnHead.getNumberModel()).setValue(0);
+		((SpinnerNumberModel) hdnTrack.getNumberModel()).setValue(0);
+		((SpinnerNumberModel) hdnSector.getNumberModel()).setValue(1);
+		hdSeekPanel.setValue(0);
 
 		if (diskDrive == null) {
-			((SpinnerNumberModel) spinnerHead.getModel()).setMaximum(0);
-			((SpinnerNumberModel) spinnerTrack.getModel()).setMaximum(0);
-			((SpinnerNumberModel) spinnerSector.getModel()).setMaximum(0);
+			((SpinnerNumberModel) hdnHead.getNumberModel()).setMaximum(0);
+			((SpinnerNumberModel) hdnTrack.getNumberModel()).setMaximum(0);
+			((SpinnerNumberModel) hdnSector.getNumberModel()).setMaximum(1);
+			((SpinnerNumberModel) hdnSector.getNumberModel()).setMinimum(1);
+			hdSeekPanel.setMaxValue(0);
+
 		} else {
-			((SpinnerNumberModel) spinnerHead.getModel()).setMaximum(diskDrive.getHeads() - 1);
-			((SpinnerNumberModel) spinnerTrack.getModel()).setMaximum(diskDrive.getTracksPerHead() - 1);
-			((SpinnerNumberModel) spinnerSector.getModel()).setMaximum(diskDrive.getSectorsPerTrack() - 1);
+			((SpinnerNumberModel) hdnHead.getNumberModel()).setMaximum(diskDrive.getHeads() - 1);
+			((SpinnerNumberModel) hdnTrack.getNumberModel()).setMaximum(diskDrive.getTracksPerHead() - 1);
+			((SpinnerNumberModel) hdnSector.getNumberModel()).setMaximum(diskDrive.getSectorsPerTrack());
+			hdSeekPanel.setMaxValue(diskDrive.getTotalSectorsOnDisk() - 1);
+
 		} // if
 	}// setHeadTrackSectorSizes
 
@@ -162,6 +128,35 @@ public class DiskUtility {
 
 		} //
 	}// haveDisk
+
+	private void selectedNewPhysicalSector(boolean fromSeekPanel) {
+		int newSector = hdSeekPanel.getValue();
+
+		if (fromSeekPanel) {
+			hdnHead.mute(true);
+			hdnTrack.mute(true);
+			hdnSector.mute(true);
+			
+			diskDrive.setCurrentAbsoluteSector(newSector);
+			hdnHead.setValue(diskDrive.getCurrentHead());
+			hdnTrack.setValue(diskDrive.getCurrentTrack());
+			hdnSector.setValue(diskDrive.getCurrentSector());
+			
+			hdnHead.mute(false);
+			hdnTrack.mute(false);
+			hdnSector.mute(false);
+
+		} else {
+
+			diskDrive.setCurrentAbsoluteSector(hdnHead.getValue(), hdnTrack.getValue(), hdnSector.getValue());
+			newSector = diskDrive.getCurrentAbsoluteSector();
+			hdSeekPanel.mute(true);
+			hdSeekPanel.setValue(newSector);
+			hdSeekPanel.mute(false);
+		} // if
+		displayPhysicalSector(newSector);
+
+	}// selectedNewPhysicalSector
 
 	private void displayPhysicalSector(int absoluteSector) {
 		if ((0 > absoluteSector) | (diskDrive.getTotalSectorsOnDisk() < absoluteSector)) {
@@ -174,21 +169,39 @@ public class DiskUtility {
 		// displayPhysicalSector();
 	}// displayPhysicalSector
 
+	private void manageFileMenus(String source) {
+		switch (source) {
+		case MNU_FILE_NEW_DISK:
+		case MNU_FILE_LOAD_DISK:
+			mnuFileNewDisk.setEnabled(false);
+			mnuFileLoadDisk.setEnabled(false);
+			mnuFileClose.setEnabled(true);
+			mnuFileSave.setEnabled(true);
+			mnuFileSaveAs.setEnabled(true);
+			mnuFileExit.setEnabled(true);
+			break;
+		case MNU_FILE_CLOSE:
+			mnuFileNewDisk.setEnabled(true);
+			mnuFileLoadDisk.setEnabled(true);
+			mnuFileClose.setEnabled(false);
+			mnuFileSave.setEnabled(false);
+			mnuFileSaveAs.setEnabled(false);
+			mnuFileExit.setEnabled(true);
+		case MNU_FILE_SAVE:
+		case MNU_FILE_SAVE_AS:
+		case MNU_FILE_EXIT:
+			break;
+		default:
+		}// switch
+	}// manageFileMenus
+
 	// .............................................................
 
 	public void setDisplayRadix() {
 
-		if (tbHexDisplay.isSelected()) {
-			seekPanel.setHexDisplay();
-			for (SpinnerFormatSet sfs : spinnerFormatSets) {
-				sfs.formattedTextField.setFormatterFactory(sfs.hexFormatterFactory);
-			} // for seekPanel
-		} else {
-			seekPanel.setDecimalDisplay();
-			for (SpinnerFormatSet sfs : spinnerFormatSets) {
-				sfs.formattedTextField.setFormatterFactory(sfs.decimalFormatterFactory);
-			} // for seekPanel
-		} // if
+		for (HDNumberBox hdNumberBox : hdNumberBoxs) {
+			hdNumberBox.setDecimalDisplay(tbDecimalDisplay.isSelected());
+		} // for
 
 	}// setDisplayRadix
 
@@ -239,35 +252,15 @@ public class DiskUtility {
 		tabbedPane.setSelectedIndex(myPrefs.getInt("Tab", 0));
 		// splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
 		myPrefs = null;
-
-		spinnerCount = 0;
-
-		spinnerFormatSets = new ArrayList<SpinnerFormatSet>();
-		spinnerFormatSets.add(makeSpinnerFormatSet(spinnerHead));
-		spinnerFormatSets.add(makeSpinnerFormatSet(spinnerSector));
-		spinnerFormatSets.add(makeSpinnerFormatSet(spinnerTrack));
+		hdNumberBoxs = new ArrayList<HDNumberBox>();
+		hdNumberBoxs.add(hdnHead);
+		hdNumberBoxs.add(hdnTrack);
+		hdNumberBoxs.add(hdnSector);
+		hdNumberBoxs.add(hdSeekPanel);
 
 		setDisplayRadix();
-
+		manageFileMenus(MNU_FILE_CLOSE);
 	}// appInit
-
-	private SpinnerFormatSet makeSpinnerFormatSet(JSpinner spinner) {
-		DefaultEditor editor = (DefaultEditor) spinner.getEditor();
-		JFormattedTextField ftf = editor.getTextField();
-		AbstractFormatterFactory decimalFormatterFactory = ftf.getFormatterFactory();
-		hexFormatterFactory = new HexFormatterFactory();
-		
-		ftf.addFocusListener(diskUtilityAdapter);
-
-//		ftf.setFormatterFactory(hexFormatterFactory);
-
-		return new SpinnerFormatSet(spinner, ftf, decimalFormatterFactory, hexFormatterFactory);
-
-	}//
-	
-	private void appInitX(){
-		
-	}
 
 	/**
 	 * Create the application.
@@ -316,20 +309,15 @@ public class DiskUtility {
 		Component horizontalStrut = Box.createHorizontalStrut(20);
 		toolBar.add(horizontalStrut);
 
-		tbHexDisplay = new JToggleButton("Display Hex");
-		tbHexDisplay.setName(TB_HEX_DISPLAY);
-		tbHexDisplay.addActionListener(diskUtilityAdapter);
-		toolBar.add(tbHexDisplay);
-		
+		tbDecimalDisplay = new JToggleButton("Display Decimal");
+		tbDecimalDisplay.setName(TB_DECIMAL_DISPLAY);
+		tbDecimalDisplay.addActionListener(diskUtilityAdapter);
+		toolBar.add(tbDecimalDisplay);
+
 		JButton btnNewButton = new JButton("New button");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				SpinnerNumberModel snm = (SpinnerNumberModel) spinnerHead.getModel();
-				int max = (int) snm.getMaximum();
-				int headValue = (int) spinnerHead.getModel().getValue();
-				System.out.printf("[actionPerformed] headValue %d%n", headValue);
-				System.out.printf("[actionPerformed] max %d%n", max);
-				spinnerHead.setValue(max);
+			//	panelSectorDisplay.clearDisplay();
 			}
 		});
 		toolBar.add(btnNewButton);
@@ -410,24 +398,24 @@ public class DiskUtility {
 		JPanel tabPhysical = new JPanel();
 		tabbedPane.addTab("Physical View", null, tabPhysical, null);
 		GridBagLayout gbl_tabPhysical = new GridBagLayout();
-		gbl_tabPhysical.columnWidths = new int[] { 0, 0 };
-		gbl_tabPhysical.rowHeights = new int[] { 0, 0, 40, 10, 0 };
-		gbl_tabPhysical.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_tabPhysical.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_tabPhysical.columnWidths = new int[] { 0, 0, 0 };
+		gbl_tabPhysical.rowHeights = new int[] { 0, 0, 0, 40, 10, 0 };
+		gbl_tabPhysical.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_tabPhysical.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		tabPhysical.setLayout(gbl_tabPhysical);
 
 		JPanel panelHeadTrackSector = new JPanel();
 		GridBagConstraints gbc_panelHeadTrackSector = new GridBagConstraints();
-		gbc_panelHeadTrackSector.insets = new Insets(0, 0, 5, 0);
+		gbc_panelHeadTrackSector.insets = new Insets(0, 0, 5, 5);
 		gbc_panelHeadTrackSector.fill = GridBagConstraints.BOTH;
 		gbc_panelHeadTrackSector.gridx = 0;
 		gbc_panelHeadTrackSector.gridy = 0;
 		tabPhysical.add(panelHeadTrackSector, gbc_panelHeadTrackSector);
 		GridBagLayout gbl_panelHeadTrackSector = new GridBagLayout();
-		gbl_panelHeadTrackSector.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panelHeadTrackSector.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		gbl_panelHeadTrackSector.rowHeights = new int[] { 0, 0 };
 		gbl_panelHeadTrackSector.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-				0.0, Double.MIN_VALUE };
+				0.0, 0.0, 0.0, Double.MIN_VALUE };
 		gbl_panelHeadTrackSector.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panelHeadTrackSector.setLayout(gbl_panelHeadTrackSector);
 
@@ -438,16 +426,15 @@ public class DiskUtility {
 		gbc_lblHead.gridy = 0;
 		panelHeadTrackSector.add(lblHead, gbc_lblHead);
 
-		spinnerHead = new JSpinner();
-		spinnerHead.setName(SPINNER_HEAD);
-		spinnerHead.addFocusListener(diskUtilityAdapter);
-		spinnerHead.setModel(new SpinnerNumberModel(0, 0, 0, 1));
-		spinnerHead.setPreferredSize(new Dimension(50, 20));
-		GridBagConstraints gbc_spinnerHead = new GridBagConstraints();
-		gbc_spinnerHead.insets = new Insets(0, 0, 0, 5);
-		gbc_spinnerHead.gridx = 3;
-		gbc_spinnerHead.gridy = 0;
-		panelHeadTrackSector.add(spinnerHead, gbc_spinnerHead);
+		hdnHead = new HDNumberBox();
+		hdnHead.setName(HDN_HEAD);
+		hdnHead.addHDNumberValueChangedListener(diskUtilityAdapter);
+		hdnHead.setPreferredSize(new Dimension(50, 20));
+		GridBagConstraints gbc_hdnHead = new GridBagConstraints();
+		gbc_hdnHead.insets = new Insets(0, 0, 0, 5);
+		gbc_hdnHead.gridx = 3;
+		gbc_hdnHead.gridy = 0;
+		panelHeadTrackSector.add(hdnHead, gbc_hdnHead);
 
 		JLabel lblTrack = new JLabel("Track");
 		GridBagConstraints gbc_lblTrack = new GridBagConstraints();
@@ -456,14 +443,15 @@ public class DiskUtility {
 		gbc_lblTrack.gridy = 0;
 		panelHeadTrackSector.add(lblTrack, gbc_lblTrack);
 
-		spinnerTrack = new JSpinner();
-		spinnerTrack.setModel(new SpinnerNumberModel(0, 0, 0, 1));
-		spinnerTrack.setPreferredSize(new Dimension(50, 20));
-		GridBagConstraints gbc_spinnerTrack = new GridBagConstraints();
-		gbc_spinnerTrack.insets = new Insets(0, 0, 0, 5);
-		gbc_spinnerTrack.gridx = 7;
-		gbc_spinnerTrack.gridy = 0;
-		panelHeadTrackSector.add(spinnerTrack, gbc_spinnerTrack);
+		hdnTrack = new HDNumberBox();
+		hdnTrack.setName(HDN_TRACK);
+		hdnTrack.addHDNumberValueChangedListener(diskUtilityAdapter);
+		hdnTrack.setPreferredSize(new Dimension(50, 20));
+		GridBagConstraints gbc_hdnTrack = new GridBagConstraints();
+		gbc_hdnTrack.insets = new Insets(0, 0, 0, 5);
+		gbc_hdnTrack.gridx = 7;
+		gbc_hdnTrack.gridy = 0;
+		panelHeadTrackSector.add(hdnTrack, gbc_hdnTrack);
 
 		JLabel lblSector = new JLabel("Sector");
 		GridBagConstraints gbc_lblSector = new GridBagConstraints();
@@ -472,17 +460,19 @@ public class DiskUtility {
 		gbc_lblSector.gridy = 0;
 		panelHeadTrackSector.add(lblSector, gbc_lblSector);
 
-		spinnerSector = new JSpinner();
-		spinnerSector.setModel(new SpinnerNumberModel(0, 0, 0, 1));
-		spinnerSector.setPreferredSize(new Dimension(50, 20));
-		GridBagConstraints gbc_spinnerSector = new GridBagConstraints();
-		gbc_spinnerSector.gridx = 11;
-		gbc_spinnerSector.gridy = 0;
-		panelHeadTrackSector.add(spinnerSector, gbc_spinnerSector);
+		hdnSector = new HDNumberBox();
+		hdnSector.setName(HDN_SECTOR);
+		hdnSector.addHDNumberValueChangedListener(diskUtilityAdapter);
+		hdnSector.setPreferredSize(new Dimension(50, 20));
+		GridBagConstraints gbc_hdnSector = new GridBagConstraints();
+		gbc_hdnSector.insets = new Insets(0, 0, 0, 5);
+		gbc_hdnSector.gridx = 11;
+		gbc_hdnSector.gridy = 0;
+		panelHeadTrackSector.add(hdnSector, gbc_hdnSector);
 
 		panelHexDisplay0 = new JPanel();
 		GridBagConstraints gbc_panelHexDisplay0 = new GridBagConstraints();
-		gbc_panelHexDisplay0.insets = new Insets(0, 0, 5, 0);
+		gbc_panelHexDisplay0.insets = new Insets(0, 0, 5, 5);
 		gbc_panelHexDisplay0.fill = GridBagConstraints.VERTICAL;
 		gbc_panelHexDisplay0.gridx = 0;
 		gbc_panelHexDisplay0.gridy = 1;
@@ -503,10 +493,10 @@ public class DiskUtility {
 
 		JPanel panel_1 = new JPanel();
 		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
-		gbc_panel_1.insets = new Insets(0, 0, 5, 0);
+		gbc_panel_1.insets = new Insets(0, 0, 5, 5);
 		gbc_panel_1.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panel_1.gridx = 0;
-		gbc_panel_1.gridy = 2;
+		gbc_panel_1.gridy = 3;
 		tabPhysical.add(panel_1, gbc_panel_1);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
 		gbl_panel_1.columnWidths = new int[] { 0, 0 };
@@ -515,19 +505,24 @@ public class DiskUtility {
 		gbl_panel_1.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panel_1.setLayout(gbl_panel_1);
 
-		seekPanel = new SeekPanel(new SpinnerNumberModel(0, 0, 0, 1));
+		hdSeekPanel = new HDSeekPanel(new SpinnerNumberModel(0, 0, 0, 1));
+		hdSeekPanel.setPreferredSize(new Dimension(260, 30));
+		hdSeekPanel.setMinimumSize(new Dimension(280, 39));
+		hdSeekPanel.setName(HD_SEEK_PANEL);
+		hdSeekPanel.addHDNumberValueChangedListener(diskUtilityAdapter);
 		GridBagConstraints gbc_seekPanel = new GridBagConstraints();
 		gbc_seekPanel.gridx = 0;
 		gbc_seekPanel.gridy = 0;
-		panel_1.add(seekPanel, gbc_seekPanel);
+		panel_1.add(hdSeekPanel, gbc_seekPanel);
 		// seekPanel.setValue(0);
-		seekPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		// hdSeekPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null,
+		// null, null, null));
 		GridBagLayout gbl_seekPanel = new GridBagLayout();
 		gbl_seekPanel.columnWidths = new int[] { 0 };
 		gbl_seekPanel.rowHeights = new int[] { 0 };
 		gbl_seekPanel.columnWeights = new double[] { Double.MIN_VALUE };
 		gbl_seekPanel.rowWeights = new double[] { Double.MIN_VALUE };
-		seekPanel.setLayout(gbl_seekPanel);
+		hdSeekPanel.setLayout(gbl_seekPanel);
 
 		JMenuBar menuBar = new JMenuBar();
 		frmDiskUtility.setJMenuBar(menuBar);
@@ -535,12 +530,12 @@ public class DiskUtility {
 		JMenu mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
 
-		JMenuItem mnuFileNewDisk = new JMenuItem("New Disk");
+		mnuFileNewDisk = new JMenuItem("New Disk");
 		mnuFileNewDisk.setName(MNU_FILE_NEW_DISK);
 		mnuFileNewDisk.addActionListener(diskUtilityAdapter);
 		mnuFile.add(mnuFileNewDisk);
 
-		JMenuItem mnuFileLoadDisk = new JMenuItem("Load Disk ...");
+		mnuFileLoadDisk = new JMenuItem("Load Disk ...");
 		mnuFileLoadDisk.setName(MNU_FILE_LOAD_DISK);
 		mnuFileLoadDisk.addActionListener(diskUtilityAdapter);
 		mnuFile.add(mnuFileLoadDisk);
@@ -548,7 +543,7 @@ public class DiskUtility {
 		JSeparator separator = new JSeparator();
 		mnuFile.add(separator);
 
-		JMenuItem mnuFileClose = new JMenuItem("Close");
+		mnuFileClose = new JMenuItem("Close");
 		mnuFileClose.setName(MNU_FILE_CLOSE);
 		mnuFileClose.addActionListener(diskUtilityAdapter);
 		mnuFile.add(mnuFileClose);
@@ -556,12 +551,12 @@ public class DiskUtility {
 		JSeparator separator_1 = new JSeparator();
 		mnuFile.add(separator_1);
 
-		JMenuItem mnuFileSave = new JMenuItem("Save");
+		mnuFileSave = new JMenuItem("Save");
 		mnuFileSave.setName(MNU_FILE_SAVE);
 		mnuFileSave.addActionListener(diskUtilityAdapter);
 		mnuFile.add(mnuFileSave);
 
-		JMenuItem mnuFileSaveAs = new JMenuItem("Save As ...");
+		mnuFileSaveAs = new JMenuItem("Save As ...");
 		mnuFileSaveAs.setName(MNU_FILE_SAVE_AS);
 		mnuFileSaveAs.addActionListener(diskUtilityAdapter);
 		mnuFile.add(mnuFileSaveAs);
@@ -569,7 +564,7 @@ public class DiskUtility {
 		JSeparator separator_2 = new JSeparator();
 		mnuFile.add(separator_2);
 
-		JMenuItem mnuFileExit = new JMenuItem("Exit");
+		mnuFileExit = new JMenuItem("Exit");
 		mnuFileExit.setName(MNU_FILE_EXIT);
 		mnuFileExit.addActionListener(diskUtilityAdapter);
 		mnuFile.add(mnuFileExit);
@@ -623,8 +618,8 @@ public class DiskUtility {
 
 	// ---------------------------------------------------------------
 
-	public class DiskUtilityAdapter implements ActionListener, FocusListener {
-		
+	public class DiskUtilityAdapter implements ActionListener, FocusListener, HDNumberValueChangeListener {
+
 		// ------ActionListener
 		@Override
 		public void actionPerformed(ActionEvent actionEvent) {
@@ -634,6 +629,7 @@ public class DiskUtility {
 			switch (name) {
 			// Menus
 			case MNU_FILE_NEW_DISK:
+				manageFileMenus(name);
 				break;
 			case MNU_FILE_LOAD_DISK:
 				JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD",
@@ -643,9 +639,11 @@ public class DiskUtility {
 					return;
 				} //
 				loadFile(fc.getSelectedFile());
+				manageFileMenus(name);
 				break;
 			case MNU_FILE_CLOSE:
 				closeFile(currentFile);
+				manageFileMenus(name);
 				break;
 			case MNU_FILE_SAVE:
 				break;
@@ -655,45 +653,62 @@ public class DiskUtility {
 				appClose();
 				break;
 			// ToggleButtons
-			case TB_HEX_DISPLAY:
+			case TB_DECIMAL_DISPLAY:
 				setDisplayRadix();
+				if (tbDecimalDisplay.isSelected()) {
+					tbDecimalDisplay.setText(DISPLAY_HEX);
+				} else {
+					tbDecimalDisplay.setText(DISPLAY_DECIMAL);
+				} // if
 				break;
 			case TB_BOOTABLE:
+				break;
+			case BTN_READ_PHYSICAL_SECTOR:
+				selectedNewPhysicalSector(false);
 				break;
 			default:
 
 			}// switch
 
 		}// actionPerformed
-		// ------ActionListener
+			// ------ActionListener
+
 		// ------FocusListener
+
 		@Override
 		public void focusLost(FocusEvent focusEvent) {
-			Object source = focusEvent.getSource();
-			String name = ((JComponent) source).getName();
-			
-			if(((Component) source).getParent() instanceof JSpinner){
-				JSpinner spinner = (JSpinner) ((JFormattedTextField)(focusEvent.getSource())).getParent();
-				
-				System.out.printf("[DiskUtilityAdapter.focusLost] value %d%n", spinner.getValue());
-			}
-			switch(name){
-			case SPINNER_HEAD:
-			case SPINNER_TRACK:
-			case SPINNER_SECTOR:
-				JSpinner spinner = (JSpinner)focusEvent.getSource();
-//				if ((int) spinner.getValue()> spinner.getModel().)
-			break;
-			}//switch
 
+		}// focusLost
 
-		}//focusLost
 		@Override
 		public void focusGained(FocusEvent arg0) {
 			// TODO Auto-generated method stub
 
-		}//focusGained
-		// ------FocusListener
+		}// focusGained
+			// ------FocusListener
+
+		// ------valueChanged
+
+		@Override
+		public void valueChanged(HDNumberValueChangeEvent hDNumberValueChangeEvent) {
+
+			String name = ((Component) hDNumberValueChangeEvent.getSource()).getName();
+
+			switch (name) {
+			case HDN_HEAD:
+			case HDN_TRACK:
+			case HDN_SECTOR:
+				 selectedNewPhysicalSector(false);
+				break;
+			case HD_SEEK_PANEL:
+				selectedNewPhysicalSector(true);
+				break;
+			default:
+			}// switch
+
+		}// valueChanged
+
+		// ------valueChanged
 
 	}// class DiskUtilityAdapter
 
@@ -701,11 +716,17 @@ public class DiskUtility {
 
 	public static final String NO_ACTIVE_FILE = "<No Active File>";
 
-	public static final String SPINNER_HEAD = "spinnerHead";
-	public static final String SPINNER_TRACK = "spinnerTrack";
-	public static final String SPINNER_SECTOR = "spinnerSector";
+	public static final String HDN_HEAD = "hdnHead";
+	public static final String HDN_TRACK = "hdnTrack";
+	public static final String HDN_SECTOR = "hdnSector";
+	public static final String HD_SEEK_PANEL = "seekPanel";
 
-	public static final String TB_HEX_DISPLAY = "tbHexDisplay";
+	public static final String DISPLAY_HEX = "Display Hex";
+	public static final String DISPLAY_DECIMAL = "Display Dicimal";
+
+	public static final String BTN_READ_PHYSICAL_SECTOR = "btnReadPhysicalSector";
+
+	public static final String TB_DECIMAL_DISPLAY = "tbDecimalDisplay";
 	public static final String TB_BOOTABLE = "tbBootable";
 
 	public static final String MNU_FILE_NEW_DISK = "mnuFileNewDisk";
@@ -718,5 +739,12 @@ public class DiskUtility {
 	private JPanel panelDirectory;
 	private JPanel panelHexDisplay0;
 	private HexEditPanelSimple panelSectorDisplay;
+	private JMenuItem mnuFileNewDisk;
+	private JMenuItem mnuFileLoadDisk;
+	private JMenuItem mnuFileClose;
+	private JMenuItem mnuFileSave;
+	private JMenuItem mnuFileSaveAs;
+	private JMenuItem mnuFileExit;
+	private Component horizontalStrut_1;
 
 }// class DiskUtility

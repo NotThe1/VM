@@ -1,13 +1,10 @@
-package utilities.seekPanel;
+package utilities.hdNumberBox;
 
 import java.util.EventObject;
-/**
- * records the current value and prior value for the SeekPanel
- * @author admin
- *
- */
 
-public class SeekValueChangeEvent extends EventObject {
+public class HDNumberValueChangeEvent extends EventObject  {
+	private static final long serialVersionUID = 1L;
+	
 	int oldValue;
 	int currentValue;
 	/**
@@ -17,7 +14,7 @@ public class SeekValueChangeEvent extends EventObject {
 	 * @param currentValue new value for the SeekPanel
 	 */
 
-	public SeekValueChangeEvent(Object source,int oldValue,int currentValue) {
+	public HDNumberValueChangeEvent(Object source,int oldValue,int currentValue) {
 		super(source);
 		this.oldValue=oldValue;
 		this.currentValue = currentValue;
@@ -32,6 +29,4 @@ public class SeekValueChangeEvent extends EventObject {
 		return this.currentValue;
 	}//getNewValue
 
-	
-	
-}//class SeekValueChangeEvent
+}//class HDNumberValueChangeEvent 

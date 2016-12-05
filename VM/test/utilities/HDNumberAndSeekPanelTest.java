@@ -13,7 +13,6 @@ import java.awt.event.WindowEvent;
 import java.util.prefs.Preferences;
 
 import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -28,15 +27,14 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.text.MaskFormatter;
 
-import utilities.hexDecimalNumberPanel.HexDecimalNumberPanel;
-import utilities.seekPanel.SeekPanel;
-import utilities.seekPanel.SeekValueChangeEvent;
-import utilities.seekPanel.SeekValueChangeListener;
+import utilities.hdNumberBox.HDNumberBox;
+import utilities.hdNumberBox.HDNumberValueChangeEvent;
+import utilities.hdNumberBox.HDNumberValueChangeListener;
+import utilities.hdNumberBox.HDSeekPanel;
 
-public class SeekPanelTest {
+public class HDNumberAndSeekPanelTest {
 
-	private SeekPanel seekPanel;
-	private HexDecimalNumberPanel hexDecimalNumberDisplay;
+	private HDSeekPanel seekPanel;
 
 	private JFrame frmTemplate;
 	private JButton btnOne;
@@ -48,7 +46,9 @@ public class SeekPanelTest {
 	private JSpinner spinnerMin;
 	private JSpinner spinnerStep;
 	private JSpinner spinnerMax;
-	private HexDecimalNumberPanel panelHD;
+	private HDNumberBox hdNumberBox;
+	private JSpinner spinnerHD;
+	private JSpinner spinnerSeek;
 
 	/**
 	 * Launch the application.
@@ -57,7 +57,7 @@ public class SeekPanelTest {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					SeekPanelTest window = new SeekPanelTest();
+					HDNumberAndSeekPanelTest window = new HDNumberAndSeekPanelTest();
 					window.frmTemplate.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -69,28 +69,32 @@ public class SeekPanelTest {
 	/* Standard Stuff */
 
 	private void doBtnOne() {
-		if (seekPanel.isDecimalDisplay()) {
-			seekPanel.setHexDisplay();
+		if (hdNumberBox.isDecimalDisplay()) {
+			hdNumberBox.setHexDisplay();
 		} else {
-			seekPanel.setDecimalDisplay();
+			hdNumberBox.setDecimalDisplay();
 		}
 	}// doBtnOne
 
 	private void doBtnTwo() {
 		SpinnerNumberModel snm = new SpinnerNumberModel((int) spinnerValue.getValue(), (int) spinnerMin.getValue(),
 				(int) spinnerMax.getValue(), (int) spinnerStep.getValue());
-		seekPanel.setNumberModel(snm);
+		hdNumberBox.setNumberModel(snm);
 	}// doBtnTwo
 
 	private void doBtnThree() {
-		if (panelHD.isDecimalDisplay()) {
-			panelHD.setHexDisplay();
+		if (seekPanel.isDecimalDisplay()) {
+			seekPanel.setHexDisplay();
 		} else {
-			panelHD.setDecimalDisplay();
-		} // if
+			seekPanel.setDecimalDisplay();
+		}//
+
 	}// doBtnThree
 
 	private void doBtnFour() {
+		SpinnerNumberModel snm = new SpinnerNumberModel((int) spinnerValue.getValue(), (int) spinnerMin.getValue(),
+				(int) spinnerMax.getValue(), (int) spinnerStep.getValue());
+		seekPanel.setNumberModel(snm);
 
 	}// doBtnFour
 
@@ -134,7 +138,7 @@ public class SeekPanelTest {
 	}// doEditPaste
 
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(SeekPanelTest.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(HDNumberAndSeekPanelTest.class);
 		Dimension dim = frmTemplate.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -146,7 +150,7 @@ public class SeekPanelTest {
 	}// appClose
 
 	private void appInit() {
-		Preferences myPrefs = Preferences.userNodeForPackage(SeekPanelTest.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(HDNumberAndSeekPanelTest.class);
 		frmTemplate.setSize(653, 500);
 		frmTemplate.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
@@ -154,11 +158,25 @@ public class SeekPanelTest {
 		MaskFormatter maskFormatter = new MaskFormatter();
 		maskFormatter.setValidCharacters("0123456789");
 		seekPanel.setDecimalDisplay();
-		panelHD.setNumberModel(new SpinnerNumberModel(0, 0, 20, 1));
+		hdNumberBox.setNumberModel(new SpinnerNumberModel(0, 0, 20, 1));
+		
+		hdNumberBox.addHDNumberValueChangedListener(new HDNumberValueChangeListener() {
+			public void valueChanged(HDNumberValueChangeEvent hDNumberValueChangeEvent) {
+				spinnerHD.setValue(hDNumberValueChangeEvent.getNewValue());
+			}//valueChanged
+		});
+		seekPanel.setNumberModel(new SpinnerNumberModel(0, 0, 20, 1));
+		seekPanel.addHDNumberValueChangedListener(new HDNumberValueChangeListener() {
+			public void valueChanged(HDNumberValueChangeEvent hDNumberValueChangeEvent) {
+				spinnerSeek.setValue(hDNumberValueChangeEvent.getNewValue());
+			}//valueChanged
+		});
+
+
 		// ftfDecimal.get
 	}// appInit
 
-	public SeekPanelTest() {
+	public HDNumberAndSeekPanelTest() {
 		initialize();
 		appInit();
 	}// Constructor
@@ -187,7 +205,7 @@ public class SeekPanelTest {
 		gbc_toolBar.gridy = 0;
 		frmTemplate.getContentPane().add(toolBar, gbc_toolBar);
 
-		btnOne = new JButton("H/D");
+		btnOne = new JButton("H/D Radix");
 		btnOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doBtnOne();
@@ -197,34 +215,35 @@ public class SeekPanelTest {
 		btnOne.setPreferredSize(new Dimension(50, 20));
 		toolBar.add(btnOne);
 
-		btnTwo = new JButton("Set Model");
+		btnTwo = new JButton("H/D Set Model");
+		btnTwo.setMinimumSize(new Dimension(50, 23));
 		btnTwo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doBtnTwo();
 			}
 		});
-		btnTwo.setPreferredSize(new Dimension(30, 20));
-		btnTwo.setMaximumSize(new Dimension(70, 20));
+		btnTwo.setPreferredSize(new Dimension(50, 20));
+		btnTwo.setMaximumSize(new Dimension(100, 30));
 		toolBar.add(btnTwo);
 
-		btnThree = new JButton("Radix");
+		btnThree = new JButton("seek Radix");
+		btnThree.setMaximumSize(new Dimension(100, 23));
 		btnThree.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doBtnThree();
 			}
 		});
 		btnThree.setPreferredSize(new Dimension(30, 20));
-		btnThree.setMaximumSize(new Dimension(70, 20));
 		toolBar.add(btnThree);
 
-		btnFour = new JButton("4");
+		btnFour = new JButton("seek Set Model");
 		btnFour.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doBtnFour();
 			}
 		});
 		btnFour.setPreferredSize(new Dimension(30, 20));
-		btnFour.setMaximumSize(new Dimension(70, 20));
+		btnFour.setMaximumSize(new Dimension(100, 20));
 		toolBar.add(btnFour);
 
 		splitPane1 = new JSplitPane();
@@ -239,21 +258,21 @@ public class SeekPanelTest {
 		splitPane1.setLeftComponent(panelLeft);
 		GridBagLayout gbl_panelLeft = new GridBagLayout();
 		gbl_panelLeft.columnWidths = new int[] { 0, 0, 0 };
-		gbl_panelLeft.rowHeights = new int[] { 0, 0, 0, 0, 0 };
-		gbl_panelLeft.columnWeights = new double[] { 1.0, 0.0, Double.MIN_VALUE };
-		gbl_panelLeft.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelLeft.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panelLeft.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelLeft.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		panelLeft.setLayout(gbl_panelLeft);
-
-		seekPanel = new SeekPanel();
-		seekPanel.addSeekValueChangedListener(new SeekValueChangeListener() {
-			public void valueChanged(SeekValueChangeEvent seekValueChangeEvent) {
-				int priorValue = seekValueChangeEvent.getOldValue();
-				int value = seekValueChangeEvent.getNewValue();
+		
+		seekPanel = new HDSeekPanel();
+		seekPanel.addHDNumberValueChangedListener(new HDNumberValueChangeListener() {
+			public void valueChanged(HDNumberValueChangeEvent hdNumberValueChangeEvent) {
+				int priorValue = hdNumberValueChangeEvent.getOldValue();
+				int value = hdNumberValueChangeEvent.getNewValue();
 				System.out.printf("[valueChanged] OldValue: %d, newValue: %d%n", priorValue, value);
 			}
 		});
 		GridBagConstraints gbc_spinnerTest = new GridBagConstraints();
-		gbc_spinnerTest.fill = GridBagConstraints.BOTH;
+		gbc_spinnerTest.fill = GridBagConstraints.VERTICAL;
 		gbc_spinnerTest.insets = new Insets(0, 0, 5, 5);
 		gbc_spinnerTest.gridx = 0;
 		gbc_spinnerTest.gridy = 0;
@@ -283,7 +302,8 @@ public class SeekPanelTest {
 		panelMain.add(lblNewLabel, gbc_lblNewLabel);
 
 		spinnerValue = new JSpinner();
-		spinnerValue.setPreferredSize(new Dimension(50, 20));
+		spinnerValue.setMinimumSize(new Dimension(40, 20));
+		spinnerValue.setPreferredSize(new Dimension(100, 20));
 		GridBagConstraints gbc_spinnerValue = new GridBagConstraints();
 		gbc_spinnerValue.insets = new Insets(0, 0, 0, 5);
 		gbc_spinnerValue.gridx = 1;
@@ -299,6 +319,7 @@ public class SeekPanelTest {
 		panelMain.add(lblHeight, gbc_lblHeight);
 
 		spinnerMin = new JSpinner();
+		spinnerMin.setMinimumSize(new Dimension(50, 20));
 		spinnerMin.setPreferredSize(new Dimension(50, 20));
 		GridBagConstraints gbc_spinnerMin = new GridBagConstraints();
 		gbc_spinnerMin.insets = new Insets(0, 0, 0, 5);
@@ -314,6 +335,8 @@ public class SeekPanelTest {
 		panelMain.add(lblMax, gbc_lblMax);
 
 		spinnerMax = new JSpinner();
+		spinnerMax.setModel(new SpinnerNumberModel(new Integer(23), null, null, new Integer(1)));
+		spinnerMax.setMinimumSize(new Dimension(50, 20));
 		spinnerMax.setPreferredSize(new Dimension(50, 20));
 		GridBagConstraints gbc_spinnerMax = new GridBagConstraints();
 		gbc_spinnerMax.insets = new Insets(0, 0, 0, 5);
@@ -329,35 +352,54 @@ public class SeekPanelTest {
 		panelMain.add(lblStep, gbc_lblStep);
 
 		spinnerStep = new JSpinner();
+		spinnerStep.setModel(new SpinnerNumberModel(new Integer(1), null, null, new Integer(1)));
+		spinnerStep.setMinimumSize(new Dimension(40, 20));
 		spinnerStep.setPreferredSize(new Dimension(50, 20));
 		GridBagConstraints gbc_spinnerStep = new GridBagConstraints();
 		gbc_spinnerStep.gridx = 10;
 		gbc_spinnerStep.gridy = 1;
 		panelMain.add(spinnerStep, gbc_spinnerStep);
+		
+		spinnerSeek = new JSpinner();
+		spinnerSeek.setModel(new SpinnerNumberModel(new Integer(-1), null, null, new Integer(1)));
+		spinnerSeek.setMinimumSize(new Dimension(100, 20));
+		GridBagConstraints gbc_spinnerSeek = new GridBagConstraints();
+		gbc_spinnerSeek.insets = new Insets(0, 0, 5, 5);
+		gbc_spinnerSeek.gridx = 0;
+		gbc_spinnerSeek.gridy = 2;
+		panelLeft.add(spinnerSeek, gbc_spinnerSeek);
+		
+		JLabel lblHd = new JLabel("HD");
+		GridBagConstraints gbc_lblHd = new GridBagConstraints();
+		gbc_lblHd.insets = new Insets(0, 0, 5, 5);
+		gbc_lblHd.gridx = 0;
+		gbc_lblHd.gridy = 3;
+		panelLeft.add(lblHd, gbc_lblHd);
 
-		panelHD = new HexDecimalNumberPanel();
-		panelHD.setMinimumSize(new Dimension(200, 25));
-		panelHD.setPreferredSize(new Dimension(200, 23));
+		hdNumberBox = new HDNumberBox();
+		hdNumberBox.setMinimumSize(new Dimension(200, 25));
+		hdNumberBox.setPreferredSize(new Dimension(200, 23));
 		GridBagConstraints gbc_panelHD = new GridBagConstraints();
 		gbc_panelHD.insets = new Insets(0, 0, 5, 5);
 		gbc_panelHD.fill = GridBagConstraints.BOTH;
 		gbc_panelHD.gridx = 0;
-		gbc_panelHD.gridy = 2;
-		panelLeft.add(panelHD, gbc_panelHD);
+		gbc_panelHD.gridy = 4;
+		panelLeft.add(hdNumberBox, gbc_panelHD);
 		GridBagLayout gbl_panelHD = new GridBagLayout();
 		gbl_panelHD.columnWidths = new int[] { 0 };
 		gbl_panelHD.rowHeights = new int[] { 0 };
 		gbl_panelHD.columnWeights = new double[] { Double.MIN_VALUE };
 		gbl_panelHD.rowWeights = new double[] { Double.MIN_VALUE };
-		panelHD.setLayout(gbl_panelHD);
+		hdNumberBox.setLayout(gbl_panelHD);
 		
-		JFormattedTextField formattedTextField = new JFormattedTextField();
-		GridBagConstraints gbc_formattedTextField = new GridBagConstraints();
-		gbc_formattedTextField.insets = new Insets(0, 0, 0, 5);
-		gbc_formattedTextField.fill = GridBagConstraints.HORIZONTAL;
-		gbc_formattedTextField.gridx = 0;
-		gbc_formattedTextField.gridy = 3;
-		panelLeft.add(formattedTextField, gbc_formattedTextField);
+		spinnerHD = new JSpinner();
+		spinnerHD.setModel(new SpinnerNumberModel(new Integer(-1), null, null, new Integer(1)));
+		spinnerHD.setMinimumSize(new Dimension(100, 20));
+		GridBagConstraints gbc_spinnerHD = new GridBagConstraints();
+		gbc_spinnerHD.insets = new Insets(0, 0, 5, 5);
+		gbc_spinnerHD.gridx = 0;
+		gbc_spinnerHD.gridy = 5;
+		panelLeft.add(spinnerHD, gbc_spinnerHD);
 
 		JPanel panelRight = new JPanel();
 		splitPane1.setRightComponent(panelRight);
