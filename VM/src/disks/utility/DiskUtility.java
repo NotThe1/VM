@@ -1,9 +1,11 @@
 package disks.utility;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -32,17 +34,33 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
+import disks.CPMDirectory;
+import disks.CPMDirectoryEntry;
+import disks.Disk;
+import disks.DiskMetrics;
 import disks.RawDiskDrive;
+//import disks.DiskUtility.DirEntry;
+//import disks.DiskUtility.FileCpmModel;
+//import disks.DiskUtility.FileCpmModel;
+//import disks.DiskUtility.RowListener;
 import utilities.FilePicker;
 import utilities.hdNumberBox.HDNumberBox;
 import utilities.hdNumberBox.HDNumberValueChangeEvent;
@@ -66,23 +84,45 @@ public class DiskUtility {
 
 	private ArrayList<HDNumberBox> hdNumberBoxs;
 	private HDSeekPanel hdSeekPanel;
-
 	boolean changeSectorInProgress = false;
+
+	private FileCpmModel fileCpmModel;
+
+	private CPMDirectory directory;
+	private JTable dirTable;
+	private DefaultTableModel modelDir;
+
+
+	private DiskMetrics diskMetrics;
+	private int heads;
+	private int tracksPerHead;
+	private int sectorsPerTrack;
+	private int bytesPerSector;
+	private int tracksBeforeDirectory;
+	private int blockSizeInSectors;
+	private int totalTracks;
+	private int totalSectors;
+	private int maxDirectoryEntry;
+	private int maxBlockNumber;
+	private int logicalRecordsPerSector;
 
 	private int absoluteSector;
 	private int currentAbsoluteSector;
+	private byte[] diskSector;
 
 	private RawDiskDrive diskDrive;
+	// ---------------------------------------
+	// ---------------------------------------
 
 	private void loadFile(File file) {
+
 		absoluteSector = 0;
 		currentFile = file;
 		diskDrive = new RawDiskDrive(file.getAbsolutePath());
-		lblFileName.setText(file.getName());
-		lblFileName.setToolTipText(file.getAbsolutePath());
-		setHeadTrackSectorSizes(diskDrive);
-		displayPhysicalSector(absoluteSector);
-		setDisplayRadix();
+
+		refreshMetrics(true);
+		displayPhysicalSector(absoluteSector); // Physical View
+		displayDirectoryView(); // Directory View
 	}// loadFile
 
 	private void closeFile(File file) {
@@ -90,13 +130,201 @@ public class DiskUtility {
 
 		currentFile = null;
 		diskDrive.dismount();
-//		setHeadTrackSectorSizes(diskDrive);
-		currentFile = null;
-		byte[] mtArray = new byte[16];
-		panelSectorDisplay.loadData(mtArray);
+		panelSectorDisplay.loadData(NO_FILE);
 		lblFileName.setText(NO_ACTIVE_FILE);
 		lblFileName.setToolTipText(NO_ACTIVE_FILE);
 	}// closeFile
+
+	private void refreshMetrics(boolean state) {
+		// state = true we have a valid disk
+		if (diskMetrics != null) {
+			diskMetrics = null;
+		} // if
+		if (state) {
+			diskMetrics = DiskMetrics.getDiskMetric(diskDrive.getDiskType());
+		} // if
+
+		setHeadTrackSectorSizes(diskDrive);
+		setDisplayRadix();
+
+		// currentHead = 0;
+		// currentTrack = 0;
+		// ;
+		// currentSector = 1;
+		currentAbsoluteSector = 0;
+
+		heads = state ? diskMetrics.heads : 0;
+		tracksPerHead = state ? diskMetrics.tracksPerHead : 0;
+		sectorsPerTrack = state ? diskMetrics.sectorsPerTrack : 0;
+		bytesPerSector = state ? diskMetrics.bytesPerSector : 0;
+		totalTracks = state ? heads * tracksPerHead : 0;
+		totalSectors = state ? diskMetrics.getTotalSectorsOnDisk() : 0;
+		tracksBeforeDirectory = state ? diskMetrics.getOFS() : 0;
+		blockSizeInSectors = state ? diskMetrics.directoryBlockCount : 0;
+
+		maxDirectoryEntry = state ? diskMetrics.getDRM() : 0;
+		maxBlockNumber = state ? diskMetrics.getDSM() : 0;
+		lblFileName.setText(state ? diskDrive.getFileLocalName() : NO_ACTIVE_FILE);
+		lblFileName.setToolTipText(state ? diskDrive.getFileAbsoluteName() : NO_ACTIVE_FILE);
+		// linesToDisplay = state ? bytesPerSector / CHARACTERS_PER_LINE : 0;
+		logicalRecordsPerSector = state ? diskMetrics.getLSperPS() : 0;
+	}// refreshMetrics
+
+	// ---Directory View-------------------------
+	private void displayDirectoryView() {
+		dirMakeDirectory();
+		dirMakeDirectoryTable();
+	}// displayDirectoryView
+
+	private void dirMakeDirectory() {
+		if (directory != null) {
+			directory = null;
+		} // if
+
+		directory = new CPMDirectory(diskDrive.getDiskType(), diskMetrics.isBootDisk());
+		int firstDirectorySector = diskMetrics.getDirectoryStartSector();
+		int lastDirectorySector = diskMetrics.getDirectorysLastSector();
+		int entriesPerSector = bytesPerSector / Disk.DIRECTORY_ENTRY_SIZE;
+
+		int directoryIndex = 0;
+		for (int s = firstDirectorySector; s < lastDirectorySector + 1; s++) {
+			diskDrive.setCurrentAbsoluteSector(s);
+			diskSector = diskDrive.read();
+			for (int i = 0; i < entriesPerSector; i++) {
+				directory.addEntry(dirExtractDirectoryEntry(diskSector, i), directoryIndex++);
+			} // for - i
+		} // for -s
+	}// makeDirectory
+
+	private byte[] dirExtractDirectoryEntry(byte[] sector, int index) {
+		byte[] rawDirectory = new byte[Disk.DIRECTORY_ENTRY_SIZE];
+		int startIndex = index * Disk.DIRECTORY_ENTRY_SIZE;
+		for (int i = 0; i < Disk.DIRECTORY_ENTRY_SIZE; i++) {
+			rawDirectory[i] = sector[startIndex + i];
+		} // for
+		return rawDirectory;
+	}// extractDirectoryEntry
+
+	private void dirMakeDirectoryTable() {
+		if (fileCpmModel != null) {
+			fileCpmModel = null;
+		} // if
+		fileCpmModel = new FileCpmModel();
+
+		if (dirTable != null) {
+			dirTable = null;
+		} // if
+		Object[] columnNames = { "index", "Name", "type", "User", "R/O", "Sys", "Seq", "Count", "Blocks" };
+		dirTable = new JTable(new DefaultTableModel(columnNames, 0)) {
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
+		dirTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		dirTable.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		dirTable.getSelectionModel().addListSelectionListener(new RowListener());
+		// dirTable.setName(AC_DIRECTORY_TABLE);
+		dirAdjustTableLook(dirTable);
+
+		scrollDirectoryTable.setViewportView(dirTable);
+		dirFillDirectoryTable(dirTable);
+		dirTable.setRowSelectionInterval(0, 0);
+
+	}// makeDirectoryTable
+
+	private void showDirectoryDetail(int entryNumber) {
+		CPMDirectoryEntry entry = directory.getDirectoryEntry(entryNumber);
+		byte[] rawDirectory = entry.getRawDirectory();
+
+		lblRawUser.setText(String.format("%02X", rawDirectory[0]));
+
+		lblRawName.setText(String.format("%02X %02X %02X %02X %02X %02X %02X %02X ", rawDirectory[1], rawDirectory[2],
+				rawDirectory[3], rawDirectory[4], rawDirectory[5], rawDirectory[6], rawDirectory[7], rawDirectory[8]));
+		lblRawType.setText(String.format("%02X %02X %02X", rawDirectory[9], rawDirectory[10], rawDirectory[11]));
+		lblRawEX.setText(String.format("%02X", rawDirectory[12]));
+		lblRawS1.setText(String.format("%02X", rawDirectory[13]));
+		lblRawS2.setText(String.format("%02X", rawDirectory[14]));
+
+		lblRawRC.setText(String.format("%02X", rawDirectory[15]));
+
+		lblRawAllocation.setText(String.format(
+				"%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X", rawDirectory[16],
+				rawDirectory[17], rawDirectory[18], rawDirectory[19], rawDirectory[20], rawDirectory[21],
+				rawDirectory[22], rawDirectory[23], rawDirectory[24], rawDirectory[25], rawDirectory[26],
+				rawDirectory[27], rawDirectory[28], rawDirectory[29], rawDirectory[30], rawDirectory[31]));
+	}// showDirectoryDetail
+	
+	private void dirAdjustTableLook(JTable table) {
+		Font realColumnFont = table.getFont();
+		FontMetrics fontMetrics = table.getFontMetrics(realColumnFont);
+
+		int charWidth = fontMetrics.stringWidth("W");
+
+		TableColumnModel tableColumn = table.getColumnModel();
+		tableColumn.getColumn(0).setPreferredWidth(charWidth * 3);
+		tableColumn.getColumn(1).setPreferredWidth(charWidth * 9);
+		tableColumn.getColumn(2).setPreferredWidth(charWidth * 4);
+		tableColumn.getColumn(3).setPreferredWidth(charWidth * 3);
+		tableColumn.getColumn(4).setPreferredWidth(charWidth * 4);
+		tableColumn.getColumn(5).setPreferredWidth(charWidth * 4);
+		tableColumn.getColumn(6).setPreferredWidth(charWidth * 3);
+		tableColumn.getColumn(7).setPreferredWidth(charWidth * 3);
+		tableColumn.getColumn(8).setPreferredWidth(charWidth * 3);
+
+		DefaultTableCellRenderer rightAlign = new DefaultTableCellRenderer();
+		rightAlign.setHorizontalAlignment(JLabel.RIGHT);
+		tableColumn.getColumn(0).setCellRenderer(rightAlign);
+		tableColumn.getColumn(3).setCellRenderer(rightAlign);
+		tableColumn.getColumn(6).setCellRenderer(rightAlign);
+		tableColumn.getColumn(7).setCellRenderer(rightAlign);
+		tableColumn.getColumn(8).setCellRenderer(rightAlign);
+
+		DefaultTableCellRenderer centerAlign = new DefaultTableCellRenderer();
+		centerAlign.setHorizontalAlignment(JLabel.CENTER);
+		tableColumn.getColumn(4).setCellRenderer(centerAlign);
+		tableColumn.getColumn(5).setCellRenderer(centerAlign);
+	}// adjustTableLook
+	
+	private void dirFillDirectoryTable(JTable table) {
+		String name, type;
+		int user, seqNumber, count, blocks;
+		boolean readOnly, systemFile;
+		modelDir = (DefaultTableModel) table.getModel();
+		CPMDirectoryEntry entry;
+		for (int i = 0; i < diskMetrics.getDRM() + 1; i++) {
+			entry = directory.getDirectoryEntry(i);
+
+			name = entry.getFileNameTrim();
+			type = entry.getFileTypeTrim();
+			user = entry.getUserNumberInt();
+			readOnly = entry.isReadOnly();
+			systemFile = entry.isSystemFile();
+			seqNumber = entry.getActualExtentNumber();
+			count = entry.getRcInt();
+			blocks = entry.getBlockCount();
+			modelDir.insertRow(i, new Object[] { i, name, type, user, readOnly, systemFile, seqNumber, count, blocks });
+			if (!entry.isEmpty()) {
+				dirFillFileChoosers(entry, i);
+			}// if
+		}// for
+//		cbFileNames.setModel(fileCpmModel);
+//		cbCpmFile.setModel(fileCpmModel); ABCDEF
+	}// fillDirectoryTable
+	
+	private void dirFillFileChoosers(CPMDirectoryEntry entry, int index) {
+		if (entry.getActualExtentNumber() >1) {
+			return; // only want one entry per file [0 or 1]
+		}// if
+		fileCpmModel.add(new DirEntry(entry.getNameAndTypePeriod(), index));
+	}// fillFileChoosers
+
+
+
+
+
+	// ---Directory View-------------------------
+
+	// ---Physical View-------------------------
 
 	private void setHeadTrackSectorSizes(RawDiskDrive diskDrive) {
 
@@ -121,27 +349,26 @@ public class DiskUtility {
 		} // if
 	}// setHeadTrackSectorSizes
 
-	private void haveDisk(boolean yes) {
-		if (yes) {
+	private void selectedNewPhysicalSector(boolean fromSeekPanel) {
+		// int priorSector = diskDrive.getCurrentAbsoluteSector(); // currently
+		// displayed
+		if (panelSectorDisplay.isDataChanged()) {
 
-		} else {
+			diskDrive.write(panelSectorDisplay.unloadData()); //
 
 		} //
-	}// haveDisk
-
-	private void selectedNewPhysicalSector(boolean fromSeekPanel) {
 		int newSector = hdSeekPanel.getValue();
 
 		if (fromSeekPanel) {
 			hdnHead.mute(true);
 			hdnTrack.mute(true);
 			hdnSector.mute(true);
-			
+
 			diskDrive.setCurrentAbsoluteSector(newSector);
 			hdnHead.setValue(diskDrive.getCurrentHead());
 			hdnTrack.setValue(diskDrive.getCurrentTrack());
 			hdnSector.setValue(diskDrive.getCurrentSector());
-			
+
 			hdnHead.mute(false);
 			hdnTrack.mute(false);
 			hdnSector.mute(false);
@@ -168,6 +395,7 @@ public class DiskUtility {
 		panelSectorDisplay.loadData(diskDrive.read());
 		// displayPhysicalSector();
 	}// displayPhysicalSector
+		// ---Physical View-------------------------
 
 	private void manageFileMenus(String source) {
 		switch (source) {
@@ -247,7 +475,7 @@ public class DiskUtility {
 
 	private void appInit() {
 		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
-		frmDiskUtility.setSize(975, 773);
+		frmDiskUtility.setSize(886, 895);
 		frmDiskUtility.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		tabbedPane.setSelectedIndex(myPrefs.getInt("Tab", 0));
 		// splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
@@ -260,6 +488,7 @@ public class DiskUtility {
 
 		setDisplayRadix();
 		manageFileMenus(MNU_FILE_CLOSE);
+		panelSectorDisplay.loadData(NO_FILE);
 	}// appInit
 
 	/**
@@ -288,7 +517,7 @@ public class DiskUtility {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
 		gridBagLayout.rowHeights = new int[] { 0, 0, 0 };
-		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gridBagLayout.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
 		frmDiskUtility.getContentPane().setLayout(gridBagLayout);
 
@@ -317,14 +546,14 @@ public class DiskUtility {
 		JButton btnNewButton = new JButton("New button");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-			//	panelSectorDisplay.clearDisplay();
+				// panelSectorDisplay.clearDisplay();
 			}
 		});
 		toolBar.add(btnNewButton);
 
 		JPanel panelTitle = new JPanel();
 		GridBagConstraints gbc_panelTitle = new GridBagConstraints();
-		gbc_panelTitle.fill = GridBagConstraints.BOTH;
+		gbc_panelTitle.fill = GridBagConstraints.VERTICAL;
 		gbc_panelTitle.gridx = 0;
 		gbc_panelTitle.gridy = 1;
 		frmDiskUtility.getContentPane().add(panelTitle, gbc_panelTitle);
@@ -355,23 +584,292 @@ public class DiskUtility {
 		tabbedPane.addTab("Directory View", null, tabDirectory, null);
 		GridBagLayout gbl_tabDirectory = new GridBagLayout();
 		gbl_tabDirectory.columnWidths = new int[] { 0, 0 };
-		gbl_tabDirectory.rowHeights = new int[] { 0, 0 };
+		gbl_tabDirectory.rowHeights = new int[] { 0, 0, 0 };
 		gbl_tabDirectory.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_tabDirectory.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_tabDirectory.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
 		tabDirectory.setLayout(gbl_tabDirectory);
 
 		panelDirectory = new JPanel();
 		GridBagConstraints gbc_panelDirectory = new GridBagConstraints();
-		gbc_panelDirectory.fill = GridBagConstraints.BOTH;
+		gbc_panelDirectory.insets = new Insets(0, 0, 5, 0);
+		gbc_panelDirectory.fill = GridBagConstraints.VERTICAL;
 		gbc_panelDirectory.gridx = 0;
 		gbc_panelDirectory.gridy = 0;
 		tabDirectory.add(panelDirectory, gbc_panelDirectory);
 		GridBagLayout gbl_panelDirectory = new GridBagLayout();
-		gbl_panelDirectory.columnWidths = new int[] { 0 };
-		gbl_panelDirectory.rowHeights = new int[] { 0 };
-		gbl_panelDirectory.columnWeights = new double[] { Double.MIN_VALUE };
-		gbl_panelDirectory.rowWeights = new double[] { Double.MIN_VALUE };
+		gbl_panelDirectory.columnWidths = new int[] { 0, 0 };
+		gbl_panelDirectory.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelDirectory.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelDirectory.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
 		panelDirectory.setLayout(gbl_panelDirectory);
+
+		panelDirRaw = new JPanel();
+		GridBagConstraints gbc_panelDirRaw = new GridBagConstraints();
+		gbc_panelDirRaw.insets = new Insets(0, 0, 5, 0);
+		gbc_panelDirRaw.fill = GridBagConstraints.BOTH;
+		gbc_panelDirRaw.gridx = 0;
+		gbc_panelDirRaw.gridy = 0;
+		panelDirectory.add(panelDirRaw, gbc_panelDirRaw);
+		GridBagLayout gbl_panelDirRaw = new GridBagLayout();
+		gbl_panelDirRaw.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panelDirRaw.rowHeights = new int[] { 0, 0 };
+		gbl_panelDirRaw.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelDirRaw.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panelDirRaw.setLayout(gbl_panelDirRaw);
+
+		panelRawUser = new JPanel();
+		panelRawUser.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelRawUser = new GridBagConstraints();
+		gbc_panelRawUser.insets = new Insets(0, 0, 0, 5);
+		gbc_panelRawUser.fill = GridBagConstraints.BOTH;
+		gbc_panelRawUser.gridx = 0;
+		gbc_panelRawUser.gridy = 0;
+		panelDirRaw.add(panelRawUser, gbc_panelRawUser);
+		GridBagLayout gbl_panelRawUser = new GridBagLayout();
+		gbl_panelRawUser.columnWidths = new int[] { 0, 0 };
+		gbl_panelRawUser.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelRawUser.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelRawUser.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelRawUser.setLayout(gbl_panelRawUser);
+
+		label = new JLabel("User [0]");
+		label.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label = new GridBagConstraints();
+		gbc_label.insets = new Insets(0, 0, 5, 0);
+		gbc_label.gridx = 0;
+		gbc_label.gridy = 0;
+		panelRawUser.add(label, gbc_label);
+
+		lblRawUser = new JLabel("00");
+		lblRawUser.setForeground(Color.BLUE);
+		lblRawUser.setFont(new Font("Courier New", Font.BOLD, 16));
+		GridBagConstraints gbc_lblRawUser = new GridBagConstraints();
+		gbc_lblRawUser.gridx = 0;
+		gbc_lblRawUser.gridy = 1;
+		panelRawUser.add(lblRawUser, gbc_lblRawUser);
+
+		panelRawName = new JPanel();
+		panelRawName.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelRawName = new GridBagConstraints();
+		gbc_panelRawName.insets = new Insets(0, 0, 0, 5);
+		gbc_panelRawName.fill = GridBagConstraints.BOTH;
+		gbc_panelRawName.gridx = 1;
+		gbc_panelRawName.gridy = 0;
+		panelDirRaw.add(panelRawName, gbc_panelRawName);
+		GridBagLayout gbl_panelRawName = new GridBagLayout();
+		gbl_panelRawName.columnWidths = new int[] { 27, 0 };
+		gbl_panelRawName.rowHeights = new int[] { 15, 18, 0 };
+		gbl_panelRawName.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelRawName.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelRawName.setLayout(gbl_panelRawName);
+
+		label_2 = new JLabel("Name [1-8]");
+		label_2.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_2 = new GridBagConstraints();
+		gbc_label_2.insets = new Insets(0, 0, 5, 0);
+		gbc_label_2.gridx = 0;
+		gbc_label_2.gridy = 0;
+		panelRawName.add(label_2, gbc_label_2);
+
+		lblRawName = new JLabel("00 00 00 00 00 00 00 00");
+		lblRawName.setForeground(Color.BLUE);
+		lblRawName.setFont(new Font("Courier New", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRawName = new GridBagConstraints();
+		gbc_lblRawName.gridx = 0;
+		gbc_lblRawName.gridy = 1;
+		panelRawName.add(lblRawName, gbc_lblRawName);
+
+		panelRawType = new JPanel();
+		panelRawType.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelRawType = new GridBagConstraints();
+		gbc_panelRawType.insets = new Insets(0, 0, 0, 5);
+		gbc_panelRawType.fill = GridBagConstraints.BOTH;
+		gbc_panelRawType.gridx = 2;
+		gbc_panelRawType.gridy = 0;
+		panelDirRaw.add(panelRawType, gbc_panelRawType);
+		GridBagLayout gbl_panelRawType = new GridBagLayout();
+		gbl_panelRawType.columnWidths = new int[] { 0, 0 };
+		gbl_panelRawType.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelRawType.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelRawType.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelRawType.setLayout(gbl_panelRawType);
+
+		label_4 = new JLabel("Type [9-11]");
+		label_4.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_4 = new GridBagConstraints();
+		gbc_label_4.insets = new Insets(0, 0, 5, 0);
+		gbc_label_4.gridx = 0;
+		gbc_label_4.gridy = 0;
+		panelRawType.add(label_4, gbc_label_4);
+
+		lblRawType = new JLabel("00 00 00");
+		lblRawType.setForeground(Color.BLUE);
+		lblRawType.setFont(new Font("Courier New", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRawType = new GridBagConstraints();
+		gbc_lblRawType.gridx = 0;
+		gbc_lblRawType.gridy = 1;
+		panelRawType.add(lblRawType, gbc_lblRawType);
+
+		panelEX = new JPanel();
+		panelEX.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelEX = new GridBagConstraints();
+		gbc_panelEX.insets = new Insets(0, 0, 0, 5);
+		gbc_panelEX.fill = GridBagConstraints.BOTH;
+		gbc_panelEX.gridx = 3;
+		gbc_panelEX.gridy = 0;
+		panelDirRaw.add(panelEX, gbc_panelEX);
+		GridBagLayout gbl_panelEX = new GridBagLayout();
+		gbl_panelEX.columnWidths = new int[] { 0, 0 };
+		gbl_panelEX.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelEX.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelEX.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelEX.setLayout(gbl_panelEX);
+
+		label_6 = new JLabel("EX [12]");
+		label_6.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_6 = new GridBagConstraints();
+		gbc_label_6.insets = new Insets(0, 0, 5, 0);
+		gbc_label_6.gridx = 0;
+		gbc_label_6.gridy = 0;
+		panelEX.add(label_6, gbc_label_6);
+
+		lblRawEX = new JLabel("00");
+		lblRawEX.setForeground(Color.BLUE);
+		lblRawEX.setFont(new Font("Courier New", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRawEX = new GridBagConstraints();
+		gbc_lblRawEX.gridx = 0;
+		gbc_lblRawEX.gridy = 1;
+		panelEX.add(lblRawEX, gbc_lblRawEX);
+
+		panelS1 = new JPanel();
+		panelS1.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelS1 = new GridBagConstraints();
+		gbc_panelS1.insets = new Insets(0, 0, 0, 5);
+		gbc_panelS1.fill = GridBagConstraints.BOTH;
+		gbc_panelS1.gridx = 4;
+		gbc_panelS1.gridy = 0;
+		panelDirRaw.add(panelS1, gbc_panelS1);
+		GridBagLayout gbl_panelS1 = new GridBagLayout();
+		gbl_panelS1.columnWidths = new int[] { 0, 0 };
+		gbl_panelS1.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelS1.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelS1.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelS1.setLayout(gbl_panelS1);
+
+		label_8 = new JLabel("S1 [13]");
+		label_8.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_8 = new GridBagConstraints();
+		gbc_label_8.insets = new Insets(0, 0, 5, 0);
+		gbc_label_8.gridx = 0;
+		gbc_label_8.gridy = 0;
+		panelS1.add(label_8, gbc_label_8);
+
+		lblRawS1 = new JLabel("00");
+		lblRawS1.setForeground(Color.BLUE);
+		lblRawS1.setFont(new Font("Courier New", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRawS1 = new GridBagConstraints();
+		gbc_lblRawS1.gridx = 0;
+		gbc_lblRawS1.gridy = 1;
+		panelS1.add(lblRawS1, gbc_lblRawS1);
+
+		panelS2 = new JPanel();
+		panelS2.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelS2 = new GridBagConstraints();
+		gbc_panelS2.insets = new Insets(0, 0, 0, 5);
+		gbc_panelS2.fill = GridBagConstraints.BOTH;
+		gbc_panelS2.gridx = 5;
+		gbc_panelS2.gridy = 0;
+		panelDirRaw.add(panelS2, gbc_panelS2);
+		GridBagLayout gbl_panelS2 = new GridBagLayout();
+		gbl_panelS2.columnWidths = new int[] { 0, 0 };
+		gbl_panelS2.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelS2.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelS2.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelS2.setLayout(gbl_panelS2);
+
+		label_10 = new JLabel("S2 [14]");
+		label_10.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_10 = new GridBagConstraints();
+		gbc_label_10.insets = new Insets(0, 0, 5, 0);
+		gbc_label_10.gridx = 0;
+		gbc_label_10.gridy = 0;
+		panelS2.add(label_10, gbc_label_10);
+
+		lblRawS2 = new JLabel("00");
+		lblRawS2.setForeground(Color.BLUE);
+		lblRawS2.setFont(new Font("Courier New", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRawS2 = new GridBagConstraints();
+		gbc_lblRawS2.gridx = 0;
+		gbc_lblRawS2.gridy = 1;
+		panelS2.add(lblRawS2, gbc_lblRawS2);
+
+		panelRC = new JPanel();
+		panelRC.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelRC = new GridBagConstraints();
+		gbc_panelRC.fill = GridBagConstraints.BOTH;
+		gbc_panelRC.gridx = 6;
+		gbc_panelRC.gridy = 0;
+		panelDirRaw.add(panelRC, gbc_panelRC);
+		GridBagLayout gbl_panelRC = new GridBagLayout();
+		gbl_panelRC.columnWidths = new int[] { 0, 0 };
+		gbl_panelRC.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelRC.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelRC.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelRC.setLayout(gbl_panelRC);
+
+		label_12 = new JLabel("RC [15]");
+		label_12.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_12 = new GridBagConstraints();
+		gbc_label_12.insets = new Insets(0, 0, 5, 0);
+		gbc_label_12.gridx = 0;
+		gbc_label_12.gridy = 0;
+		panelRC.add(label_12, gbc_label_12);
+
+		lblRawRC = new JLabel("00");
+		lblRawRC.setForeground(Color.BLUE);
+		lblRawRC.setFont(new Font("Courier New", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRawRC = new GridBagConstraints();
+		gbc_lblRawRC.gridx = 0;
+		gbc_lblRawRC.gridy = 1;
+		panelRC.add(lblRawRC, gbc_lblRawRC);
+
+		panelAllocationVector = new JPanel();
+		panelAllocationVector.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		GridBagConstraints gbc_panelAllocationVector = new GridBagConstraints();
+		gbc_panelAllocationVector.fill = GridBagConstraints.VERTICAL;
+		gbc_panelAllocationVector.gridx = 0;
+		gbc_panelAllocationVector.gridy = 1;
+		panelDirectory.add(panelAllocationVector, gbc_panelAllocationVector);
+		GridBagLayout gbl_panelAllocationVector = new GridBagLayout();
+		gbl_panelAllocationVector.columnWidths = new int[] { 0, 0 };
+		gbl_panelAllocationVector.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelAllocationVector.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelAllocationVector.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelAllocationVector.setLayout(gbl_panelAllocationVector);
+
+		label_14 = new JLabel("Allocation Vector [16-31]");
+		label_14.setFont(new Font("Arial", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_14 = new GridBagConstraints();
+		gbc_label_14.insets = new Insets(0, 0, 5, 0);
+		gbc_label_14.gridx = 0;
+		gbc_label_14.gridy = 0;
+		panelAllocationVector.add(label_14, gbc_label_14);
+
+		lblRawAllocation = new JLabel("00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+		lblRawAllocation.setForeground(Color.BLUE);
+		lblRawAllocation.setFont(new Font("Courier New", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRawAllocation = new GridBagConstraints();
+		gbc_lblRawAllocation.gridx = 0;
+		gbc_lblRawAllocation.gridy = 1;
+		panelAllocationVector.add(lblRawAllocation, gbc_lblRawAllocation);
+
+		scrollDirectoryTable = new JScrollPane();
+		scrollDirectoryTable.setPreferredSize(new Dimension(531, 0));
+		GridBagConstraints gbc_scrollDirectoryTable = new GridBagConstraints();
+		gbc_scrollDirectoryTable.fill = GridBagConstraints.VERTICAL;
+		gbc_scrollDirectoryTable.gridx = 0;
+		gbc_scrollDirectoryTable.gridy = 1;
+		tabDirectory.add(scrollDirectoryTable, gbc_scrollDirectoryTable);
 
 		JPanel tabFile = new JPanel();
 		tabbedPane.addTab("File View", null, tabFile, null);
@@ -400,7 +898,7 @@ public class DiskUtility {
 		GridBagLayout gbl_tabPhysical = new GridBagLayout();
 		gbl_tabPhysical.columnWidths = new int[] { 0, 0, 0 };
 		gbl_tabPhysical.rowHeights = new int[] { 0, 0, 0, 40, 10, 0 };
-		gbl_tabPhysical.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_tabPhysical.columnWeights = new double[] { 1.0, 0.0, Double.MIN_VALUE };
 		gbl_tabPhysical.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		tabPhysical.setLayout(gbl_tabPhysical);
 
@@ -478,16 +976,23 @@ public class DiskUtility {
 		gbc_panelHexDisplay0.gridy = 1;
 		tabPhysical.add(panelHexDisplay0, gbc_panelHexDisplay0);
 		GridBagLayout gbl_panelHexDisplay0 = new GridBagLayout();
-		gbl_panelHexDisplay0.columnWidths = new int[] { 0, 0 };
+		gbl_panelHexDisplay0.columnWidths = new int[] { 0, 0, 0 };
 		gbl_panelHexDisplay0.rowHeights = new int[] { 0, 0 };
-		gbl_panelHexDisplay0.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_panelHexDisplay0.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
 		gbl_panelHexDisplay0.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		panelHexDisplay0.setLayout(gbl_panelHexDisplay0);
+		
+		horizontalStrut_2 = Box.createHorizontalStrut(20);
+		GridBagConstraints gbc_horizontalStrut_2 = new GridBagConstraints();
+		gbc_horizontalStrut_2.insets = new Insets(0, 0, 0, 5);
+		gbc_horizontalStrut_2.gridx = 0;
+		gbc_horizontalStrut_2.gridy = 0;
+		panelHexDisplay0.add(horizontalStrut_2, gbc_horizontalStrut_2);
 
 		panelSectorDisplay = new HexEditPanelSimple();
 		GridBagConstraints gbc_panelSectorDisplay = new GridBagConstraints();
 		gbc_panelSectorDisplay.fill = GridBagConstraints.BOTH;
-		gbc_panelSectorDisplay.gridx = 0;
+		gbc_panelSectorDisplay.gridx = 1;
 		gbc_panelSectorDisplay.gridy = 0;
 		panelHexDisplay0.add(panelSectorDisplay, gbc_panelSectorDisplay);
 
@@ -698,7 +1203,7 @@ public class DiskUtility {
 			case HDN_HEAD:
 			case HDN_TRACK:
 			case HDN_SECTOR:
-				 selectedNewPhysicalSector(false);
+				selectedNewPhysicalSector(false);
 				break;
 			case HD_SEEK_PANEL:
 				selectedNewPhysicalSector(true);
@@ -713,6 +1218,10 @@ public class DiskUtility {
 	}// class DiskUtilityAdapter
 
 	// ---------------------------------------------------------------
+
+	public static final byte[] NO_FILE = new byte[] { (byte) 0X3C, (byte) 0X4E, (byte) 0X6F, (byte) 0X20, (byte) 0X41,
+			(byte) 0X63, (byte) 0X74, (byte) 0X69, (byte) 0X76, (byte) 0X65, (byte) 0X20, (byte) 0X46, (byte) 0X69,
+			(byte) 0X6C, (byte) 0X65, (byte) 0X3E };
 
 	public static final String NO_ACTIVE_FILE = "<No Active File>";
 
@@ -746,5 +1255,43 @@ public class DiskUtility {
 	private JMenuItem mnuFileSaveAs;
 	private JMenuItem mnuFileExit;
 	private Component horizontalStrut_1;
+	private JPanel panelDirRaw;
+	private JPanel panelRawUser;
+	private JLabel label;
+	private JLabel lblRawUser;
+	private JPanel panelRawName;
+	private JLabel label_2;
+	private JLabel lblRawName;
+	private JPanel panelRawType;
+	private JLabel label_4;
+	private JLabel lblRawType;
+	private JPanel panelEX;
+	private JLabel label_6;
+	private JLabel lblRawEX;
+	private JPanel panelS1;
+	private JLabel label_8;
+	private JLabel lblRawS1;
+	private JPanel panelS2;
+	private JLabel label_10;
+	private JLabel lblRawS2;
+	private JPanel panelRC;
+	private JLabel label_12;
+	private JLabel lblRawRC;
+	private JPanel panelAllocationVector;
+	private JLabel label_14;
+	private JLabel lblRawAllocation;
+	private JScrollPane scrollDirectoryTable;
+	private Component horizontalStrut_2;
+
+	// ----------------------------------------------------------------------
+
+	private class RowListener implements ListSelectionListener {
+		public void valueChanged(ListSelectionEvent event) {
+			if (event.getValueIsAdjusting()) {
+				return;
+			} // if
+			showDirectoryDetail(dirTable.getSelectedRow());
+		}// valueChanged
+	}// class RowListener
 
 }// class DiskUtility

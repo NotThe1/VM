@@ -15,9 +15,6 @@ import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
 
 public class HDSeekPanel extends HDNumberBox {
 
@@ -54,20 +51,9 @@ public class HDSeekPanel extends HDNumberBox {
 	}// Constructor
 
 	public HDSeekPanel(SpinnerNumberModel numberModel, boolean decimalDisplay) {
-		super(numberModel,decimalDisplay);
+		super(numberModel, decimalDisplay);
 		initialize();
 	}// Constructor
-
-//	public void appInit0() {
-////		displayDoc = new SeekDocument(true);
-//	}// appInit0
-//
-//	public void appInit() {
-////		currentValue = (int) numberModel.getValue();
-////		txtValueDisplay.setDocument(displayDoc);
-//		// txtValueDisplay.setPreferredSize(new Dimension(100, 23));
-////		seekValueChangedListenerList = new EventListenerList();
-//	}// appInit
 
 	public void initialize() {
 		addMouseListener(new MouseAdapter() {
@@ -84,14 +70,13 @@ public class HDSeekPanel extends HDNumberBox {
 		});
 
 		setPreferredSize(new Dimension(390, 30));
-		
+
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 65, 65, 100, 65, 65, 0 };
 		gridBagLayout.rowHeights = new int[] { 23, 0 };
 		gridBagLayout.columnWeights = new double[] { 0.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		setLayout(gridBagLayout);
-
 
 		JButton btnFirst = new JButton("<<");
 		btnFirst.addActionListener(new ActionListener() {
@@ -119,8 +104,6 @@ public class HDSeekPanel extends HDNumberBox {
 		gbc_btnPrior.gridy = 0;
 		add(btnPrior, gbc_btnPrior);
 
-//		txtValueDisplay = new JFormattedTextField();
-		// txtValueDisplay.setBackground(Color.GRAY);
 		txtValueDisplay.setFont(new Font("Courier New", Font.PLAIN, 13));
 		txtValueDisplay.addFocusListener(new FocusAdapter() {
 			@Override
@@ -169,44 +152,8 @@ public class HDSeekPanel extends HDNumberBox {
 		setBorder(UIManager.getBorder("Spinner.border"));
 	}// Constructor
 
-
 	// ---------------------------
-	// ---------------------------
-	class SeekDocument extends PlainDocument {
-		private static final long serialVersionUID = 1L;
 
-		private String inputPattern;
-
-		SeekDocument(boolean decimalDisplay) {
-			if (decimalDisplay == true) {
-				displayDecimal();
-			} else {
-				displayHex();
-			} // if
-		}// Constructor
-
-		public void displayDecimal() {
-			inputPattern = "-??[0-9]*";
-
-		}// displayDecimal
-
-		public void displayHex() {
-			inputPattern = "[A-F|a-f|0-9]+";
-		}// displayHex
-
-		public void insertString(int offSet, String string, AttributeSet attributeSet) throws BadLocationException {
-			if (string == null) {
-				return;
-			} // if
-
-			if (!string.matches(inputPattern)) {
-				return;
-			} // for
-
-			super.insertString(offSet, string, attributeSet);
-		}// insertString
-	}// class SeekDocument
-		// ______________________________
 
 	private static final int UP = 1;
 	private static final int DOWN = -1;

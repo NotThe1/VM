@@ -268,7 +268,7 @@ public class HDNumberAndSeekPanelTest {
 			public void valueChanged(HDNumberValueChangeEvent hdNumberValueChangeEvent) {
 				int priorValue = hdNumberValueChangeEvent.getOldValue();
 				int value = hdNumberValueChangeEvent.getNewValue();
-				System.out.printf("[valueChanged] OldValue: %d, newValue: %d%n", priorValue, value);
+				System.out.printf("[HDNumberAndSeekPanelTest.valueChanged] OldValue: %d, newValue: %d%n", priorValue, value);
 			}
 		});
 		GridBagConstraints gbc_spinnerTest = new GridBagConstraints();
