@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -17,12 +16,14 @@ import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
@@ -58,6 +59,7 @@ import disks.Disk;
 import disks.DiskMetrics;
 import disks.RawDiskDrive;
 //import disks.DiskUtility.DirEntry;
+//import disks.DiskUtility.DirEntry;
 //import disks.DiskUtility.FileCpmModel;
 //import disks.DiskUtility.FileCpmModel;
 //import disks.DiskUtility.RowListener;
@@ -79,6 +81,7 @@ public class DiskUtility {
 	private JTabbedPane tabbedPane;
 	private File currentFile;
 	private JLabel lblFileName;
+	private String radixFormat;
 	// ....
 	private DiskUtilityAdapter diskUtilityAdapter;
 
@@ -92,7 +95,6 @@ public class DiskUtility {
 	private JTable dirTable;
 	private DefaultTableModel modelDir;
 
-
 	private DiskMetrics diskMetrics;
 	private int heads;
 	private int tracksPerHead;
@@ -105,6 +107,7 @@ public class DiskUtility {
 	private int maxDirectoryEntry;
 	private int maxBlockNumber;
 	private int logicalRecordsPerSector;
+	private int linesPerLogicalRecord = Disk.LOGICAL_SECTOR_SIZE / CHARACTERS_PER_LINE;
 
 	private int absoluteSector;
 	private int currentAbsoluteSector;
@@ -123,6 +126,7 @@ public class DiskUtility {
 		refreshMetrics(true);
 		displayPhysicalSector(absoluteSector); // Physical View
 		displayDirectoryView(); // Directory View
+		// displayFileView();
 	}// loadFile
 
 	private void closeFile(File file) {
@@ -169,6 +173,130 @@ public class DiskUtility {
 		// linesToDisplay = state ? bytesPerSector / CHARACTERS_PER_LINE : 0;
 		logicalRecordsPerSector = state ? diskMetrics.getLSperPS() : 0;
 	}// refreshMetrics
+
+	// ---File View------------------------------
+	private void displaySelectedFile() {
+		{
+			if (cbFileNames.getItemCount() == 0) {
+				return;
+			} // if
+			DirEntry de = (DirEntry) cbFileNames.getSelectedItem();
+			String fileName = de.fileName;
+			processSourceCPMFile(fileName);
+		} // cbFileNames
+	}// displaySelectedFile
+
+	private void processSourceCPMFile(String sourceFileName, String targetFileName) {
+
+		ArrayList<Integer> sectors = getAllSectorsForFile(sourceFileName);
+		int recordCount = directory.getTotalRecordCount(sourceFileName);
+		int actualNumberOfSectorsToRead = getActualNumberOfRecordsToRead(sourceFileName);
+
+		lblRecordCount.setText(String.format(radixFormat, recordCount));
+		lblReadOnly.setVisible(directory.isReadOnly(sourceFileName));
+		lblSystemFile.setVisible(directory.isSystemFile(sourceFileName));
+
+		ByteBuffer sourceData = ByteBuffer.allocate(actualNumberOfSectorsToRead * diskDrive.getBytesPerSector());
+
+		int actualByteCount = recordCount * Disk.LOGICAL_SECTOR_SIZE;
+		// int numberOfLogicalRecordsToProcess = 0;
+
+		for (int i = 0; i < actualNumberOfSectorsToRead; i++) {
+			diskDrive.setCurrentAbsoluteSector(sectors.get(i));
+			sourceData.put(diskDrive.read());
+		} // - for- i : each sector
+
+		// sourceData.limit(actualByteCount);
+		sourceData.rewind();
+		byte[] fileData = new byte[actualByteCount];
+		sourceData.get(fileData, 0, actualByteCount);
+		panelFileHex.loadData(fileData);
+
+		// if (targetFileName == null) {
+		// clearDocument(docFile);
+		// docFile = txtFile.getDocument();
+		// } else {
+		// // try {
+		// // FileOutputStream fout = new FileOutputStream(nativeFile);
+		// // fcOut = fout.getChannel();
+		// // } catch (FileNotFoundException e) {
+		// // // ignore
+		// // e.printStackTrace();
+		// // } // try
+		//
+		// } // if
+
+		// numberOfLogicalRecordsToProcess = (recordCount /
+		// logicalRecordsPerSector != 0) ? logicalRecordsPerSector
+		// : recordCount % logicalRecordsPerSector;
+		// if (targetFileName == null) {
+		// for (int j = 0; j < numberOfLogicalRecordsToProcess *
+		// linesPerLogicalRecord; j++) {
+		// int lineNumber = (i * linesPerLogicalRecord *
+		// logicalRecordsPerSector) + j;
+		// displayRecord(lineNumber);
+		// } // for - j each logical 128-byte record
+		// recordCount -= logicalRecordsPerSector;
+		// if (recordCount < 1) {
+		// break;
+		// } // if - recordCount
+
+		// } else {
+		// int numberOfBytesForWrite = numberOfLogicalRecordsToProcess *
+		// Disk.LOGICAL_SECTOR_SIZE;
+		// ByteBuffer outBuffer =
+		// ByteBuffer.allocate(numberOfBytesForWrite);
+		// outBuffer.put(aSector, 0, numberOfBytesForWrite);
+		// outBuffer.flip();
+		// try {
+		// fcOut.write(outBuffer);
+		// } catch (IOException e) {
+		// // ignore
+		// e.printStackTrace();
+		// } // try
+
+		// } // if - screen or file
+
+		// if (fcOut != null) {
+		// try {
+		// fcOut.close();
+		// } catch (IOException e) {
+		// // ignore
+		// e.printStackTrace();
+		// } // try
+		// } // if fc not null
+	}// processSourceCPMFile
+
+	private void processSourceCPMFile(String sourceFileName) {
+		processSourceCPMFile(sourceFileName, null);
+		// txtFile.setCaretPosition(0);
+	}// processSourceCPMFile
+
+	private ArrayList<Integer> getAllSectorsForFile(String fileName) {
+		ArrayList<Integer> blocks = directory.getAllAllocatedBlocks(fileName);
+		ArrayList<Integer> sectors = new ArrayList<Integer>();
+		int blockSectorStart = 0;
+
+		int sectorsPerBlock = diskMetrics.getSectorsPerBlock();
+		int block0StartSector = diskMetrics.getDirectoryStartSector();
+		for (int i = 0; i < blocks.size(); i++) {
+			blockSectorStart = block0StartSector + (blocks.get(i) * sectorsPerBlock);
+			for (int j = 0; j < sectorsPerBlock; sectors.add(blockSectorStart + j++))
+				;
+		} // for - i
+		return sectors;
+	}// getAllSectorsForFile
+
+	private int getActualNumberOfRecordsToRead(String fileName) {
+		int recordCount = directory.getTotalRecordCount(fileName); // 128-byte
+																	// logical
+																	// records
+		return ((recordCount - 1) / logicalRecordsPerSector) + 1; // Logical
+																	// Sectors
+																	// Per
+	}// getActualNumberOfRecordsToRead
+
+	// ---File View------------------------------
 
 	// ---Directory View-------------------------
 	private void displayDirectoryView() {
@@ -220,6 +348,7 @@ public class DiskUtility {
 				return false;
 			}
 		};
+
 		dirTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		dirTable.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		dirTable.getSelectionModel().addListSelectionListener(new RowListener());
@@ -253,12 +382,10 @@ public class DiskUtility {
 				rawDirectory[22], rawDirectory[23], rawDirectory[24], rawDirectory[25], rawDirectory[26],
 				rawDirectory[27], rawDirectory[28], rawDirectory[29], rawDirectory[30], rawDirectory[31]));
 	}// showDirectoryDetail
-	
+
 	private void dirAdjustTableLook(JTable table) {
 		Font realColumnFont = table.getFont();
-		FontMetrics fontMetrics = table.getFontMetrics(realColumnFont);
-
-		int charWidth = fontMetrics.stringWidth("W");
+		int charWidth = table.getFontMetrics(realColumnFont).getWidths()[0X57];
 
 		TableColumnModel tableColumn = table.getColumnModel();
 		tableColumn.getColumn(0).setPreferredWidth(charWidth * 3);
@@ -284,7 +411,7 @@ public class DiskUtility {
 		tableColumn.getColumn(4).setCellRenderer(centerAlign);
 		tableColumn.getColumn(5).setCellRenderer(centerAlign);
 	}// adjustTableLook
-	
+
 	private void dirFillDirectoryTable(JTable table) {
 		String name, type;
 		int user, seqNumber, count, blocks;
@@ -305,22 +432,19 @@ public class DiskUtility {
 			modelDir.insertRow(i, new Object[] { i, name, type, user, readOnly, systemFile, seqNumber, count, blocks });
 			if (!entry.isEmpty()) {
 				dirFillFileChoosers(entry, i);
-			}// if
-		}// for
-//		cbFileNames.setModel(fileCpmModel);
-//		cbCpmFile.setModel(fileCpmModel); ABCDEF
+			} // if
+		} // for
+		cbFileNames.setModel(fileCpmModel);
+		cbFileNames.setSelectedIndex(0);
+		// cbCpmFile.setModel(fileCpmModel); ABCDEF
 	}// fillDirectoryTable
-	
+
 	private void dirFillFileChoosers(CPMDirectoryEntry entry, int index) {
-		if (entry.getActualExtentNumber() >1) {
+		if (entry.getActualExtentNumber() > 1) {
 			return; // only want one entry per file [0 or 1]
-		}// if
+		} // if
 		fileCpmModel.add(new DirEntry(entry.getNameAndTypePeriod(), index));
 	}// fillFileChoosers
-
-
-
-
 
 	// ---Directory View-------------------------
 
@@ -426,7 +550,7 @@ public class DiskUtility {
 	// .............................................................
 
 	public void setDisplayRadix() {
-
+		radixFormat = tbDecimalDisplay.isSelected() ? "%X" : "%,d";
 		for (HDNumberBox hdNumberBox : hdNumberBoxs) {
 			hdNumberBox.setDecimalDisplay(tbDecimalDisplay.isSelected());
 		} // for
@@ -475,7 +599,7 @@ public class DiskUtility {
 
 	private void appInit() {
 		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
-		frmDiskUtility.setSize(886, 895);
+		frmDiskUtility.setSize(895, 895);
 		frmDiskUtility.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		tabbedPane.setSelectedIndex(myPrefs.getInt("Tab", 0));
 		// splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
@@ -551,18 +675,18 @@ public class DiskUtility {
 		});
 		toolBar.add(btnNewButton);
 
-		JPanel panelTitle = new JPanel();
-		GridBagConstraints gbc_panelTitle = new GridBagConstraints();
-		gbc_panelTitle.fill = GridBagConstraints.VERTICAL;
-		gbc_panelTitle.gridx = 0;
-		gbc_panelTitle.gridy = 1;
-		frmDiskUtility.getContentPane().add(panelTitle, gbc_panelTitle);
-		GridBagLayout gbl_panelTitle = new GridBagLayout();
-		gbl_panelTitle.columnWidths = new int[] { 0, 0 };
-		gbl_panelTitle.rowHeights = new int[] { 0, 0, 0 };
-		gbl_panelTitle.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_panelTitle.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-		panelTitle.setLayout(gbl_panelTitle);
+		JPanel panelMain = new JPanel();
+		GridBagConstraints gbc_panelMain = new GridBagConstraints();
+		gbc_panelMain.fill = GridBagConstraints.VERTICAL;
+		gbc_panelMain.gridx = 0;
+		gbc_panelMain.gridy = 1;
+		frmDiskUtility.getContentPane().add(panelMain, gbc_panelMain);
+		GridBagLayout gbl_panelMain = new GridBagLayout();
+		gbl_panelMain.columnWidths = new int[] { 0, 0 };
+		gbl_panelMain.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelMain.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_panelMain.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		panelMain.setLayout(gbl_panelMain);
 
 		lblFileName = new JLabel(NO_ACTIVE_FILE);
 		lblFileName.setToolTipText("<No File Active>");
@@ -571,14 +695,14 @@ public class DiskUtility {
 		gbc_lblFileName.insets = new Insets(0, 0, 5, 0);
 		gbc_lblFileName.gridx = 0;
 		gbc_lblFileName.gridy = 0;
-		panelTitle.add(lblFileName, gbc_lblFileName);
+		panelMain.add(lblFileName, gbc_lblFileName);
 
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 0;
 		gbc_tabbedPane.gridy = 1;
-		panelTitle.add(tabbedPane, gbc_tabbedPane);
+		panelMain.add(tabbedPane, gbc_tabbedPane);
 
 		JPanel tabDirectory = new JPanel();
 		tabbedPane.addTab("Directory View", null, tabDirectory, null);
@@ -875,23 +999,139 @@ public class DiskUtility {
 		tabbedPane.addTab("File View", null, tabFile, null);
 		GridBagLayout gbl_tabFile = new GridBagLayout();
 		gbl_tabFile.columnWidths = new int[] { 0, 0 };
-		gbl_tabFile.rowHeights = new int[] { 0, 0 };
+		gbl_tabFile.rowHeights = new int[] { 0, 0, 0, 0, 0, 0 };
 		gbl_tabFile.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_tabFile.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_tabFile.rowWeights = new double[] { 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		tabFile.setLayout(gbl_tabFile);
 
-		JPanel panelFile = new JPanel();
-		GridBagConstraints gbc_panelFile = new GridBagConstraints();
-		gbc_panelFile.fill = GridBagConstraints.BOTH;
-		gbc_panelFile.gridx = 0;
-		gbc_panelFile.gridy = 0;
-		tabFile.add(panelFile, gbc_panelFile);
-		GridBagLayout gbl_panelFile = new GridBagLayout();
-		gbl_panelFile.columnWidths = new int[] { 0 };
-		gbl_panelFile.rowHeights = new int[] { 0 };
-		gbl_panelFile.columnWeights = new double[] { Double.MIN_VALUE };
-		gbl_panelFile.rowWeights = new double[] { Double.MIN_VALUE };
-		panelFile.setLayout(gbl_panelFile);
+		panelFileSelection = new JPanel();
+		GridBagConstraints gbc_panelFileSelection = new GridBagConstraints();
+		gbc_panelFileSelection.insets = new Insets(0, 0, 5, 0);
+		gbc_panelFileSelection.gridx = 0;
+		gbc_panelFileSelection.gridy = 0;
+		tabFile.add(panelFileSelection, gbc_panelFileSelection);
+		GridBagLayout gbl_panelFileSelection = new GridBagLayout();
+		gbl_panelFileSelection.columnWidths = new int[] { 200, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panelFileSelection.rowHeights = new int[] { 0 };
+		gbl_panelFileSelection.columnWeights = new double[] { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+				Double.MIN_VALUE };
+		gbl_panelFileSelection.rowWeights = new double[] { 0.0 };
+		panelFileSelection.setLayout(gbl_panelFileSelection);
+
+		cbFileNames = new JComboBox<DirEntry>();
+		cbFileNames.setPreferredSize(new Dimension(200, 20));
+		GridBagConstraints gbc_cbFileNames = new GridBagConstraints();
+		gbc_cbFileNames.insets = new Insets(0, 0, 0, 5);
+		gbc_cbFileNames.fill = GridBagConstraints.HORIZONTAL;
+		gbc_cbFileNames.gridx = 0;
+		gbc_cbFileNames.gridy = 0;
+		panelFileSelection.add(cbFileNames, gbc_cbFileNames);
+		cbFileNames.setActionCommand(AC_CB_FILE_NAMES);
+		cbFileNames.setName(AC_CB_FILE_NAMES);
+		cbFileNames.addActionListener(diskUtilityAdapter);
+		cbFileNames.setEnabled(true);
+		cbFileNames.setEditable(false);
+		cbFileNames.setMinimumSize(new Dimension(100, 20));
+
+		horizontalStrut_3 = Box.createHorizontalStrut(20);
+		horizontalStrut_3.setPreferredSize(new Dimension(30, 0));
+		GridBagConstraints gbc_horizontalStrut_3 = new GridBagConstraints();
+		gbc_horizontalStrut_3.insets = new Insets(0, 0, 0, 5);
+		gbc_horizontalStrut_3.gridx = 1;
+		gbc_horizontalStrut_3.gridy = 0;
+		panelFileSelection.add(horizontalStrut_3, gbc_horizontalStrut_3);
+
+		lblRecordCount = new JLabel("0");
+		lblRecordCount.setFont(new Font("Arial", Font.BOLD, 15));
+		GridBagConstraints gbc_lblRecordCount = new GridBagConstraints();
+		gbc_lblRecordCount.insets = new Insets(0, 0, 0, 5);
+		gbc_lblRecordCount.gridx = 2;
+		gbc_lblRecordCount.gridy = 0;
+		panelFileSelection.add(lblRecordCount, gbc_lblRecordCount);
+
+		horizontalStrut_4 = Box.createHorizontalStrut(20);
+		horizontalStrut_4.setPreferredSize(new Dimension(10, 0));
+		GridBagConstraints gbc_horizontalStrut_4 = new GridBagConstraints();
+		gbc_horizontalStrut_4.insets = new Insets(0, 0, 0, 5);
+		gbc_horizontalStrut_4.gridx = 3;
+		gbc_horizontalStrut_4.gridy = 0;
+		panelFileSelection.add(horizontalStrut_4, gbc_horizontalStrut_4);
+
+		label_1 = new JLabel("Record Count");
+		label_1.setFont(new Font("Arial", Font.PLAIN, 13));
+		GridBagConstraints gbc_label_1 = new GridBagConstraints();
+		gbc_label_1.insets = new Insets(0, 0, 0, 5);
+		gbc_label_1.gridx = 4;
+		gbc_label_1.gridy = 0;
+		panelFileSelection.add(label_1, gbc_label_1);
+
+		horizontalStrut_5 = Box.createHorizontalStrut(20);
+		horizontalStrut_5.setPreferredSize(new Dimension(60, 0));
+		GridBagConstraints gbc_horizontalStrut_5 = new GridBagConstraints();
+		gbc_horizontalStrut_5.insets = new Insets(0, 0, 0, 5);
+		gbc_horizontalStrut_5.gridx = 5;
+		gbc_horizontalStrut_5.gridy = 0;
+		panelFileSelection.add(horizontalStrut_5, gbc_horizontalStrut_5);
+
+		lblReadOnly = new JLabel("Read Only");
+		lblReadOnly.setForeground(Color.RED);
+		lblReadOnly.setFont(new Font("Arial", Font.BOLD, 15));
+		GridBagConstraints gbc_lblReadOnly = new GridBagConstraints();
+		gbc_lblReadOnly.insets = new Insets(0, 0, 0, 5);
+		gbc_lblReadOnly.gridx = 6;
+		gbc_lblReadOnly.gridy = 0;
+		panelFileSelection.add(lblReadOnly, gbc_lblReadOnly);
+
+		horizontalStrut_6 = Box.createHorizontalStrut(20);
+		GridBagConstraints gbc_horizontalStrut_6 = new GridBagConstraints();
+		gbc_horizontalStrut_6.insets = new Insets(0, 0, 0, 5);
+		gbc_horizontalStrut_6.gridx = 7;
+		gbc_horizontalStrut_6.gridy = 0;
+		panelFileSelection.add(horizontalStrut_6, gbc_horizontalStrut_6);
+
+		lblSystemFile = new JLabel("System File");
+		lblSystemFile.setForeground(Color.RED);
+		lblSystemFile.setFont(new Font("Arial", Font.BOLD, 15));
+		GridBagConstraints gbc_lblSystemFile = new GridBagConstraints();
+		gbc_lblSystemFile.gridx = 8;
+		gbc_lblSystemFile.gridy = 0;
+		panelFileSelection.add(lblSystemFile, gbc_lblSystemFile);
+
+		panelFile0 = new JPanel();
+		GridBagConstraints gbc_panelFile0 = new GridBagConstraints();
+		gbc_panelFile0.insets = new Insets(0, 0, 5, 0);
+		gbc_panelFile0.fill = GridBagConstraints.VERTICAL;
+		gbc_panelFile0.gridx = 0;
+		gbc_panelFile0.gridy = 1;
+		tabFile.add(panelFile0, gbc_panelFile0);
+		GridBagLayout gbl_panelFile0 = new GridBagLayout();
+		gbl_panelFile0.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelFile0.rowHeights = new int[] {  0, 0 };
+		gbl_panelFile0.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		gbl_panelFile0.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+		panelFile0.setLayout(gbl_panelFile0);
+
+		horizontalStrut_7 = Box.createHorizontalStrut(20);
+		GridBagConstraints gbc_horizontalStrut_7 = new GridBagConstraints();
+		gbc_horizontalStrut_7.insets = new Insets(0, 0, 0, 5);
+		gbc_horizontalStrut_7.gridx = 0;
+		gbc_horizontalStrut_7.gridy = 0;
+		panelFile0.add(horizontalStrut_7, gbc_horizontalStrut_7);
+		
+		panelFileHex = new HexEditPanelSimple();
+		GridBagConstraints gbc_panelFileHex = new GridBagConstraints();
+//		gbc_panelFileHex.insets = new Insets(0, 0, 5, 0);
+		gbc_panelFileHex.fill = GridBagConstraints.BOTH;
+		gbc_panelFileHex.gridx = 1;
+		gbc_panelFileHex.gridy = 0;
+		panelFile0.add(panelFileHex, gbc_panelFileHex);
+//		GridBagLayout gbl_panelFileHex = new GridBagLayout();
+//		gbl_panelFileHex.columnWidths = new int[] { 0 };
+//		gbl_panelFileHex.rowHeights = new int[] { 0 };
+//		gbl_panelFileHex.columnWeights = new double[] { Double.MIN_VALUE };
+//		gbl_panelFileHex.rowWeights = new double[] { Double.MIN_VALUE };
+//		panelFileHex.setLayout(gbl_panelFileHex);
+
 
 		JPanel tabPhysical = new JPanel();
 		tabbedPane.addTab("Physical View", null, tabPhysical, null);
@@ -968,47 +1208,47 @@ public class DiskUtility {
 		gbc_hdnSector.gridy = 0;
 		panelHeadTrackSector.add(hdnSector, gbc_hdnSector);
 
-		panelHexDisplay0 = new JPanel();
-		GridBagConstraints gbc_panelHexDisplay0 = new GridBagConstraints();
-		gbc_panelHexDisplay0.insets = new Insets(0, 0, 5, 5);
-		gbc_panelHexDisplay0.fill = GridBagConstraints.VERTICAL;
-		gbc_panelHexDisplay0.gridx = 0;
-		gbc_panelHexDisplay0.gridy = 1;
-		tabPhysical.add(panelHexDisplay0, gbc_panelHexDisplay0);
-		GridBagLayout gbl_panelHexDisplay0 = new GridBagLayout();
-		gbl_panelHexDisplay0.columnWidths = new int[] { 0, 0, 0 };
-		gbl_panelHexDisplay0.rowHeights = new int[] { 0, 0 };
-		gbl_panelHexDisplay0.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-		gbl_panelHexDisplay0.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
-		panelHexDisplay0.setLayout(gbl_panelHexDisplay0);
-		
+		panelPhysical0 = new JPanel();
+		GridBagConstraints gbc_panelPhysical0 = new GridBagConstraints();
+		gbc_panelPhysical0.insets = new Insets(0, 0, 5, 5);
+		gbc_panelPhysical0.fill = GridBagConstraints.VERTICAL;
+		gbc_panelPhysical0.gridx = 0;
+		gbc_panelPhysical0.gridy = 1;
+		tabPhysical.add(panelPhysical0, gbc_panelPhysical0);
+		GridBagLayout gbl_panelPhysical0 = new GridBagLayout();
+		gbl_panelPhysical0.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelPhysical0.rowHeights = new int[] { 0, 0 };
+		gbl_panelPhysical0.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		gbl_panelPhysical0.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
+		panelPhysical0.setLayout(gbl_panelPhysical0);
+
 		horizontalStrut_2 = Box.createHorizontalStrut(20);
 		GridBagConstraints gbc_horizontalStrut_2 = new GridBagConstraints();
 		gbc_horizontalStrut_2.insets = new Insets(0, 0, 0, 5);
 		gbc_horizontalStrut_2.gridx = 0;
 		gbc_horizontalStrut_2.gridy = 0;
-		panelHexDisplay0.add(horizontalStrut_2, gbc_horizontalStrut_2);
+		panelPhysical0.add(horizontalStrut_2, gbc_horizontalStrut_2);
 
 		panelSectorDisplay = new HexEditPanelSimple();
 		GridBagConstraints gbc_panelSectorDisplay = new GridBagConstraints();
 		gbc_panelSectorDisplay.fill = GridBagConstraints.BOTH;
 		gbc_panelSectorDisplay.gridx = 1;
 		gbc_panelSectorDisplay.gridy = 0;
-		panelHexDisplay0.add(panelSectorDisplay, gbc_panelSectorDisplay);
+		panelPhysical0.add(panelSectorDisplay, gbc_panelSectorDisplay);
 
-		JPanel panel_1 = new JPanel();
-		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
-		gbc_panel_1.insets = new Insets(0, 0, 5, 5);
-		gbc_panel_1.fill = GridBagConstraints.HORIZONTAL;
-		gbc_panel_1.gridx = 0;
-		gbc_panel_1.gridy = 3;
-		tabPhysical.add(panel_1, gbc_panel_1);
-		GridBagLayout gbl_panel_1 = new GridBagLayout();
-		gbl_panel_1.columnWidths = new int[] { 0, 0 };
-		gbl_panel_1.rowHeights = new int[] { 0, 0 };
-		gbl_panel_1.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_panel_1.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
-		panel_1.setLayout(gbl_panel_1);
+		JPanel panelSeek = new JPanel();
+		GridBagConstraints gbc_panelSeek = new GridBagConstraints();
+		gbc_panelSeek.insets = new Insets(0, 0, 5, 5);
+		gbc_panelSeek.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panelSeek.gridx = 0;
+		gbc_panelSeek.gridy = 3;
+		tabPhysical.add(panelSeek, gbc_panelSeek);
+		GridBagLayout gbl_panelSeek = new GridBagLayout();
+		gbl_panelSeek.columnWidths = new int[] { 0, 0 };
+		gbl_panelSeek.rowHeights = new int[] { 0, 0 };
+		gbl_panelSeek.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_panelSeek.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panelSeek.setLayout(gbl_panelSeek);
 
 		hdSeekPanel = new HDSeekPanel(new SpinnerNumberModel(0, 0, 0, 1));
 		hdSeekPanel.setPreferredSize(new Dimension(260, 30));
@@ -1018,7 +1258,7 @@ public class DiskUtility {
 		GridBagConstraints gbc_seekPanel = new GridBagConstraints();
 		gbc_seekPanel.gridx = 0;
 		gbc_seekPanel.gridy = 0;
-		panel_1.add(hdSeekPanel, gbc_seekPanel);
+		panelSeek.add(hdSeekPanel, gbc_seekPanel);
 		// seekPanel.setValue(0);
 		// hdSeekPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null,
 		// null, null, null));
@@ -1142,7 +1382,7 @@ public class DiskUtility {
 				if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 					System.out.println("Bailed out of the open");
 					return;
-				} //
+				} // if
 				loadFile(fc.getSelectedFile());
 				manageFileMenus(name);
 				break;
@@ -1157,6 +1397,7 @@ public class DiskUtility {
 			case MNU_FILE_EXIT:
 				appClose();
 				break;
+
 			// ToggleButtons
 			case TB_DECIMAL_DISPLAY:
 				setDisplayRadix();
@@ -1168,9 +1409,15 @@ public class DiskUtility {
 				break;
 			case TB_BOOTABLE:
 				break;
-			case BTN_READ_PHYSICAL_SECTOR:
-				selectedNewPhysicalSector(false);
+
+			// ComboBoxs
+			case AC_CB_FILE_NAMES:
+				displaySelectedFile();
 				break;
+
+			// case BTN_READ_PHYSICAL_SECTOR:
+			// selectedNewPhysicalSector(false);
+			// break;
 			default:
 
 			}// switch
@@ -1232,8 +1479,12 @@ public class DiskUtility {
 
 	public static final String DISPLAY_HEX = "Display Hex";
 	public static final String DISPLAY_DECIMAL = "Display Dicimal";
+	private final static int CHARACTERS_PER_LINE = 16;
 
-	public static final String BTN_READ_PHYSICAL_SECTOR = "btnReadPhysicalSector";
+	// public static final String BTN_READ_PHYSICAL_SECTOR =
+	// "btnReadPhysicalSector";
+
+	private final static String AC_CB_FILE_NAMES = "cbFileNames";
 
 	public static final String TB_DECIMAL_DISPLAY = "tbDecimalDisplay";
 	public static final String TB_BOOTABLE = "tbBootable";
@@ -1246,7 +1497,7 @@ public class DiskUtility {
 	public static final String MNU_FILE_EXIT = "mnuFileExit";
 
 	private JPanel panelDirectory;
-	private JPanel panelHexDisplay0;
+	private JPanel panelPhysical0;
 	private HexEditPanelSimple panelSectorDisplay;
 	private JMenuItem mnuFileNewDisk;
 	private JMenuItem mnuFileLoadDisk;
@@ -1282,6 +1533,20 @@ public class DiskUtility {
 	private JLabel lblRawAllocation;
 	private JScrollPane scrollDirectoryTable;
 	private Component horizontalStrut_2;
+	private JPanel panelFileSelection;
+	private JComboBox<DirEntry> cbFileNames;
+	private Component horizontalStrut_3;
+	private JLabel lblRecordCount;
+	private JLabel label_1;
+	private Component horizontalStrut_4;
+	private Component horizontalStrut_5;
+	private JLabel lblReadOnly;
+	private Component horizontalStrut_6;
+	private JLabel lblSystemFile;
+//	private HexEditPanelSimple panelFileHex;
+	private Component horizontalStrut_7;
+	private HexEditPanelSimple panelFileHex;
+	private JPanel panelFile0;
 
 	// ----------------------------------------------------------------------
 
