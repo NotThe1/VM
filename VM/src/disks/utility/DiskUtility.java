@@ -40,11 +40,14 @@ import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -523,25 +526,25 @@ public class DiskUtility {
 
 	private void manageFileMenus(String source) {
 		switch (source) {
-		case MNU_FILE_NEW_DISK:
-		case MNU_FILE_LOAD_DISK:
-			mnuFileNewDisk.setEnabled(false);
-			mnuFileLoadDisk.setEnabled(false);
-			mnuFileClose.setEnabled(true);
-			mnuFileSave.setEnabled(true);
-			mnuFileSaveAs.setEnabled(true);
-			mnuFileExit.setEnabled(true);
+		case MNU_DISK_NEW_DISK:
+		case MNU_DISK_LOAD_DISK:
+			mnuDiskNew.setEnabled(false);
+			mnuDiskLoad.setEnabled(false);
+			mnuDiskClose.setEnabled(true);
+			mnuDiskSave.setEnabled(true);
+			mnuDiskSaveAs.setEnabled(true);
+			mnuDiskExit.setEnabled(true);
 			break;
-		case MNU_FILE_CLOSE:
-			mnuFileNewDisk.setEnabled(true);
-			mnuFileLoadDisk.setEnabled(true);
-			mnuFileClose.setEnabled(false);
-			mnuFileSave.setEnabled(false);
-			mnuFileSaveAs.setEnabled(false);
-			mnuFileExit.setEnabled(true);
-		case MNU_FILE_SAVE:
-		case MNU_FILE_SAVE_AS:
-		case MNU_FILE_EXIT:
+		case MNU_DISK_CLOSE:
+			mnuDiskNew.setEnabled(true);
+			mnuDiskLoad.setEnabled(true);
+			mnuDiskClose.setEnabled(false);
+			mnuDiskSave.setEnabled(false);
+			mnuDiskSaveAs.setEnabled(false);
+			mnuDiskExit.setEnabled(true);
+		case MNU_DISK_SAVE:
+		case MNU_DISK_SAVE_AS:
+		case MNU_DISK_EXIT:
 			break;
 		default:
 		}// switch
@@ -611,7 +614,7 @@ public class DiskUtility {
 		hdNumberBoxs.add(hdSeekPanel);
 
 		setDisplayRadix();
-		manageFileMenus(MNU_FILE_CLOSE);
+		manageFileMenus(MNU_DISK_CLOSE);
 		panelSectorDisplay.loadData(NO_FILE);
 	}// appInit
 
@@ -1026,8 +1029,8 @@ public class DiskUtility {
 		gbc_cbFileNames.gridx = 0;
 		gbc_cbFileNames.gridy = 0;
 		panelFileSelection.add(cbFileNames, gbc_cbFileNames);
-		cbFileNames.setActionCommand(AC_CB_FILE_NAMES);
-		cbFileNames.setName(AC_CB_FILE_NAMES);
+		cbFileNames.setActionCommand(CB_FILE_NAMES);
+		cbFileNames.setName(CB_FILE_NAMES);
 		cbFileNames.addActionListener(diskUtilityAdapter);
 		cbFileNames.setEnabled(true);
 		cbFileNames.setEditable(false);
@@ -1268,51 +1271,395 @@ public class DiskUtility {
 		gbl_seekPanel.columnWeights = new double[] { Double.MIN_VALUE };
 		gbl_seekPanel.rowWeights = new double[] { Double.MIN_VALUE };
 		hdSeekPanel.setLayout(gbl_seekPanel);
+		
+		tabUtilities = new JPanel();
+		tabbedPane.addTab("Utilities", null, tabUtilities, null);
+		GridBagLayout gbl_tabUtilities = new GridBagLayout();
+		gbl_tabUtilities.columnWidths = new int[]{0, 0};
+		gbl_tabUtilities.rowHeights = new int[]{0, 0, 0};
+		gbl_tabUtilities.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_tabUtilities.rowWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+		tabUtilities.setLayout(gbl_tabUtilities);
+		
+		panelMetrics0 = new JPanel();
+		panelMetrics0.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+		GridBagConstraints gbc_panelMetrics0 = new GridBagConstraints();
+		gbc_panelMetrics0.insets = new Insets(0, 0, 5, 0);
+		gbc_panelMetrics0.fill = GridBagConstraints.BOTH;
+		gbc_panelMetrics0.gridx = 0;
+		gbc_panelMetrics0.gridy = 0;
+		tabUtilities.add(panelMetrics0, gbc_panelMetrics0);
+		GridBagLayout gbl_panelMetrics0 = new GridBagLayout();
+		gbl_panelMetrics0.columnWidths = new int[]{0, 0};
+		gbl_panelMetrics0.rowHeights = new int[]{0, 0};
+		gbl_panelMetrics0.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panelMetrics0.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		panelMetrics0.setLayout(gbl_panelMetrics0);
+		
+		panelMetrics = new JPanel();
+		GridBagConstraints gbc_panelMetrics = new GridBagConstraints();
+		gbc_panelMetrics.fill = GridBagConstraints.VERTICAL;
+		gbc_panelMetrics.gridx = 0;
+		gbc_panelMetrics.gridy = 0;
+		panelMetrics0.add(panelMetrics, gbc_panelMetrics);
+		panelMetrics.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "Disk & File System Metrics", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, null));
+		GridBagLayout gbl_panelMetrics = new GridBagLayout();
+		gbl_panelMetrics.columnWidths = new int[]{0, 0, 0, 0, 0};
+		gbl_panelMetrics.rowHeights = new int[]{0, 0};
+		gbl_panelMetrics.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gbl_panelMetrics.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		panelMetrics.setLayout(gbl_panelMetrics);
+		
+		panelDiskGeometry = new JPanel();
+		panelDiskGeometry.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "Disk Geometry", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		GridBagConstraints gbc_panelDiskGeometry = new GridBagConstraints();
+		gbc_panelDiskGeometry.insets = new Insets(0, 0, 0, 5);
+		gbc_panelDiskGeometry.anchor = GridBagConstraints.WEST;
+		gbc_panelDiskGeometry.fill = GridBagConstraints.VERTICAL;
+		gbc_panelDiskGeometry.gridx = 1;
+		gbc_panelDiskGeometry.gridy = 0;
+		panelMetrics.add(panelDiskGeometry, gbc_panelDiskGeometry);
+		GridBagLayout gbl_panelDiskGeometry = new GridBagLayout();
+		gbl_panelDiskGeometry.columnWidths = new int[]{0, 50, 10, 150, 0};
+		gbl_panelDiskGeometry.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+		gbl_panelDiskGeometry.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelDiskGeometry.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panelDiskGeometry.setLayout(gbl_panelDiskGeometry);
+		
+		lblHeads = new JLabel("0");
+		lblHeads.setFont(new Font("Tahoma", Font.BOLD, 12));
+		lblHeads.setHorizontalAlignment(SwingConstants.RIGHT);
+		GridBagConstraints gbc_lblHeads = new GridBagConstraints();
+		gbc_lblHeads.anchor = GridBagConstraints.EAST;
+		gbc_lblHeads.insets = new Insets(0, 0, 5, 5);
+		gbc_lblHeads.gridx = 1;
+		gbc_lblHeads.gridy = 0;
+		panelDiskGeometry.add(lblHeads, gbc_lblHeads);
+		
+		lblNewLabel_1 = new JLabel("Heads");
+		lblNewLabel_1.setHorizontalAlignment(SwingConstants.LEFT);
+		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+		gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 0);
+		gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel_1.gridx = 3;
+		gbc_lblNewLabel_1.gridy = 0;
+		panelDiskGeometry.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		
+		lblTracksPerHead = new JLabel("0");
+		lblTracksPerHead.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblTracksPerHead.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_lblTracksPerHead = new GridBagConstraints();
+		gbc_lblTracksPerHead.anchor = GridBagConstraints.EAST;
+		gbc_lblTracksPerHead.insets = new Insets(0, 0, 5, 5);
+		gbc_lblTracksPerHead.gridx = 1;
+		gbc_lblTracksPerHead.gridy = 1;
+		panelDiskGeometry.add(lblTracksPerHead, gbc_lblTracksPerHead);
+		
+		lblTracksPerHead_1 = new JLabel("Tracks/Head");
+		lblTracksPerHead_1.setHorizontalAlignment(SwingConstants.LEFT);
+		lblTracksPerHead_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_lblTracksPerHead_1 = new GridBagConstraints();
+		gbc_lblTracksPerHead_1.insets = new Insets(0, 0, 5, 0);
+		gbc_lblTracksPerHead_1.anchor = GridBagConstraints.WEST;
+		gbc_lblTracksPerHead_1.gridx = 3;
+		gbc_lblTracksPerHead_1.gridy = 1;
+		panelDiskGeometry.add(lblTracksPerHead_1, gbc_lblTracksPerHead_1);
+		
+		lblSectorsPerTrack = new JLabel("0");
+		lblSectorsPerTrack.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblSectorsPerTrack.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_lblSectorsPerTrack = new GridBagConstraints();
+		gbc_lblSectorsPerTrack.anchor = GridBagConstraints.EAST;
+		gbc_lblSectorsPerTrack.insets = new Insets(0, 0, 5, 5);
+		gbc_lblSectorsPerTrack.gridx = 1;
+		gbc_lblSectorsPerTrack.gridy = 2;
+		panelDiskGeometry.add(lblSectorsPerTrack, gbc_lblSectorsPerTrack);
+		
+		lblNewLabel = new JLabel("Sectors/Track");
+		lblNewLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 0);
+		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+		gbc_lblNewLabel.gridx = 3;
+		gbc_lblNewLabel.gridy = 2;
+		panelDiskGeometry.add(lblNewLabel, gbc_lblNewLabel);
+		
+		lblTotalTracks = new JLabel("0");
+		lblTotalTracks.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblTotalTracks.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_lblTotalTracks = new GridBagConstraints();
+		gbc_lblTotalTracks.anchor = GridBagConstraints.EAST;
+		gbc_lblTotalTracks.insets = new Insets(0, 0, 5, 5);
+		gbc_lblTotalTracks.gridx = 1;
+		gbc_lblTotalTracks.gridy = 3;
+		panelDiskGeometry.add(lblTotalTracks, gbc_lblTotalTracks);
+		
+		label4 = new JLabel("Total Tracks");
+		label4.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_label4 = new GridBagConstraints();
+		gbc_label4.insets = new Insets(0, 0, 5, 0);
+		gbc_label4.anchor = GridBagConstraints.WEST;
+		gbc_label4.gridx = 3;
+		gbc_label4.gridy = 3;
+		panelDiskGeometry.add(label4, gbc_label4);
+		
+		lblTotalSectors = new JLabel("0");
+		lblTotalSectors.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblTotalSectors.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_lblTotalSectors = new GridBagConstraints();
+		gbc_lblTotalSectors.anchor = GridBagConstraints.EAST;
+		gbc_lblTotalSectors.insets = new Insets(0, 0, 0, 5);
+		gbc_lblTotalSectors.gridx = 1;
+		gbc_lblTotalSectors.gridy = 4;
+		panelDiskGeometry.add(lblTotalSectors, gbc_lblTotalSectors);
+		
+		lblTotalSectors_1 = new JLabel("Total Sectors");
+		lblTotalSectors_1.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_lblTotalSectors_1 = new GridBagConstraints();
+		gbc_lblTotalSectors_1.anchor = GridBagConstraints.WEST;
+		gbc_lblTotalSectors_1.gridx = 3;
+		gbc_lblTotalSectors_1.gridy = 4;
+		panelDiskGeometry.add(lblTotalSectors_1, gbc_lblTotalSectors_1);
+		
+		panelFileSystemParameters = new JPanel();
+		GridBagConstraints gbc_panelFileSystemParameters = new GridBagConstraints();
+		gbc_panelFileSystemParameters.insets = new Insets(0, 0, 0, 5);
+		gbc_panelFileSystemParameters.gridx = 2;
+		gbc_panelFileSystemParameters.gridy = 0;
+		panelMetrics.add(panelFileSystemParameters, gbc_panelFileSystemParameters);
+		panelFileSystemParameters.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "File System Parameters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		GridBagLayout gbl_panelFileSystemParameters = new GridBagLayout();
+		gbl_panelFileSystemParameters.columnWidths = new int[]{0, 50, 10, 150, 0};
+		gbl_panelFileSystemParameters.rowHeights = new int[]{0, 0, 0, 0, 0};
+		gbl_panelFileSystemParameters.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panelFileSystemParameters.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panelFileSystemParameters.setLayout(gbl_panelFileSystemParameters);
+		
+		label_5 = new JLabel("0");
+		label_5.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_5.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_label_5 = new GridBagConstraints();
+		gbc_label_5.anchor = GridBagConstraints.EAST;
+		gbc_label_5.insets = new Insets(0, 0, 5, 5);
+		gbc_label_5.gridx = 1;
+		gbc_label_5.gridy = 0;
+		panelFileSystemParameters.add(label_5, gbc_label_5);
+		
+		label_7 = new JLabel("Tracks Before Directory");
+		label_7.setHorizontalAlignment(SwingConstants.LEFT);
+		label_7.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_7 = new GridBagConstraints();
+		gbc_label_7.anchor = GridBagConstraints.WEST;
+		gbc_label_7.insets = new Insets(0, 0, 5, 0);
+		gbc_label_7.gridx = 3;
+		gbc_label_7.gridy = 0;
+		panelFileSystemParameters.add(label_7, gbc_label_7);
+		
+		label_9 = new JLabel("0");
+		label_9.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_9.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_label_9 = new GridBagConstraints();
+		gbc_label_9.anchor = GridBagConstraints.EAST;
+		gbc_label_9.insets = new Insets(0, 0, 5, 5);
+		gbc_label_9.gridx = 1;
+		gbc_label_9.gridy = 1;
+		panelFileSystemParameters.add(label_9, gbc_label_9);
+		
+		label_11 = new JLabel("Logical Block Size in Sectors");
+		label_11.setHorizontalAlignment(SwingConstants.LEFT);
+		label_11.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_11 = new GridBagConstraints();
+		gbc_label_11.anchor = GridBagConstraints.WEST;
+		gbc_label_11.insets = new Insets(0, 0, 5, 0);
+		gbc_label_11.gridx = 3;
+		gbc_label_11.gridy = 1;
+		panelFileSystemParameters.add(label_11, gbc_label_11);
+		
+		label_13 = new JLabel("0");
+		label_13.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_13.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_label_13 = new GridBagConstraints();
+		gbc_label_13.anchor = GridBagConstraints.EAST;
+		gbc_label_13.insets = new Insets(0, 0, 5, 5);
+		gbc_label_13.gridx = 1;
+		gbc_label_13.gridy = 2;
+		panelFileSystemParameters.add(label_13, gbc_label_13);
+		
+		label_15 = new JLabel("Max Directory Entry");
+		label_15.setHorizontalAlignment(SwingConstants.LEFT);
+		label_15.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_15 = new GridBagConstraints();
+		gbc_label_15.anchor = GridBagConstraints.WEST;
+		gbc_label_15.insets = new Insets(0, 0, 5, 0);
+		gbc_label_15.gridx = 3;
+		gbc_label_15.gridy = 2;
+		panelFileSystemParameters.add(label_15, gbc_label_15);
+		
+		lblNewLabel_2 = new JLabel("0");
+		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 12));
+		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
+		gbc_lblNewLabel_2.anchor = GridBagConstraints.EAST;
+		gbc_lblNewLabel_2.insets = new Insets(0, 0, 0, 5);
+		gbc_lblNewLabel_2.gridx = 1;
+		gbc_lblNewLabel_2.gridy = 3;
+		panelFileSystemParameters.add(lblNewLabel_2, gbc_lblNewLabel_2);
+		
+		label_16 = new JLabel("Max Directory Entry");
+		label_16.setHorizontalAlignment(SwingConstants.LEFT);
+		label_16.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_label_16 = new GridBagConstraints();
+		gbc_label_16.anchor = GridBagConstraints.WEST;
+		gbc_label_16.gridx = 3;
+		gbc_label_16.gridy = 3;
+		panelFileSystemParameters.add(label_16, gbc_label_16);
+		
+		panelCopy0 = new JPanel();
+		panelCopy0.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+		GridBagConstraints gbc_panelCopy0 = new GridBagConstraints();
+		gbc_panelCopy0.fill = GridBagConstraints.BOTH;
+		gbc_panelCopy0.gridx = 0;
+		gbc_panelCopy0.gridy = 1;
+		tabUtilities.add(panelCopy0, gbc_panelCopy0);
+		GridBagLayout gbl_panelCopy0 = new GridBagLayout();
+		gbl_panelCopy0.columnWidths = new int[]{0, 0, 0};
+		gbl_panelCopy0.rowHeights = new int[]{0, 0, 0};
+		gbl_panelCopy0.columnWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+		gbl_panelCopy0.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+		panelCopy0.setLayout(gbl_panelCopy0);
+		
+		panel = new JPanel();
+		panel.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "Import / Export Files", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, null));
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.insets = new Insets(0, 0, 5, 5);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 0;
+		panelCopy0.add(panel, gbc_panel);
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0, 0, 0, 0, 0};
+		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+		gbl_panel.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
+		
+		lblNewLabel_3 = new JLabel("Native File :");
+		GridBagConstraints gbc_lblNewLabel_3 = new GridBagConstraints();
+		gbc_lblNewLabel_3.anchor = GridBagConstraints.EAST;
+		gbc_lblNewLabel_3.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewLabel_3.gridx = 1;
+		gbc_lblNewLabel_3.gridy = 1;
+		panel.add(lblNewLabel_3, gbc_lblNewLabel_3);
+		
+		btnNativeFile = new JButton("...");
+		btnNativeFile.setName(BTN_NATIVE_FILE);
+		btnNativeFile.addActionListener(diskUtilityAdapter);
+		btnNativeFile.setMaximumSize(new Dimension(25, 23));
+		btnNativeFile.setMinimumSize(new Dimension(25, 23));
+		btnNativeFile.setPreferredSize(new Dimension(25, 23));
+		GridBagConstraints gbc_btnNativeFile = new GridBagConstraints();
+		gbc_btnNativeFile.insets = new Insets(0, 0, 5, 5);
+		gbc_btnNativeFile.gridx = 2;
+		gbc_btnNativeFile.gridy = 1;
+		panel.add(btnNativeFile, gbc_btnNativeFile);
+		
+		txtNativeFileIniOut = new JTextField();
+		txtNativeFileIniOut.setEditable(false);
+		GridBagConstraints gbc_txtNativeFileIniOut = new GridBagConstraints();
+		gbc_txtNativeFileIniOut.insets = new Insets(0, 0, 5, 0);
+		gbc_txtNativeFileIniOut.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtNativeFileIniOut.gridx = 3;
+		gbc_txtNativeFileIniOut.gridy = 1;
+		panel.add(txtNativeFileIniOut, gbc_txtNativeFileIniOut);
+		txtNativeFileIniOut.setColumns(10);
+		
+		lblCpmFile = new JLabel("CPM File :");
+		GridBagConstraints gbc_lblCpmFile = new GridBagConstraints();
+		gbc_lblCpmFile.anchor = GridBagConstraints.EAST;
+		gbc_lblCpmFile.insets = new Insets(0, 0, 5, 5);
+		gbc_lblCpmFile.gridx = 1;
+		gbc_lblCpmFile.gridy = 2;
+		panel.add(lblCpmFile, gbc_lblCpmFile);
+		
+		cbCpmFileInOut = new JComboBox();
+		cbCpmFileInOut.setName(CB_CPM_FILE_IN_OUT);
+		cbCpmFileInOut.addActionListener(diskUtilityAdapter);
+		cbCpmFileInOut.setEditable(true);
+		cbCpmFileInOut.setPreferredSize(new Dimension(200, 20));
+		cbCpmFileInOut.setMaximumSize(new Dimension(200, 20));
+		cbCpmFileInOut.setMinimumSize(new Dimension(200, 20));
+		GridBagConstraints gbc_cbCpmFileInOut = new GridBagConstraints();
+		gbc_cbCpmFileInOut.anchor = GridBagConstraints.WEST;
+		gbc_cbCpmFileInOut.insets = new Insets(0, 0, 5, 0);
+		gbc_cbCpmFileInOut.gridx = 3;
+		gbc_cbCpmFileInOut.gridy = 2;
+		panel.add(cbCpmFileInOut, gbc_cbCpmFileInOut);
+		
+		btnExport = new JButton("Export to Native File");
+		btnExport.setName(BTN_EXPORT);
+		btnExport.addActionListener(diskUtilityAdapter);
+		btnExport.setEnabled(false);
+		GridBagConstraints gbc_btnExport = new GridBagConstraints();
+		gbc_btnExport.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnExport.insets = new Insets(0, 0, 5, 5);
+		gbc_btnExport.gridx = 1;
+		gbc_btnExport.gridy = 3;
+		panel.add(btnExport, gbc_btnExport);
+		
+		btnImport = new JButton("Import from Native File");
+		btnImport.setName(BTN_IMPORT);
+		btnImport.addActionListener(diskUtilityAdapter);
+		btnImport.setEnabled(false);
+		GridBagConstraints gbc_btnImport = new GridBagConstraints();
+		gbc_btnImport.insets = new Insets(0, 0, 0, 5);
+		gbc_btnImport.gridx = 1;
+		gbc_btnImport.gridy = 4;
+		panel.add(btnImport, gbc_btnImport);
 
 		JMenuBar menuBar = new JMenuBar();
 		frmDiskUtility.setJMenuBar(menuBar);
 
-		JMenu mnuFile = new JMenu("File");
-		menuBar.add(mnuFile);
+		JMenu mnuDisk = new JMenu("Disk");
+		menuBar.add(mnuDisk);
 
-		mnuFileNewDisk = new JMenuItem("New Disk");
-		mnuFileNewDisk.setName(MNU_FILE_NEW_DISK);
-		mnuFileNewDisk.addActionListener(diskUtilityAdapter);
-		mnuFile.add(mnuFileNewDisk);
+		mnuDiskNew = new JMenuItem("New Disk");
+		mnuDiskNew.setName(MNU_DISK_NEW_DISK);
+		mnuDiskNew.addActionListener(diskUtilityAdapter);
+		mnuDisk.add(mnuDiskNew);
 
-		mnuFileLoadDisk = new JMenuItem("Load Disk ...");
-		mnuFileLoadDisk.setName(MNU_FILE_LOAD_DISK);
-		mnuFileLoadDisk.addActionListener(diskUtilityAdapter);
-		mnuFile.add(mnuFileLoadDisk);
+		mnuDiskLoad = new JMenuItem("Load Disk ...");
+		mnuDiskLoad.setName(MNU_DISK_LOAD_DISK);
+		mnuDiskLoad.addActionListener(diskUtilityAdapter);
+		mnuDisk.add(mnuDiskLoad);
 
 		JSeparator separator = new JSeparator();
-		mnuFile.add(separator);
+		mnuDisk.add(separator);
 
-		mnuFileClose = new JMenuItem("Close");
-		mnuFileClose.setName(MNU_FILE_CLOSE);
-		mnuFileClose.addActionListener(diskUtilityAdapter);
-		mnuFile.add(mnuFileClose);
+		mnuDiskClose = new JMenuItem("Close");
+		mnuDiskClose.setName(MNU_DISK_CLOSE);
+		mnuDiskClose.addActionListener(diskUtilityAdapter);
+		mnuDisk.add(mnuDiskClose);
 
 		JSeparator separator_1 = new JSeparator();
-		mnuFile.add(separator_1);
+		mnuDisk.add(separator_1);
 
-		mnuFileSave = new JMenuItem("Save");
-		mnuFileSave.setName(MNU_FILE_SAVE);
-		mnuFileSave.addActionListener(diskUtilityAdapter);
-		mnuFile.add(mnuFileSave);
+		mnuDiskSave = new JMenuItem("Save");
+		mnuDiskSave.setName(MNU_DISK_SAVE);
+		mnuDiskSave.addActionListener(diskUtilityAdapter);
+		mnuDisk.add(mnuDiskSave);
 
-		mnuFileSaveAs = new JMenuItem("Save As ...");
-		mnuFileSaveAs.setName(MNU_FILE_SAVE_AS);
-		mnuFileSaveAs.addActionListener(diskUtilityAdapter);
-		mnuFile.add(mnuFileSaveAs);
+		mnuDiskSaveAs = new JMenuItem("Save As ...");
+		mnuDiskSaveAs.setName(MNU_DISK_SAVE_AS);
+		mnuDiskSaveAs.addActionListener(diskUtilityAdapter);
+		mnuDisk.add(mnuDiskSaveAs);
 
 		JSeparator separator_2 = new JSeparator();
-		mnuFile.add(separator_2);
+		mnuDisk.add(separator_2);
 
-		mnuFileExit = new JMenuItem("Exit");
-		mnuFileExit.setName(MNU_FILE_EXIT);
-		mnuFileExit.addActionListener(diskUtilityAdapter);
-		mnuFile.add(mnuFileExit);
+		mnuDiskExit = new JMenuItem("Exit");
+		mnuDiskExit.setName(MNU_DISK_EXIT);
+		mnuDiskExit.addActionListener(diskUtilityAdapter);
+		mnuDisk.add(mnuDiskExit);
 	}// initialize
 
 	// ----------------------------------------------------------------------------------------------------------
@@ -1373,10 +1720,10 @@ public class DiskUtility {
 
 			switch (name) {
 			// Menus
-			case MNU_FILE_NEW_DISK:
+			case MNU_DISK_NEW_DISK:
 				manageFileMenus(name);
 				break;
-			case MNU_FILE_LOAD_DISK:
+			case MNU_DISK_LOAD_DISK:
 				JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD",
 						"F5HD", "F8SS", "F8DS");
 				if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
@@ -1386,19 +1733,27 @@ public class DiskUtility {
 				loadFile(fc.getSelectedFile());
 				manageFileMenus(name);
 				break;
-			case MNU_FILE_CLOSE:
+			case MNU_DISK_CLOSE:
 				closeFile(currentFile);
 				manageFileMenus(name);
 				break;
-			case MNU_FILE_SAVE:
+			case MNU_DISK_SAVE:
 				break;
-			case MNU_FILE_SAVE_AS:
+			case MNU_DISK_SAVE_AS:
 				break;
-			case MNU_FILE_EXIT:
+			case MNU_DISK_EXIT:
 				appClose();
 				break;
 
-			// ToggleButtons
+				// Buttons
+			case BTN_IMPORT:
+				break;
+			case BTN_EXPORT:
+				break;
+			case BTN_NATIVE_FILE:
+				break;
+				
+				// Toggle Buttons
 			case TB_DECIMAL_DISPLAY:
 				setDisplayRadix();
 				if (tbDecimalDisplay.isSelected()) {
@@ -1411,9 +1766,13 @@ public class DiskUtility {
 				break;
 
 			// ComboBoxs
-			case AC_CB_FILE_NAMES:
+			case CB_FILE_NAMES:
 				displaySelectedFile();
 				break;
+			case CB_CPM_FILE_IN_OUT:
+				displaySelectedFile();
+				break;
+
 
 			// case BTN_READ_PHYSICAL_SECTOR:
 			// selectedNewPhysicalSector(false);
@@ -1483,29 +1842,34 @@ public class DiskUtility {
 
 	// public static final String BTN_READ_PHYSICAL_SECTOR =
 	// "btnReadPhysicalSector";
+	
+	public static final String BTN_IMPORT = "btnImport";
+	public static final String BTN_EXPORT = "btnExport";
+	public static final String BTN_NATIVE_FILE = "btnNativeFile";
+	
 
-	private final static String AC_CB_FILE_NAMES = "cbFileNames";
+	private final static String CB_FILE_NAMES = "cbFileNames";
+	private final static String CB_CPM_FILE_IN_OUT = "cbCpmFIleInOut";
 
 	public static final String TB_DECIMAL_DISPLAY = "tbDecimalDisplay";
 	public static final String TB_BOOTABLE = "tbBootable";
 
-	public static final String MNU_FILE_NEW_DISK = "mnuFileNewDisk";
-	public static final String MNU_FILE_LOAD_DISK = "mnuFileLoadDisk";
-	public static final String MNU_FILE_CLOSE = "mnuFileClose";
-	public static final String MNU_FILE_SAVE = "mnuFileSave";
-	public static final String MNU_FILE_SAVE_AS = "mnuFileSaveAs";
-	public static final String MNU_FILE_EXIT = "mnuFileExit";
+	public static final String MNU_DISK_NEW_DISK = "mnuDiskNew";
+	public static final String MNU_DISK_LOAD_DISK = "mnuDiskLoad";
+	public static final String MNU_DISK_CLOSE = "mnuDiskClose";
+	public static final String MNU_DISK_SAVE = "mnuDiskSave";
+	public static final String MNU_DISK_SAVE_AS = "mnuDiskSaveAs";
+	public static final String MNU_DISK_EXIT = "mnuDiskExit";
 
 	private JPanel panelDirectory;
 	private JPanel panelPhysical0;
 	private HexEditPanelSimple panelSectorDisplay;
-	private JMenuItem mnuFileNewDisk;
-	private JMenuItem mnuFileLoadDisk;
-	private JMenuItem mnuFileClose;
-	private JMenuItem mnuFileSave;
-	private JMenuItem mnuFileSaveAs;
-	private JMenuItem mnuFileExit;
-	private Component horizontalStrut_1;
+	private JMenuItem mnuDiskNew;
+	private JMenuItem mnuDiskLoad;
+	private JMenuItem mnuDiskClose;
+	private JMenuItem mnuDiskSave;
+	private JMenuItem mnuDiskSaveAs;
+	private JMenuItem mnuDiskExit;
 	private JPanel panelDirRaw;
 	private JPanel panelRawUser;
 	private JLabel label;
@@ -1547,6 +1911,38 @@ public class DiskUtility {
 	private Component horizontalStrut_7;
 	private HexEditPanelSimple panelFileHex;
 	private JPanel panelFile0;
+	private JPanel tabUtilities;
+	private JPanel panelMetrics;
+	private JPanel panelDiskGeometry;
+	private JLabel lblHeads;
+	private JLabel lblNewLabel_1;
+	private JLabel lblTracksPerHead;
+	private JLabel lblTracksPerHead_1;
+	private JLabel lblNewLabel;
+	private JLabel lblSectorsPerTrack;
+	private JLabel lblTotalTracks;
+	private JLabel label4;
+	private JLabel lblTotalSectors;
+	private JLabel lblTotalSectors_1;
+	private JPanel panelFileSystemParameters;
+	private JLabel label_5;
+	private JLabel label_7;
+	private JLabel label_9;
+	private JLabel label_11;
+	private JLabel label_13;
+	private JLabel label_15;
+	private JLabel label_16;
+	private JLabel lblNewLabel_2;
+	private JPanel panelMetrics0;
+	private JPanel panelCopy0;
+	private JPanel panel;
+	private JButton btnExport;
+	private JButton btnImport;
+	private JTextField txtNativeFileIniOut;
+	private JComboBox cbCpmFileInOut;
+	private JButton btnNativeFile;
+	private JLabel lblNewLabel_3;
+	private JLabel lblCpmFile;
 
 	// ----------------------------------------------------------------------
 
