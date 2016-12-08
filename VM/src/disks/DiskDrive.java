@@ -11,6 +11,7 @@ import java.util.Vector;
 
 public class DiskDrive {
 	private String diskType;
+	private boolean bootable;
 	protected int heads;
 	private int currentHead;
 	protected int tracksPerHead;
@@ -85,8 +86,13 @@ public class DiskDrive {
 		this.sectorsPerHead = diskMetric.getTotalSectorsPerHead();
 		this.totalSectorsOnDisk = diskMetric.getTotalSectorsOnDisk();
 		this.totalBytesOnDisk = diskMetric.getTotalBytes();
+		this.bootable = diskMetric.isBootDisk();
 
 	}// resolveDiskType
+	
+	public boolean isBootable(){
+		return this.bootable;
+	}//isBootable
 
 	public String getFileAbsoluteName() {
 		return this.fileAbsoluteName;
