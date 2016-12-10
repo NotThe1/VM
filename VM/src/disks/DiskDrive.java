@@ -46,6 +46,7 @@ public class DiskDrive {
 			disk = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, fileChannel.size());// this.totalBytesOnDisk);
 			fileAbsoluteName = file.getAbsolutePath();
 			fileLocalName = file.getName();
+			
 		} catch (IOException e) {
 			fireVDiskError((long) 1, "Physical I/O error" + e.getMessage());
 			System.err.printf("Physical I/O error - %s%n", e.getMessage());
@@ -56,9 +57,16 @@ public class DiskDrive {
 	}// Constructor
 
 	public void dismount() {
+		
 		if (disk != null) {
 			disk = null;
 		} // if
+		try {
+			fileChannel.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (fileChannel != null) {
 			fileChannel = null;
 		} // if

@@ -11,8 +11,11 @@ public class HexEditPanelSimple extends HexEditPanelBase {
 	public void loadData(Object src) {
 		this.source = ByteBuffer.wrap((byte[]) src);
 		loadDataCommon(source.capacity());
-
 	}// loadDocument
+	
+	public void loadData(ByteBuffer src){
+		loadDataCommon(source.capacity());
+	}//
 
 	public byte[] unloadData() {
 		return applyChanges(source.array(), source.limit(), 0);

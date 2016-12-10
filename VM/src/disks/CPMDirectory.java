@@ -16,8 +16,10 @@ public class CPMDirectory {
 	private int trackOffset; // ofs
 	public int sectorsOffset;
 	private int maxBlocks;
+	private int logicalRecordsPerSector;
 
 	private int directoryEntryNumber;
+	private int directoryStartSector;
 
 	private HashMap<Integer, Boolean> allocationTable;
 
@@ -39,7 +41,9 @@ public class CPMDirectory {
 		this.maxBlocks = diskMetric.getDSM() + 1;
 		this.directoryBlockCount = diskMetric.directoryBlockCount;
 		this.sectorsOffset = diskMetric.getDirectoryStartSector();
-
+		
+		this.logicalRecordsPerSector= diskMetric.getLSperPS();
+		this.directoryStartSector = diskMetric.getDirectoryStartSector();
 		resetDirectory();
 	}
 
@@ -49,6 +53,22 @@ public class CPMDirectory {
 		clearDirEntries();
 		initializeAllocationTable();
 	}
+	
+	public int getBytesPerSector(){
+		return this.bytesPerSector;
+	}//getBytesPerSector
+	
+	public int getSectorsPerBlock(){
+		return this.sectorsPerBlock;
+	}//getSectorsPerBlock
+	
+	public int getLogicalRecordsPerSector(){
+		return this.logicalRecordsPerSector;
+	}
+	
+	public int getDirectoryStartSector(){
+		return this.directoryStartSector;
+	}//getDirectoryStartSector
 
 	public int getDirectoryBlockNumber(int directoryEntryNumber) {
 		return directoryEntryNumber / entriesPerBlock;

@@ -16,7 +16,12 @@ import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.prefs.Preferences;
@@ -58,6 +63,7 @@ import javax.swing.text.DefaultFormatterFactory;
 
 import disks.CPMDirectory;
 import disks.CPMDirectoryEntry;
+import disks.CPMFile;
 import disks.Disk;
 import disks.DiskMetrics;
 import disks.RawDiskDrive;
@@ -77,10 +83,12 @@ public class DiskUtility {
 	private JToggleButton tbBootable;
 	private JToggleButton tbDecimalDisplay;
 	private JTabbedPane tabbedPane;
-	private File currentDisk;
+	// private File currentDisk;
+	private File workDisk;
 	private File nativeFile;
 	private JLabel lblDiskName;
 	private String radixFormat;
+	private boolean dirtyFile;
 	// ....
 	private DiskUtilityAdapter diskUtilityAdapter;
 
@@ -91,6 +99,7 @@ public class DiskUtility {
 	private FileCpmModel fileCpmModel;
 
 	private CPMDirectory directory;
+	private CPMFile cpmFile;
 	private JTable dirTable;
 	private DefaultTableModel modelDir;
 
@@ -115,16 +124,47 @@ public class DiskUtility {
 	// ---------------------------------------
 
 	private void loadDisk(File file) {
-		currentDisk = file;
-		diskDrive = new RawDiskDrive(file.getAbsolutePath());
+		// currentDisk = file;
+		workDisk = createWorkDisk(file);
+		diskDrive = new RawDiskDrive(workDisk.getAbsolutePath());
 		haveDisk(true);
 
 		displayPhysicalSector(0); // Physical View
 		displayDirectoryView(); // Directory View
 	}// loadFile
 
-	private void closeDisk(File file) {
-		currentDisk = null;
+	private File createWorkDisk(File file) {
+
+		String fileName = file.getName();
+		String fileExtension = "";
+		String[] fileNameComponents = fileName.split("\\.");
+		try {
+			fileExtension = fileNameComponents[1].toUpperCase();
+		} catch (Exception e) {
+			return null;
+		} // try
+
+		try {
+			workDisk = File.createTempFile("diskUtility", "." + fileExtension);
+			workDisk.deleteOnExit();
+			System.out.printf("[DiskUtility.btnNewButton] Temp File: %s%n", workDisk.getAbsolutePath());
+
+			Path source = Paths.get(file.getAbsolutePath());
+			Path target = Paths.get(workDisk.getAbsolutePath());
+			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // try
+
+		return workDisk;
+	}// useBackup
+
+	private void closeDisk() {
+		// if (panelFileHex.isDataChanged()){
+		//
+		// }
+		// currentDisk = null;
 		diskDrive.dismount();
 		// panelSectorDisplay.loadData(NO_FILE);
 		haveDisk(false);
@@ -132,11 +172,12 @@ public class DiskUtility {
 	}// closeFile
 
 	private void haveDisk(boolean state) {
+
 		refreshMetrics(state);
 		btnNativeFile.setEnabled(state);
 		manageFileMenus(state ? MNU_DISK_LOAD_DISK : MNU_DISK_CLOSE);
 		if (state) {
-
+			dirtyFile = false;
 		} else {
 			manageFileMenus(MNU_DISK_CLOSE);
 			panelSectorDisplay.loadData(NO_FILE);
@@ -145,7 +186,7 @@ public class DiskUtility {
 
 			scrollDirectoryTable.setViewportView(null);
 			showDirectoryDetail(new byte[32]);
-			
+
 			panelFileHex.loadData(NO_FILE);
 			cbFileNames.setModel(new FileCpmModel());
 			cbCpmFileInOut.setModel(new FileCpmModel());
@@ -153,7 +194,7 @@ public class DiskUtility {
 			lblReadOnly.setVisible(false);
 			lblSystemFile.setVisible(false);
 		} // if - state
-		// tabbedPane.setEnabled(state);
+			// tabbedPane.setEnabled(state);
 	}// haveDisk
 
 	private void refreshMetrics(boolean state) {
@@ -210,22 +251,48 @@ public class DiskUtility {
 
 	// ---File View------------------------------
 	private void displaySelectedFile() {
-		{
-			if (cbFileNames.getItemCount() == 0) {
-				return;
-			} // if
-			DirEntry de = (DirEntry) cbFileNames.getSelectedItem();
-			String fileName = de.fileName;
-			processSourceCPMFile(fileName);
-		} // cbFileNames
+
+		System.out.printf("[displaySelectedFile] panelFileHex.isDataChanged(): %s%n", panelFileHex.isDataChanged());
+		// System.out.printf("[displaySelectedFile]
+		// panelFileHex.isSourceDirty(): %s%n",
+		// panelFileHex.isSourceDirty());
+
+		dirtyFile = panelFileHex.isDataChanged() ? true : dirtyFile;
+		System.out.printf("[displayPhysicalSector] dirtyFile: %s%n%n", dirtyFile);
+
+		if (dirtyFile) {
+			byte[] changedData = panelFileHex.unloadData();
+			cpmFile.write(changedData);
+		}//if dirty file
+
+		if (cbFileNames.getItemCount() == 0) {
+			return;
+		} // if
+		DirEntry de = (DirEntry) cbFileNames.getSelectedItem();
+		String fileName = de.fileName;
+		// processSourceCPMFile(fileName);
+		 cpmFile = new CPMFile(diskDrive, directory, fileName);
+		panelFileHex.loadData(cpmFile.read());
+		
+
 	}// displaySelectedFile
+
+	private void displayCPMFile(String fileName) {
+		CPMFile cpmFile = new CPMFile(diskDrive, directory, fileName);
+		panelFileHex.loadData(cpmFile.read());
+	}// displayCPMFile
+	
+
 
 	private void processSourceCPMFile(String sourceFileName, String targetFileName) {
 
-		ArrayList<Integer> sectors = getAllSectorsForFile(sourceFileName);
 		int recordCount = directory.getTotalRecordCount(sourceFileName);
 		int actualNumberOfSectorsToRead = getActualNumberOfRecordsToRead(sourceFileName);
+		if (recordCount < 1) {
+			return;
+		} // malformed directory entry
 
+		ArrayList<Integer> sectors = getAllSectorsForFile(sourceFileName);
 		lblRecordCount.setText(String.format(radixFormat, recordCount));
 		lblReadOnly.setVisible(directory.isReadOnly(sourceFileName));
 		lblSystemFile.setVisible(directory.isSystemFile(sourceFileName));
@@ -394,16 +461,14 @@ public class DiskUtility {
 		dirTable.setRowSelectionInterval(0, 0);
 
 	}// makeDirectoryTable
-		
-	
 
 	private void showDirectoryDetail(int entryNumber) {
 		CPMDirectoryEntry entry = directory.getDirectoryEntry(entryNumber);
 		byte[] rawDirectory = entry.getRawDirectory();
 		showDirectoryDetail(rawDirectory);
-	}//showDirectoryDetail
-	
-	private void showDirectoryDetail(byte[] rawDirectory){
+	}// showDirectoryDetail
+
+	private void showDirectoryDetail(byte[] rawDirectory) {
 
 		lblRawUser.setText(String.format("%02X", rawDirectory[0]));
 
@@ -476,9 +541,9 @@ public class DiskUtility {
 		} // for
 		cbFileNames.setModel(fileCpmModel);
 		cbCpmFileInOut.setModel(fileCpmModel);//
-		if (fileCpmModel.getSize()!=0){
+		if (fileCpmModel.getSize() != 0) {
 			cbFileNames.setSelectedIndex(0);
-		}//if 
+		} // if
 	}// fillDirectoryTable
 
 	private void dirFillFileChoosers(CPMDirectoryEntry entry, int index) {
@@ -497,7 +562,9 @@ public class DiskUtility {
 		((SpinnerNumberModel) hdnHead.getNumberModel()).setValue(0);
 		((SpinnerNumberModel) hdnTrack.getNumberModel()).setValue(0);
 		((SpinnerNumberModel) hdnSector.getNumberModel()).setValue(1);
+		hdSeekPanel.mute(true);
 		hdSeekPanel.setValue(0);
+		hdSeekPanel.mute(false);
 
 		if (diskDrive == null) {
 			((SpinnerNumberModel) hdnHead.getNumberModel()).setMaximum(0);
@@ -555,6 +622,16 @@ public class DiskUtility {
 		if ((0 > absoluteSector) | (diskDrive.getTotalSectorsOnDisk() < absoluteSector)) {
 			absoluteSector = 0;
 		} // if
+
+		System.out.printf("[displayPhysicalSector] panelSectorDisplay.isDataChanged(): %s%n",
+				panelSectorDisplay.isDataChanged());
+		// System.out.printf("[displayPhysicalSector]
+		// panelSectorDisplay.isSourceDirty(): %s%n",
+		// panelSectorDisplay.isSourceDirty());
+
+		dirtyFile = panelSectorDisplay.isDataChanged() ? true : dirtyFile;
+		System.out.printf("[displayPhysicalSector] dirtyFile: %s%n%n", dirtyFile);
+
 		diskDrive.setCurrentAbsoluteSector(absoluteSector);
 		panelSectorDisplay.loadData(diskDrive.read());
 	}// displayPhysicalSector
@@ -577,12 +654,11 @@ public class DiskUtility {
 		btnImport.setEnabled(true);
 		btnExport.setEnabled(true);
 
-
 		nativeFile = nativeChooser.getSelectedFile();
 
 		txtNativeFileInOut.setText(nativeFile.getName());
 		txtNativeFileInOut.setToolTipText(nativeFile.getAbsolutePath());
-		
+
 		// sourceSize = nativeFile.length();
 
 		return nativeFile;
@@ -661,7 +737,8 @@ public class DiskUtility {
 		myPrefs.putInt("Tab", tabbedPane.getSelectedIndex());
 		// myPrefs.putInt("Divider", splitPane1.getDividerLocation());
 		myPrefs = null;
-		cleanUp(currentDisk);
+		// cleanUp(currentDisk);
+		
 		System.exit(0);
 	}// appClose
 
@@ -747,10 +824,15 @@ public class DiskUtility {
 		toolBar.add(tbDecimalDisplay);
 
 		JButton btnNewButton = new JButton("New button");
-		btnNewButton.setVisible(false);
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				// panelSectorDisplay.clearDisplay();
+				try {
+					File tempFile = File.createTempFile("diskUtility", ".tmp");
+					System.out.printf("[DiskUtility.btnNewButton] Temp File: %s%n", tempFile.getAbsolutePath());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		toolBar.add(btnNewButton);
@@ -1802,6 +1884,12 @@ public class DiskUtility {
 			switch (name) {
 			// Menus
 			case MNU_DISK_NEW_DISK:
+				File newFile = MakeNewDisk.makeNewDisk();
+				if (newFile == null) {
+					System.out.printf("[DiskUtility.actionPerformed] No new file %s%n", "");
+					return;
+				} // if
+				loadDisk(newFile);
 				manageFileMenus(name);
 				break;
 			case MNU_DISK_LOAD_DISK:
@@ -1815,7 +1903,7 @@ public class DiskUtility {
 				manageFileMenus(name);
 				break;
 			case MNU_DISK_CLOSE:
-				closeDisk(currentDisk);
+				closeDisk();
 				manageFileMenus(name);
 				break;
 			case MNU_DISK_SAVE:
