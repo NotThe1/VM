@@ -738,7 +738,11 @@ public class DiskUtility {
 		// myPrefs.putInt("Divider", splitPane1.getDividerLocation());
 		myPrefs = null;
 		// cleanUp(currentDisk);
-		
+		try {
+			workDisk.delete();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		System.exit(0);
 	}// appClose
 
