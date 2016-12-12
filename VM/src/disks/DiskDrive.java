@@ -31,6 +31,7 @@ public class DiskDrive {
 	private byte[] readSector;
 	private ByteBuffer writeSector;
 	
+	RandomAccessFile raf;
 
 	public DiskDrive(Path path) {
 		this(path.resolve(path).toString());
@@ -42,11 +43,15 @@ public class DiskDrive {
 
 		try {
 			File file = new File(strPathName);
-			fileChannel = new RandomAccessFile(file, "rw").getChannel();
+			
+			 raf = new RandomAccessFile(file,"rw");
+			fileChannel = raf.getChannel();
+			
+//			fileChannel = new RandomAccessFile(file, "rw").getChannel();
 			disk = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, fileChannel.size());// this.totalBytesOnDisk);
 			fileAbsoluteName = file.getAbsolutePath();
 			fileLocalName = file.getName();
-			
+
 		} catch (IOException e) {
 			fireVDiskError((long) 1, "Physical I/O error" + e.getMessage());
 			System.err.printf("Physical I/O error - %s%n", e.getMessage());
@@ -57,17 +62,24 @@ public class DiskDrive {
 	}// Constructor
 
 	public void dismount() {
+		try {
+			raf.close();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
+
 		if (disk != null) {
 			disk = null;
 		} // if
-		try {
-			fileChannel.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		if (fileChannel != null) {
+			try {
+				fileChannel.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			fileChannel = null;
 		} // if
 			// fileChannel.close();
@@ -97,10 +109,10 @@ public class DiskDrive {
 		this.bootable = diskMetric.isBootDisk();
 
 	}// resolveDiskType
-	
-	public boolean isBootable(){
+
+	public boolean isBootable() {
 		return this.bootable;
-	}//isBootable
+	}// isBootable
 
 	public String getFileAbsoluteName() {
 		return this.fileAbsoluteName;
@@ -109,10 +121,10 @@ public class DiskDrive {
 	public String getFileLocalName() {
 		return this.fileLocalName;
 	}// getFileLocalName
-	
-	public String getDiskType(){
+
+	public String getDiskType() {
 		return this.diskType;
-	}//getDiskType
+	}// getDiskType
 
 	public void homeHeads() {
 		this.currentHead = 0;
@@ -236,7 +248,7 @@ public class DiskDrive {
 			validateHead = false;
 		} // if
 		return validateHead;
-	}//validateHead
+	}// validateHead
 
 	private boolean validateTrack(int track) {
 		boolean validateTrack = true;
@@ -247,7 +259,7 @@ public class DiskDrive {
 			validateTrack = false;
 		} // if
 		return validateTrack;
-	}//validateTrack
+	}// validateTrack
 
 	private boolean validateSector(int sector) {
 		// between 1 andsectorsPerTrack
@@ -258,7 +270,7 @@ public class DiskDrive {
 			validateSector = false;
 		} // if
 		return validateSector;
-	}//validateSector
+	}// validateSector
 
 	private boolean validateAbsoluteSector(long absoluteSector) {
 		// between 0 and totalSectorsOnDisk-1
@@ -269,7 +281,7 @@ public class DiskDrive {
 			validateAbsoluteSector = false;
 		} // if
 		return validateAbsoluteSector;
-	}//validateAbsoluteSector
+	}// validateAbsoluteSector
 
 	// ---------------------------------Error
 	// Events----------------------------------------

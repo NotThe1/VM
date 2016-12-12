@@ -44,8 +44,8 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-public abstract class HexEditPanelBase extends JPanel 
-implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
+public abstract class HexEditPanelBase extends JPanel
+		implements AdjustmentListener, ComponentListener, ChangeListener, Runnable {
 	private static final long serialVersionUID = 1L;
 
 	protected ByteBuffer source;
@@ -84,10 +84,10 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 	public SortedMap<Integer, Byte> getChangedData() {
 		return changes;
 	}// getChangedData
-	
-	public void run(){
+
+	public void run() {
 		fillPane();
-	}//run
+	}// run
 
 	// -----------------------------------------------------------------------------------------------
 	HexEditDocumentFilter loadDataCommon(int sourceSize) {
@@ -95,20 +95,15 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 		setUpScrollBar();
 		currentLineStart = 0;
 		prepareDoc(doc, (long) sourceSize);
-		//
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				fillPane();
-			}// run
-		});
-		//
+
+		fillPane();
+		
 		calcHexMetrics(sourceSize);
 		setNavigationFilter(doc);
 		HexEditDocumentFilter hexDocumentFilter = setDocumentFilter(doc);
-		
+
 		return hexDocumentFilter;
-	}//loadDataCommon
-	
+	}// loadDataCommon
 
 	void fillPane() {
 		if (currentExtent == 0) {
@@ -122,8 +117,7 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 			// Auto-generated catch block
 			e.printStackTrace();
 		} // try
-			// System.out.printf("FillPane: currentStartLine = %d%n",
-			// currentLineStart);
+
 		int sourceIndex = currentLineStart * BYTES_PER_LINE; // address to
 																// display
 		byte[] activeLine = new byte[BYTES_PER_LINE];
@@ -137,9 +131,7 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 			processLine(processedData, bytesToRead, sourceIndex);
 			sourceIndex += bytesToRead;
 			if (bytesToRead < BYTES_PER_LINE) {
-				// System.out.printf("[fillPane] sourceIndex: %d, bytesToRead:
-				// %d (%2X)%n", sourceIndex,bytesToRead,bytesToRead);
-
+				// leave withe byte count for the last sector set in bytesToRead
 				break;
 			} // if
 			bytesToRead = Math.min(source.remaining(), BYTES_PER_LINE);
@@ -150,8 +142,6 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 		} // for
 		restoreFilters();
 		hexNavigationFilter.setLastLine(bytesToRead, linesToDisplay - 1);
-		// System.out.printf("[fillPane] bytesToRead: %d,linesToDisplay: %d%n",
-		// bytesToRead, linesToDisplay - 1);
 		textPane.setCaretPosition(0);
 	}// fillPane
 
@@ -160,10 +150,6 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 		SortedMap<Integer, Byte> rowChanges = changes.subMap(bufferAddress, bufferAddress + bytesRead);
 
 		if (rowChanges.size() != 0) {
-			// System.out.printf("[applyChanges]: %n");
-			// rowChanges.forEach((k, v) -> System.out.printf("\t\tIndex = %4d,
-			// vlaue = %02X%n", k, v));
-
 			rowChanges.forEach((k, v) -> ans[(int) k - bufferAddress] = (byte) v);
 		} // if need to update
 		return ans;
@@ -176,7 +162,6 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 				sbData.append(SPACE);
 			} // if data extra space
 			sbData.append(String.format(hexCharacterFormat, rawData[i]));
-			// System.out.printf("sourceArray[%2d]: %02X%n", i, rawData[i]);
 		} // for
 
 		String bufferAddressStr = String.format(addressFormat, bufferAddress);
@@ -346,12 +331,6 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 				setValue(0, model);
 				setExtent(extent, model);
 				scrollBar.setBlockIncrement(extent - 2);
-				// -
-				// System.out.printf("Max = %d%n", model.getMaximum());
-				// System.out.printf("Min = %d%n", model.getMinimum());
-				// System.out.printf("Extent = %d%n", model.getExtent());
-				// System.out.printf("Value = %d%n", model.getValue());
-				// --
 			}// run
 		});
 	}// setUpScrollBar
@@ -404,6 +383,8 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 		doc = textPane.getStyledDocument();
 		makeStyles();
 		changes = new TreeMap<Integer, Byte>();
+		scrollBar.addAdjustmentListener(this);
+		textPane.addComponentListener(this);
 	}// appInit
 
 	private void initialize() {
@@ -441,7 +422,7 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 		panelHeader.add(spinnerAddress);
 
 		textPane = new JTextPane();
-		textPane.addComponentListener(this);
+		// textPane.addComponentListener(this);
 
 		textPane.setFont(new Font("Courier New", Font.PLAIN, 16));
 		GridBagConstraints gbc_textPane = new GridBagConstraints();
@@ -452,7 +433,7 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 		add(textPane, gbc_textPane);
 
 		scrollBar = new JScrollBar();
-		scrollBar.addAdjustmentListener(this);
+		// scrollBar.addAdjustmentListener(this);
 		scrollBar.setMaximum(0);
 		scrollBar.setPreferredSize(new Dimension(25, 48));
 		scrollBar.setMinimumSize(new Dimension(25, 5));
@@ -468,27 +449,22 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 	@Override
 	public void componentResized(ComponentEvent comonentEvent) {
 		setUpScrollBar();
-		fillPane();
+		// fillPane();
 	}// componentResized
 
 	@Override
 	public void adjustmentValueChanged(AdjustmentEvent adjustmentEvent) {
+
 		if (adjustmentEvent.getValueIsAdjusting()) {
 			return;
 		} // if
-
 		if (adjustmentEvent.getAdjustmentType() != AdjustmentEvent.TRACK) {
 			return;
 		} // if
 
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				currentLineStart = adjustmentEvent.getValue();
-				spinnerAddress.setValue(BYTES_PER_LINE * currentLineStart);
-				fillPane();
-			}// run
-		});
-
+		currentLineStart = adjustmentEvent.getValue();
+		spinnerAddress.setValue(BYTES_PER_LINE * currentLineStart);
+		fillPane();
 	}// adjustmentValueChanged
 
 	public static final int BYTES_PER_LINE = 16;
@@ -574,19 +550,9 @@ implements AdjustmentListener, ComponentListener, ChangeListener,Runnable {
 
 		if (targetValue == (int) scrollBar.getValue()) {
 			return; // same line
-		} //
+		} // if
 
 		scrollBar.setValue(targetValue);
-
-		// int valueSB = (int) scrollBar.getValue();
-		// int maxSB = (int) scrollBar.getValue();
-
-		// System.out.printf("[focusLost] spinnerValue: %d (%X)%n", value,
-		// value);
-		// System.out.printf("[focusLost] scrollBar Value: %d (%X)%n", valueSB,
-		// valueSB);
-		// System.out.printf("[focusLost] scrollBar Max: %d (%X)%n", maxSB,
-		// maxSB);
 
 	}// stateChanged
 

@@ -11,13 +11,16 @@ public class CPMFile extends CPMFileHeader {
 	}// Constructor
 
 	public byte[] read() {
+		byte[] ans = new byte[actualByteCount];
+		if (recordCount == 0) {
+			return ans;
+		} // if
 		ByteBuffer readData = ByteBuffer.allocate(numberOfSectors * diskDrive.getBytesPerSector());
 		for (int i = 0; i < numberOfSectors; i++) {
 			diskDrive.setCurrentAbsoluteSector(sectors.get(i));
 			readData.put(diskDrive.read());
 		} // - for- i : each sector
 		readData.rewind();
-		byte[] ans = new byte[actualByteCount];
 		readData.get(ans);
 		return ans;
 	}// read

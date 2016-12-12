@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -157,7 +158,8 @@ public class MenuUtilityTest {
 		gbc_toolBar.gridy = 0;
 		frmTemplate.getContentPane().add(toolBar, gbc_toolBar);
 
-		btnOne = new JButton("1");
+		btnOne = new JButton("Add 3 files");
+		btnOne.setMinimumSize(new Dimension(50, 23));
 		btnOne.setToolTipText("Add 3 files to the menu");
 		btnOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -169,8 +171,8 @@ public class MenuUtilityTest {
 				MenuUtility.addFile(mnuFile, file);
 			}// action Performed
 		});
-		btnOne.setMaximumSize(new Dimension(30, 20));
-		btnOne.setPreferredSize(new Dimension(30, 20));
+		btnOne.setMaximumSize(new Dimension(8888888, 20));
+		btnOne.setPreferredSize(new Dimension(50, 20));
 		toolBar.add(btnOne);
 
 		btnTwo = new JButton("2");
@@ -202,6 +204,12 @@ public class MenuUtilityTest {
 		toolBar.add(btnThree);
 
 		btnFour = new JButton("4");
+		btnFour.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JOptionPane.showConfirmDialog(null,
+			             "Do you want to save Changes", "Close Disk", JOptionPane.YES_NO_CANCEL_OPTION);
+			}//
+		});
 		btnFour.setPreferredSize(new Dimension(30, 20));
 		btnFour.setMaximumSize(new Dimension(30, 20));
 		toolBar.add(btnFour);
