@@ -76,6 +76,8 @@ import utilities.hexEdit.HexEditPanelSimple;
 
 public class DiskUtility {
 
+	File testDisk;
+
 	private JFrame frmDiskUtility;
 	private HexEditPanelSimple panelFileHex;
 	private HexEditPanelSimple panelSectorDisplay;
@@ -132,7 +134,7 @@ public class DiskUtility {
 		workDisk = createWorkDisk(file);
 		diskDrive = new RawDiskDrive(workDisk.getAbsolutePath());
 		haveDisk(true);
-		
+
 		// need the two display... methods run on different threads
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -141,7 +143,6 @@ public class DiskUtility {
 		});
 		displayDirectoryView(); // Directory View
 		// need the two display... methods run on different threads
-
 
 	}// loadFile
 
@@ -159,13 +160,12 @@ public class DiskUtility {
 		try {
 			workDisk = File.createTempFile("diskUtility", "." + fileExtension);
 			workDisk.deleteOnExit();
-			System.out.printf("[DiskUtility.btnNewButton] Temp File: %s%n", workDisk.getAbsolutePath());
+			System.out.printf("[DiskUtility.createWorkDisk] Temp File: %s%n", workDisk.getAbsolutePath());
 
 			Path source = Paths.get(file.getAbsolutePath());
 			Path target = Paths.get(workDisk.getAbsolutePath());
 			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} // try
 
@@ -174,13 +174,43 @@ public class DiskUtility {
 
 	private void closeDisk() {
 		if (dirtyFile) {
-			updateDisk();
+			int reply = JOptionPane.showConfirmDialog(null, "Do you want to save Changes", "Close Disk",
+					JOptionPane.YES_NO_CANCEL_OPTION);
+
+			switch (reply) {
+			case JOptionPane.CANCEL_OPTION:
+				manageFileMenus(MNU_DISK_LOAD_DISK);
+				return;
+			// break;
+			case JOptionPane.YES_OPTION:
+				updateDisk();
+				saveDisk();
+				break;
+			case JOptionPane.NO_OPTION:
+				dirtyFile = false;
+				break;
+			}// switch
 		} // if
+		//-------------------------------------------------------
+//		if (dirtyFile) {
+//			updateDisk();
+//		} // if
 
 		if (diskDrive != null) {
 			diskDrive.dismount();
 			diskDrive = null;
 		} // if diskDrive
+
+		if (currentDisk != null) {
+			currentDisk = null;
+		} // if currentDisk
+
+		if (workDisk != null) {
+
+			boolean result = workDisk.delete();
+			System.out.printf("[DiskUtility.closeDisk] delete workDisk: %s%n", result);
+			// workDisk =null;
+		} // if workDisk
 
 		haveDisk(false);
 	}// closeFile
@@ -312,80 +342,83 @@ public class DiskUtility {
 		lblRecordCount.setText(String.format(radixFormat, cpmFile.getRecordCount()));
 		lblReadOnly.setVisible(cpmFile.isReadOnly());
 		lblSystemFile.setVisible(cpmFile.isSystemFile());
-		
+
 		byte[] dataToDisplay;
 		if (cpmFile.getRecordCount() == 0) {
 			dataToDisplay = NO_FILE;
-		} else{
+		} else {
 			dataToDisplay = cpmFile.read();
-		}//if
+		} // if
 
 		panelFileHex.loadData(dataToDisplay);
 
 	}// displaySelectedFile
 
-//	private void displayCPMFile(String fileName) {
-//		CPMFile cpmFile = new CPMFile(diskDrive, directory, fileName);
-//		panelFileHex.loadData(cpmFile.read());
-//	}// displayCPMFile
+	// private void displayCPMFile(String fileName) {
+	// CPMFile cpmFile = new CPMFile(diskDrive, directory, fileName);
+	// panelFileHex.loadData(cpmFile.read());
+	// }// displayCPMFile
 
-//	private void processSourceCPMFile(String sourceFileName, String targetFileName) {
-//
-//		int recordCount = directory.getTotalRecordCount(sourceFileName);
-//		int actualNumberOfSectorsToRead = getActualNumberOfRecordsToRead(sourceFileName);
-//		if (recordCount < 1) {
-//			return;
-//		} // malformed directory entry
-//
-//		ArrayList<Integer> sectors = getAllSectorsForFile(sourceFileName);
-//		lblRecordCount.setText(String.format(radixFormat, recordCount));
-//		lblReadOnly.setVisible(directory.isReadOnly(sourceFileName));
-//		lblSystemFile.setVisible(directory.isSystemFile(sourceFileName));
-//
-//		ByteBuffer sourceData = ByteBuffer.allocate(actualNumberOfSectorsToRead * diskDrive.getBytesPerSector());
-//
-//		int actualByteCount = recordCount * Disk.LOGICAL_SECTOR_SIZE;
-//
-//		for (int i = 0; i < actualNumberOfSectorsToRead; i++) {
-//			diskDrive.setCurrentAbsoluteSector(sectors.get(i));
-//			sourceData.put(diskDrive.read());
-//		} // - for- i : each sector
-//
-//		// sourceData.limit(actualByteCount);
-//		sourceData.rewind();
-//		byte[] fileData = new byte[actualByteCount];
-//		sourceData.get(fileData, 0, actualByteCount);
-//		panelFileHex.loadData(fileData);
-//
-//	}// processSourceCPMFile
-//
-//	private void processSourceCPMFile(String sourceFileName) {
-//		processSourceCPMFile(sourceFileName, null);
-//	}// processSourceCPMFile
+	// private void processSourceCPMFile(String sourceFileName, String
+	// targetFileName) {
+	//
+	// int recordCount = directory.getTotalRecordCount(sourceFileName);
+	// int actualNumberOfSectorsToRead =
+	// getActualNumberOfRecordsToRead(sourceFileName);
+	// if (recordCount < 1) {
+	// return;
+	// } // malformed directory entry
+	//
+	// ArrayList<Integer> sectors = getAllSectorsForFile(sourceFileName);
+	// lblRecordCount.setText(String.format(radixFormat, recordCount));
+	// lblReadOnly.setVisible(directory.isReadOnly(sourceFileName));
+	// lblSystemFile.setVisible(directory.isSystemFile(sourceFileName));
+	//
+	// ByteBuffer sourceData = ByteBuffer.allocate(actualNumberOfSectorsToRead *
+	// diskDrive.getBytesPerSector());
+	//
+	// int actualByteCount = recordCount * Disk.LOGICAL_SECTOR_SIZE;
+	//
+	// for (int i = 0; i < actualNumberOfSectorsToRead; i++) {
+	// diskDrive.setCurrentAbsoluteSector(sectors.get(i));
+	// sourceData.put(diskDrive.read());
+	// } // - for- i : each sector
+	//
+	// // sourceData.limit(actualByteCount);
+	// sourceData.rewind();
+	// byte[] fileData = new byte[actualByteCount];
+	// sourceData.get(fileData, 0, actualByteCount);
+	// panelFileHex.loadData(fileData);
+	//
+	// }// processSourceCPMFile
+	//
+	// private void processSourceCPMFile(String sourceFileName) {
+	// processSourceCPMFile(sourceFileName, null);
+	// }// processSourceCPMFile
 
-//	private ArrayList<Integer> getAllSectorsForFile(String fileName) {
-//		ArrayList<Integer> blocks = directory.getAllAllocatedBlocks(fileName);
-//		ArrayList<Integer> sectors = new ArrayList<Integer>();
-//		int blockSectorStart = 0;
-//
-//		int sectorsPerBlock = diskMetrics.getSectorsPerBlock();
-//		int block0StartSector = diskMetrics.getDirectoryStartSector();
-//		for (int i = 0; i < blocks.size(); i++) {
-//			blockSectorStart = block0StartSector + (blocks.get(i) * sectorsPerBlock);
-//			for (int j = 0; j < sectorsPerBlock; sectors.add(blockSectorStart + j++))
-//				;
-//		} // for - i
-//		return sectors;
-//	}// getAllSectorsForFile
-//
-//	private int getActualNumberOfRecordsToRead(String fileName) {
-//		int recordCount = directory.getTotalRecordCount(fileName); // 128-byte
-//																	// logical
-//																	// records
-//		return ((recordCount - 1) / logicalRecordsPerSector) + 1; // Logical
-//																	// Sectors
-//																	// Per
-//	}// getActualNumberOfRecordsToRead
+	// private ArrayList<Integer> getAllSectorsForFile(String fileName) {
+	// ArrayList<Integer> blocks = directory.getAllAllocatedBlocks(fileName);
+	// ArrayList<Integer> sectors = new ArrayList<Integer>();
+	// int blockSectorStart = 0;
+	//
+	// int sectorsPerBlock = diskMetrics.getSectorsPerBlock();
+	// int block0StartSector = diskMetrics.getDirectoryStartSector();
+	// for (int i = 0; i < blocks.size(); i++) {
+	// blockSectorStart = block0StartSector + (blocks.get(i) * sectorsPerBlock);
+	// for (int j = 0; j < sectorsPerBlock; sectors.add(blockSectorStart + j++))
+	// ;
+	// } // for - i
+	// return sectors;
+	// }// getAllSectorsForFile
+	//
+	// private int getActualNumberOfRecordsToRead(String fileName) {
+	// int recordCount = directory.getTotalRecordCount(fileName); // 128-byte
+	// // logical
+	// // records
+	// return ((recordCount - 1) / logicalRecordsPerSector) + 1; // Logical
+	// // Sectors
+	// // Per
+	// }// getActualNumberOfRecordsToRead
 
 	// ---File View------------------------------
 
@@ -730,11 +763,13 @@ public class DiskUtility {
 		// myPrefs.putInt("Divider", splitPane1.getDividerLocation());
 		myPrefs = null;
 		// cleanUp(currentDisk);
-		try {
-			workDisk.delete();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		if (workDisk != null) {
+			try {
+				workDisk.delete();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} // try
+		} // if
 		System.exit(0);
 	}// appClose
 
@@ -1899,27 +1934,24 @@ public class DiskUtility {
 				manageFileMenus(name);
 				break;
 			case MNU_DISK_CLOSE:
-				if (dirtyFile) {
-					int reply = JOptionPane.showConfirmDialog(null, "Do you want to save Changes", "Close Disk",
-							JOptionPane.YES_NO_CANCEL_OPTION);
-
-					switch (reply) {
-					case JOptionPane.CANCEL_OPTION:
-						return;
-					// break;
-					case JOptionPane.YES_OPTION:
-						saveDisk();
-						break;
-					case JOptionPane.NO_OPTION:
-						dirtyFile = false;
-						closeDisk();
-						manageFileMenus(name);
-						break;
-					}// switch
-				} // if
-
+//				if (dirtyFile) {
+//					int reply = JOptionPane.showConfirmDialog(null, "Do you want to save Changes", "Close Disk",
+//							JOptionPane.YES_NO_CANCEL_OPTION);
+//
+//					switch (reply) {
+//					case JOptionPane.CANCEL_OPTION:
+//						return;
+//					// break;
+//					case JOptionPane.YES_OPTION:
+//						saveDisk();
+//						break;
+//					case JOptionPane.NO_OPTION:
+//						dirtyFile = false;
+//						break;
+//					}// switch
+//				} // if
 				closeDisk();
-				manageFileMenus(name);
+//				manageFileMenus(name);
 
 				break;
 			case MNU_DISK_SAVE:

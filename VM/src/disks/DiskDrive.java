@@ -30,7 +30,7 @@ public class DiskDrive {
 	private MappedByteBuffer disk;
 	private byte[] readSector;
 	private ByteBuffer writeSector;
-	
+
 	RandomAccessFile raf;
 
 	public DiskDrive(Path path) {
@@ -43,11 +43,11 @@ public class DiskDrive {
 
 		try {
 			File file = new File(strPathName);
-			
-			 raf = new RandomAccessFile(file,"rw");
+
+			raf = new RandomAccessFile(file, "rw");
 			fileChannel = raf.getChannel();
-			
-//			fileChannel = new RandomAccessFile(file, "rw").getChannel();
+
+			// fileChannel = new RandomAccessFile(file, "rw").getChannel();
 			disk = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, fileChannel.size());// this.totalBytesOnDisk);
 			fileAbsoluteName = file.getAbsolutePath();
 			fileLocalName = file.getName();
@@ -64,11 +64,11 @@ public class DiskDrive {
 	public void dismount() {
 		try {
 			raf.close();
+			raf = null;
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
 
 		if (disk != null) {
 			disk = null;
