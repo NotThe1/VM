@@ -16,6 +16,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -129,7 +130,7 @@ public class DiskUtility {
 	// ---------------------------------------
 	// ---------------------------------------
 
-	private void loadDisk(File file) {
+	private void diskSetup(File file) {
 		currentDisk = file;
 		workDisk = createWorkDisk(file);
 		diskDrive = new RawDiskDrive(workDisk.getAbsolutePath());
@@ -158,7 +159,7 @@ public class DiskUtility {
 		} // try
 
 		try {
-			workDisk = File.createTempFile("diskUtility", "." + fileExtension);
+			workDisk = File.createTempFile(TEMP_PREFIX, "." + fileExtension);
 			workDisk.deleteOnExit();
 			System.out.printf("[DiskUtility.createWorkDisk] Temp File: %s%n", workDisk.getAbsolutePath());
 
@@ -171,8 +172,30 @@ public class DiskUtility {
 
 		return workDisk;
 	}// useBackup
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<	
+	private void diskNew(){
+		File newFile = MakeNewDisk.makeNewDisk();
+		if (newFile == null) {
+			System.out.printf("[DiskUtility.actionPerformed] No new file %s%n", "");
+			return;
+		} // if
+		diskSetup(newFile);
+		manageFileMenus(MNU_DISK_NEW_DISK);
+	}//diskNew
+	
+	public void diskLoad(){
+		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD",
+				"F5HD", "F8SS", "F8DS");
+		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+			System.out.println("Bailed out of the open");
+			return;
+		} // if
+		diskSetup(fc.getSelectedFile());
+		manageFileMenus(MNU_DISK_LOAD_DISK);
 
-	private void closeDisk() {
+	}//diskLoad
+
+	private void diskClose() {
 		if (dirtyFile) {
 			int reply = JOptionPane.showConfirmDialog(null, "Do you want to save Changes", "Close Disk",
 					JOptionPane.YES_NO_CANCEL_OPTION);
@@ -184,7 +207,7 @@ public class DiskUtility {
 			// break;
 			case JOptionPane.YES_OPTION:
 				updateDisk();
-				saveDisk();
+				diskSave();
 				break;
 			case JOptionPane.NO_OPTION:
 				dirtyFile = false;
@@ -215,25 +238,48 @@ public class DiskUtility {
 		haveDisk(false);
 	}// closeFile
 
-	private void saveDisk() {
+	private void diskSave() {
 		updateDisk();
 		dirtyFile = false;
 		lblDiskName.setForeground(Color.black);
 	}// closeDisk
 
-	private void saveAsDisk() {
-
+	private void diskSaveAs() {
+		String diskType = diskDrive.getDiskType();
+		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", diskType);
+		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+			System.out.println("Bailed out of the open");
+			return;
+		} // if fc
+		
+		String fileName = fc.getSelectedFile().getName();
+		if(!fileName.toUpperCase().endsWith(diskType)){
+			String msg = String.format("Disk name \"%s\" is not disk type \"%s\".%n",fileName,diskType);
+			JOptionPane.showMessageDialog(null,msg);
+			return;
+		}//if diskType
+		
+		System.out.printf("[DiskUtility.diskSaveAs] file =  %s%n", fc.getSelectedFile().getName());
+		updateDisk(Paths.get(fc.getSelectedFile().getAbsolutePath()));
+		diskClose();
+		diskSetup(fc.getSelectedFile());
+		manageFileMenus(MNU_DISK_LOAD_DISK);
+//updateDisk();
 	}// saveAsDisk
-
-	private void updateDisk() {
-		Path current = Paths.get(currentDisk.getAbsolutePath());
-		Path work = Paths.get(workDisk.getAbsolutePath());
+	//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	private void updateDisk(Path path) {
+		Path target = path;
+		Path source = Paths.get(workDisk.getAbsolutePath());
 		try {
-			Files.copy(work, current, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} // try
+	}// updateDisk
+
+	private void updateDisk() {
+		 updateDisk(Paths.get(currentDisk.getAbsolutePath()));
 	}// updateDisk
 
 	private void haveDisk(boolean state) {
@@ -751,7 +797,7 @@ public class DiskUtility {
 		// -------
 
 	private void appClose() {
-		closeDisk();
+		diskClose();
 		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
 		Dimension dim = frmDiskUtility.getSize();
 		myPrefs.putInt("Height", dim.height);
@@ -772,12 +818,43 @@ public class DiskUtility {
 		} // if
 		System.exit(0);
 	}// appClose
+	
+/**
+ * removes any old temporary files from prior runs of the program
+ */
+	private void cleanUpOldFiles() {
+		String strTempDir = System.getenv(TEMP_EV);
+		File tempDir = new File(strTempDir);
+		String[] tempFiles = tempDir.list(new PrefixFilter(TEMP_PREFIX));
+		
+		String tempFullPath;
+		for(String tempFile:tempFiles){
+			tempFullPath = strTempDir + FILE_SEPARTOR +  tempFile;
+			try {
+				boolean wasDeleted = Files.deleteIfExists(Paths.get(tempFullPath));
+				System.out.printf("[DiskUtility.cleanUpOldFiles] wasDeleted %-10s  %s%n", wasDeleted,tempFullPath);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}//for
+	}//cleanUpOldFiles
+	//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+	class PrefixFilter implements FilenameFilter {
+		  String prefix;
 
-	private void cleanUp(Object obj) {
-		if (obj != null) {
-			obj = null;
-		} // cleanUp
-	}
+		  public PrefixFilter(String prefix) {
+		    this.prefix = prefix;
+		  }//Constructor
+
+		  public boolean accept(File dir, String name) {
+			  boolean yes = name.startsWith(prefix);
+			    return yes;
+			   // return name.endsWith(ext);
+		  }//accept
+		}//class PrefixFilter
+	//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 
 	private void appInit0() {
 		diskUtilityAdapter = new DiskUtilityAdapter();
@@ -795,6 +872,8 @@ public class DiskUtility {
 		hdNumberBoxs.add(hdnTrack);
 		hdNumberBoxs.add(hdnSector);
 		hdNumberBoxs.add(hdSeekPanel);
+		
+		cleanUpOldFiles();
 
 		// setDisplayRadix();
 		haveDisk(false);
@@ -1915,48 +1994,19 @@ public class DiskUtility {
 			switch (name) {
 			// Menus
 			case MNU_DISK_NEW_DISK:
-				File newFile = MakeNewDisk.makeNewDisk();
-				if (newFile == null) {
-					System.out.printf("[DiskUtility.actionPerformed] No new file %s%n", "");
-					return;
-				} // if
-				loadDisk(newFile);
-				manageFileMenus(name);
+				 diskNew();
 				break;
 			case MNU_DISK_LOAD_DISK:
-				JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD",
-						"F5HD", "F8SS", "F8DS");
-				if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
-					System.out.println("Bailed out of the open");
-					return;
-				} // if
-				loadDisk(fc.getSelectedFile());
-				manageFileMenus(name);
+				diskLoad();
 				break;
 			case MNU_DISK_CLOSE:
-//				if (dirtyFile) {
-//					int reply = JOptionPane.showConfirmDialog(null, "Do you want to save Changes", "Close Disk",
-//							JOptionPane.YES_NO_CANCEL_OPTION);
-//
-//					switch (reply) {
-//					case JOptionPane.CANCEL_OPTION:
-//						return;
-//					// break;
-//					case JOptionPane.YES_OPTION:
-//						saveDisk();
-//						break;
-//					case JOptionPane.NO_OPTION:
-//						dirtyFile = false;
-//						break;
-//					}// switch
-//				} // if
-				closeDisk();
-//				manageFileMenus(name);
-
+				diskClose();
 				break;
 			case MNU_DISK_SAVE:
+				diskSave();
 				break;
 			case MNU_DISK_SAVE_AS:
+				diskSaveAs();
 				break;
 			case MNU_DISK_EXIT:
 				appClose();
@@ -2061,6 +2111,9 @@ public class DiskUtility {
 	// "btnReadPhysicalSector"; user.home
 	public static final String USER_HOME = "user.home";
 	public static final String THIS_DIR = ".";
+	public static final String TEMP_EV = "TEMP";
+	public static final String TEMP_PREFIX = "DiskUtility_";
+	public static final String FILE_SEPARTOR = File.separator;
 
 	public static final String BTN_IMPORT = "btnImport";
 	public static final String BTN_EXPORT = "btnExport";
