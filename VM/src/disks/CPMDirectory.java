@@ -3,6 +3,8 @@ package disks;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 public class CPMDirectory {
@@ -20,6 +22,7 @@ public class CPMDirectory {
 
 	private int directoryEntryNumber;
 	private int directoryStartSector;
+	private int directoryLastSector;
 
 	private HashMap<Integer, Boolean> allocationTable;
 
@@ -44,6 +47,7 @@ public class CPMDirectory {
 		
 		this.logicalRecordsPerSector= diskMetric.getLSperPS();
 		this.directoryStartSector = diskMetric.getDirectoryStartSector();
+		this.directoryLastSector= diskMetric.getDirectorysLastSector();
 		resetDirectory();
 	}
 
@@ -68,6 +72,10 @@ public class CPMDirectory {
 	
 	public int getDirectoryStartSector(){
 		return this.directoryStartSector;
+	}//getDirectoryStartSector
+	
+	public int getDirectoryLastSector(){
+		return this.directoryLastSector;
 	}//getDirectoryStartSector
 
 	public int getDirectoryBlockNumber(int directoryEntryNumber) {
@@ -154,6 +162,17 @@ public class CPMDirectory {
 		allocationTable.put(nextBlock, true);
 		return nextBlock;
 	}
+	//.................................................
+	public Queue<Integer> storageFromBlock(int blockNumber){
+		Queue<Integer> ans =  new LinkedList<Integer>();
+//		int firstDirectorySector = this.getDirectoryStartSector();
+		int sector = this.getDirectoryStartSector() + ( blockNumber * this.sectorsPerBlock);
+		for ( int i = 0; i< this.sectorsPerBlock; i++){
+			ans.offer(sector++);
+		}//for		
+		return ans;
+	}//storageFromBlock
+	//.................................................
 
 	public void deleteFile(int directoryEntryNumber) {
 		ArrayList<Integer> blockList = getFilesBlocks(directoryEntryNumber);

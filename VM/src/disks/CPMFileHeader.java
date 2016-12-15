@@ -12,6 +12,7 @@ public class CPMFileHeader {
 	private boolean readOnly;
 	private boolean systemFile;
 	protected ArrayList<Integer> sectors;
+	
 
 	public String fileName;
 

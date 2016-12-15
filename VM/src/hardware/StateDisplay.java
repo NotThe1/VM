@@ -1,26 +1,25 @@
 package hardware;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
-
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-import javax.swing.JRadioButton;
-import javax.swing.InputVerifier;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JFormattedTextField;
-import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
-import javax.swing.text.DefaultFormatter;
-import javax.swing.text.JTextComponent;
-
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
+
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.text.DefaultFormatter;
+import javax.swing.text.JTextComponent;
 
 //import memory.Core;
 
@@ -503,7 +502,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		public String valueToString(Object value) throws ParseException {
 			String ans = String.format(formatString, value);
 			if (ans.length() > numberOfDigits) {
-				ans.substring(ans.length() - numberOfDigits);
+				ans =ans.substring(ans.length() - numberOfDigits);
 			}// if
 			return ans;
 		}// valueToString

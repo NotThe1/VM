@@ -11,10 +11,10 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -172,8 +172,9 @@ public class DiskUtility {
 
 		return workDisk;
 	}// useBackup
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<	
-	private void diskNew(){
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+	private void diskNew() {
 		File newFile = MakeNewDisk.makeNewDisk();
 		if (newFile == null) {
 			System.out.printf("[DiskUtility.actionPerformed] No new file %s%n", "");
@@ -181,19 +182,22 @@ public class DiskUtility {
 		} // if
 		diskSetup(newFile);
 		manageFileMenus(MNU_DISK_NEW_DISK);
-	}//diskNew
-	
-	public void diskLoad(){
-		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD",
-				"F5HD", "F8SS", "F8DS");
+	}// diskNew
+
+	public void diskLoad() {
+		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
+				"F8SS", "F8DS");
 		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
 		} // if
+		if (!fc.getSelectedFile().exists()) {
+			return; // try again
+		}
 		diskSetup(fc.getSelectedFile());
 		manageFileMenus(MNU_DISK_LOAD_DISK);
 
-	}//diskLoad
+	}// diskLoad
 
 	private void diskClose() {
 		if (dirtyFile) {
@@ -214,10 +218,10 @@ public class DiskUtility {
 				break;
 			}// switch
 		} // if
-		//-------------------------------------------------------
-//		if (dirtyFile) {
-//			updateDisk();
-//		} // if
+			// -------------------------------------------------------
+		// if (dirtyFile) {
+		// updateDisk();
+		// } // if
 
 		if (diskDrive != null) {
 			diskDrive.dismount();
@@ -251,22 +255,23 @@ public class DiskUtility {
 			System.out.println("Bailed out of the open");
 			return;
 		} // if fc
-		
+
 		String fileName = fc.getSelectedFile().getName();
-		if(!fileName.toUpperCase().endsWith(diskType)){
-			String msg = String.format("Disk name \"%s\" is not disk type \"%s\".%n",fileName,diskType);
-			JOptionPane.showMessageDialog(null,msg);
+		if (!fileName.toUpperCase().endsWith(diskType)) {
+			String msg = String.format("Disk name \"%s\" is not disk type \"%s\".%n", fileName, diskType);
+			JOptionPane.showMessageDialog(null, msg);
 			return;
-		}//if diskType
-		
+		} // if diskType
+
 		System.out.printf("[DiskUtility.diskSaveAs] file =  %s%n", fc.getSelectedFile().getName());
 		updateDisk(Paths.get(fc.getSelectedFile().getAbsolutePath()));
 		diskClose();
 		diskSetup(fc.getSelectedFile());
 		manageFileMenus(MNU_DISK_LOAD_DISK);
-//updateDisk();
+		// updateDisk();
 	}// saveAsDisk
-	//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 	private void updateDisk(Path path) {
 		Path target = path;
 		Path source = Paths.get(workDisk.getAbsolutePath());
@@ -279,7 +284,7 @@ public class DiskUtility {
 	}// updateDisk
 
 	private void updateDisk() {
-		 updateDisk(Paths.get(currentDisk.getAbsolutePath()));
+		updateDisk(Paths.get(currentDisk.getAbsolutePath()));
 	}// updateDisk
 
 	private void haveDisk(boolean state) {
@@ -303,10 +308,14 @@ public class DiskUtility {
 
 			panelFileHex.loadData(NO_FILE);
 			cbFileNames.setModel(new FileCpmModel());
-			cbCpmFileInOut.setModel(new FileCpmModel());
+			// cbCpmFileInOut.setModel(new FileCpmModel());
 			lblRecordCount.setText("0");
 			lblReadOnly.setVisible(false);
 			lblSystemFile.setVisible(false);
+			nativeFile = null;
+			txtNativeFileInOut.setText("");
+			txtNativeFileInOut.setToolTipText("");
+			cbCpmFileInOut.removeAllItems();
 		} // if - state
 			// tabbedPane.setEnabled(state);
 	}// haveDisk
@@ -367,12 +376,112 @@ public class DiskUtility {
 
 	}// setDisplayRadix
 
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	public void fileExport() {
+		if (cbCpmFileInOut.getItemCount() == 0) {
+			return;
+		} // if
+		String fileName = ((String) cbCpmFileInOut.getSelectedItem()).toUpperCase();
+		if (!fileCpmModel.exists(fileName)) {
+			cbCpmFileInOut.setSelectedItem("");
+			return;
+		} // if
+		cbCpmFileInOut.setSelectedItem(fileName);
+
+		cpmFile = CPMFile.getCPMFile(diskDrive, directory, fileName);
+		// ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ByteArrayInputStream bis = new ByteArrayInputStream(cpmFile.readNet());
+		try {
+			Files.copy(bis, Paths.get(nativeFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // try
+
+		System.out.printf("[DiskUtility.fileExport] CPM file: %15s nativeFile: %s%n", fileName, nativeFile);
+	}// fileExport
+
+	public void fileInport() {
+		boolean deleteFile = false;
+
+		String fileName = ((String) cbCpmFileInOut.getSelectedItem()).toUpperCase();
+		cbCpmFileInOut.setSelectedItem(fileName);
+		
+		if (fileCpmModel.exists(fileName)) {
+			int ans = JOptionPane.showConfirmDialog(null, "File Exits, Do you want to overwrite?",
+					"Copying a Native File to a CPM file", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+			if (ans == JOptionPane.NO_OPTION) {
+				return;
+			} // if
+			deleteFile = true;
+		} // if
+		
+		// do we have enough space on the CP/M disk to do this?
+		if (!enoughSpaceOnCPM(deleteFile,fileName)) {
+			return;
+		}// if - space
+		if (deleteFile) {
+			directory.deleteFile(fileName);
+		}//if
+
+		// now we have all the pieces needed to actually move the file
+		// now we need to get a directory entry and some storage for the file
+		
+		 ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		//ByteArrayInputStream bis = new ByteArrayInputStream(cpmFile.readNet());
+		try {
+			Files.copy(Paths.get(nativeFile.getAbsolutePath()),bos);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // try
+		
+		byte[] dataToWrite = bos.toByteArray();
+		
+		CPMFile newFile = CPMFile.createCPMFile(diskDrive, directory, fileName);
+		boolean result = newFile.writeNewFile(dataToWrite);
+		
+		// need the two display... methods run on different threads
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				displayPhysicalSector(0); // Physical View
+			}// run
+		});
+		displayDirectoryView(); // Directory View
+		// need the two display... methods run on different threads
+
+		
+		
+		System.out.printf("[DiskUtility.fileInport] CPM file: %s, nativeFile: %s%n\tdeleteFile: %s, writeNewFile: %s%n",
+				fileName, nativeFile,deleteFile,result);
+		
+	}// fileInport
+	//...............................................................
+	private boolean enoughSpaceOnCPM(boolean deleteFile,String fileName) {
+		int blocksNeeded = (int) Math.ceil(nativeFile.length() / (float) diskMetrics.getBytesPerBlock());	
+		int availableBlocks = directory.getAvailableBlockCount();
+		if(availableBlocks > blocksNeeded){
+			return true;
+		}//
+		availableBlocks = deleteFile ? availableBlocks + directory.getFileBlocksCount(fileName) : availableBlocks;
+		boolean result = true;
+		
+		if (blocksNeeded > directory.getAvailableBlockCount()) {
+			String msg = String.format("Not enough space on CPM disk%n"
+					+ "Blocks Available: %,d -Blocks  Need: %,d", availableBlocks, blocksNeeded);
+			JOptionPane.showMessageDialog(null, msg, "Copying a file to CPM", JOptionPane.WARNING_MESSAGE);
+			result = false;
+		}// if
+		return result;
+	}// enoughSpaceOnCPM
+		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 	// ---File View------------------------------
 	private void displaySelectedFile() {
 
 		System.out.printf("[displaySelectedFile] panelFileHex.isDataChanged(): %s%n", panelFileHex.isDataChanged());
 
-		if (dirtyFile) {
+		if (panelFileHex.isDataChanged()) {
 			byte[] changedData = panelFileHex.unloadData();
 			cpmFile.write(changedData);
 			lblDiskName.setForeground(Color.RED);
@@ -383,7 +492,7 @@ public class DiskUtility {
 		} // if
 		DirEntry de = (DirEntry) cbFileNames.getSelectedItem();
 		String fileName = de.fileName;
-		cpmFile = new CPMFile(diskDrive, directory, fileName);
+		cpmFile = CPMFile.getCPMFile(diskDrive, directory, fileName);
 
 		lblRecordCount.setText(String.format(radixFormat, cpmFile.getRecordCount()));
 		lblReadOnly.setVisible(cpmFile.isReadOnly());
@@ -393,78 +502,12 @@ public class DiskUtility {
 		if (cpmFile.getRecordCount() == 0) {
 			dataToDisplay = NO_FILE;
 		} else {
-			dataToDisplay = cpmFile.read();
+			dataToDisplay = cpmFile.readRaw();
 		} // if
 
 		panelFileHex.loadData(dataToDisplay);
 
 	}// displaySelectedFile
-
-	// private void displayCPMFile(String fileName) {
-	// CPMFile cpmFile = new CPMFile(diskDrive, directory, fileName);
-	// panelFileHex.loadData(cpmFile.read());
-	// }// displayCPMFile
-
-	// private void processSourceCPMFile(String sourceFileName, String
-	// targetFileName) {
-	//
-	// int recordCount = directory.getTotalRecordCount(sourceFileName);
-	// int actualNumberOfSectorsToRead =
-	// getActualNumberOfRecordsToRead(sourceFileName);
-	// if (recordCount < 1) {
-	// return;
-	// } // malformed directory entry
-	//
-	// ArrayList<Integer> sectors = getAllSectorsForFile(sourceFileName);
-	// lblRecordCount.setText(String.format(radixFormat, recordCount));
-	// lblReadOnly.setVisible(directory.isReadOnly(sourceFileName));
-	// lblSystemFile.setVisible(directory.isSystemFile(sourceFileName));
-	//
-	// ByteBuffer sourceData = ByteBuffer.allocate(actualNumberOfSectorsToRead *
-	// diskDrive.getBytesPerSector());
-	//
-	// int actualByteCount = recordCount * Disk.LOGICAL_SECTOR_SIZE;
-	//
-	// for (int i = 0; i < actualNumberOfSectorsToRead; i++) {
-	// diskDrive.setCurrentAbsoluteSector(sectors.get(i));
-	// sourceData.put(diskDrive.read());
-	// } // - for- i : each sector
-	//
-	// // sourceData.limit(actualByteCount);
-	// sourceData.rewind();
-	// byte[] fileData = new byte[actualByteCount];
-	// sourceData.get(fileData, 0, actualByteCount);
-	// panelFileHex.loadData(fileData);
-	//
-	// }// processSourceCPMFile
-	//
-	// private void processSourceCPMFile(String sourceFileName) {
-	// processSourceCPMFile(sourceFileName, null);
-	// }// processSourceCPMFile
-
-	// private ArrayList<Integer> getAllSectorsForFile(String fileName) {
-	// ArrayList<Integer> blocks = directory.getAllAllocatedBlocks(fileName);
-	// ArrayList<Integer> sectors = new ArrayList<Integer>();
-	// int blockSectorStart = 0;
-	//
-	// int sectorsPerBlock = diskMetrics.getSectorsPerBlock();
-	// int block0StartSector = diskMetrics.getDirectoryStartSector();
-	// for (int i = 0; i < blocks.size(); i++) {
-	// blockSectorStart = block0StartSector + (blocks.get(i) * sectorsPerBlock);
-	// for (int j = 0; j < sectorsPerBlock; sectors.add(blockSectorStart + j++))
-	// ;
-	// } // for - i
-	// return sectors;
-	// }// getAllSectorsForFile
-	//
-	// private int getActualNumberOfRecordsToRead(String fileName) {
-	// int recordCount = directory.getTotalRecordCount(fileName); // 128-byte
-	// // logical
-	// // records
-	// return ((recordCount - 1) / logicalRecordsPerSector) + 1; // Logical
-	// // Sectors
-	// // Per
-	// }// getActualNumberOfRecordsToRead
 
 	// ---File View------------------------------
 
@@ -609,9 +652,11 @@ public class DiskUtility {
 			} // if
 		} // for
 		cbFileNames.setModel(fileCpmModel);
-		cbCpmFileInOut.setModel(fileCpmModel);//
+		// cbCpmFileInOut.setModel(fileCpmModel);//
 		if (fileCpmModel.getSize() != 0) {
 			cbFileNames.setSelectedIndex(0);
+			cbCpmFileInOut.setSelectedIndex(0);
+			//
 		} // if
 	}// fillDirectoryTable
 
@@ -619,7 +664,9 @@ public class DiskUtility {
 		if (entry.getActualExtentNumber() > 1) {
 			return; // only want one entry per file [0 or 1]
 		} // if
-		fileCpmModel.add(new DirEntry(entry.getNameAndTypePeriod(), index));
+		String entryName = entry.getNameAndTypePeriod();
+		fileCpmModel.add(new DirEntry(entryName, index));
+		cbCpmFileInOut.addItem(entryName);
 	}// fillFileChoosers
 
 	// ---Directory View-------------------------
@@ -688,7 +735,7 @@ public class DiskUtility {
 	}// selectedNewPhysicalSector
 
 	private void displayPhysicalSector(int absoluteSector) {
-		if ((0 > absoluteSector) | (diskDrive.getTotalSectorsOnDisk() < absoluteSector)) {
+		if ((0 > absoluteSector) || (diskDrive.getTotalSectorsOnDisk() < absoluteSector)) {
 			absoluteSector = 0;
 		} // if
 
@@ -818,43 +865,42 @@ public class DiskUtility {
 		} // if
 		System.exit(0);
 	}// appClose
-	
-/**
- * removes any old temporary files from prior runs of the program
- */
+
+	/**
+	 * removes any old temporary files from prior runs of the program
+	 */
 	private void cleanUpOldFiles() {
 		String strTempDir = System.getenv(TEMP_EV);
 		File tempDir = new File(strTempDir);
 		String[] tempFiles = tempDir.list(new PrefixFilter(TEMP_PREFIX));
-		
+
 		String tempFullPath;
-		for(String tempFile:tempFiles){
-			tempFullPath = strTempDir + FILE_SEPARTOR +  tempFile;
+		for (String tempFile : tempFiles) {
+			tempFullPath = strTempDir + FILE_SEPARTOR + tempFile;
 			try {
 				boolean wasDeleted = Files.deleteIfExists(Paths.get(tempFullPath));
-				System.out.printf("[DiskUtility.cleanUpOldFiles] wasDeleted %-10s  %s%n", wasDeleted,tempFullPath);
+				System.out.printf("[DiskUtility.cleanUpOldFiles] wasDeleted %-10s  %s%n", wasDeleted, tempFullPath);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-		}//for
-	}//cleanUpOldFiles
-	//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+			} // try
+		} // for
+	}// cleanUpOldFiles
+		// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 	class PrefixFilter implements FilenameFilter {
-		  String prefix;
+		String prefix;
 
-		  public PrefixFilter(String prefix) {
-		    this.prefix = prefix;
-		  }//Constructor
+		public PrefixFilter(String prefix) {
+			this.prefix = prefix;
+		}// Constructor
 
-		  public boolean accept(File dir, String name) {
-			  boolean yes = name.startsWith(prefix);
-			    return yes;
-			   // return name.endsWith(ext);
-		  }//accept
-		}//class PrefixFilter
-	//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
+		public boolean accept(File dir, String name) {
+			boolean yes = name.startsWith(prefix);
+			return yes;
+			// return name.endsWith(ext);
+		}// accept
+	}// class PrefixFilter
+	// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	private void appInit0() {
 		diskUtilityAdapter = new DiskUtilityAdapter();
@@ -872,7 +918,7 @@ public class DiskUtility {
 		hdNumberBoxs.add(hdnTrack);
 		hdNumberBoxs.add(hdnSector);
 		hdNumberBoxs.add(hdSeekPanel);
-		
+
 		cleanUpOldFiles();
 
 		// setDisplayRadix();
@@ -934,15 +980,16 @@ public class DiskUtility {
 		toolBar.add(tbDecimalDisplay);
 
 		JButton btnNewButton = new JButton("New button");
+		btnNewButton.setVisible(false);
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				try {
-					File tempFile = File.createTempFile("diskUtility", ".tmp");
-					System.out.printf("[DiskUtility.btnNewButton] Temp File: %s%n", tempFile.getAbsolutePath());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				
+//				try {
+//					File tempFile = File.createTempFile("diskUtility", ".tmp");
+//					System.out.printf("[DiskUtility.btnNewButton] Temp File: %s%n", tempFile.getAbsolutePath());
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				} // try
 			}
 		});
 		toolBar.add(btnNewButton);
@@ -1983,9 +2030,9 @@ public class DiskUtility {
 
 	// ---------------------------------------------------------------
 
-	public class DiskUtilityAdapter implements ActionListener, FocusListener, HDNumberValueChangeListener {
-
-		// ------ActionListener
+	public class DiskUtilityAdapter implements ActionListener, HDNumberValueChangeListener {
+		// FocusListener, ?
+		// ------ActionListener,
 		@Override
 		public void actionPerformed(ActionEvent actionEvent) {
 			Object source = actionEvent.getSource();
@@ -1994,7 +2041,7 @@ public class DiskUtility {
 			switch (name) {
 			// Menus
 			case MNU_DISK_NEW_DISK:
-				 diskNew();
+				diskNew();
 				break;
 			case MNU_DISK_LOAD_DISK:
 				diskLoad();
@@ -2014,8 +2061,10 @@ public class DiskUtility {
 
 			// Buttons
 			case BTN_IMPORT:
+				fileInport();
 				break;
 			case BTN_EXPORT:
+				fileExport();
 				break;
 			case BTN_NATIVE_FILE:
 				getNativeFile();
@@ -2051,19 +2100,19 @@ public class DiskUtility {
 		}// actionPerformed
 			// ------ActionListener
 
-		// ------FocusListener
-
-		@Override
-		public void focusLost(FocusEvent focusEvent) {
-
-		}// focusLost
-
-		@Override
-		public void focusGained(FocusEvent arg0) {
-			// TODO Auto-generated method stub
-
-		}// focusGained
-			// ------FocusListener
+		// // ------FocusListener
+		//
+		// @Override
+		// public void focusLost(FocusEvent focusEvent) {
+		//
+		// }// focusLost
+		//
+		// @Override
+		// public void focusGained(FocusEvent arg0) {
+		// // do nothing
+		//
+		// }// focusGained
+		// // ------FocusListener
 
 		// ------valueChanged
 

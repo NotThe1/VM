@@ -45,4 +45,15 @@ class FileCpmModel extends AbstractListModel implements ComboBoxModel {
 			selection = new DirEntry((String) arg0, -1);
 		}// if
 	}// setSelectedItem
+	
+	public boolean exists(String fileName){
+		boolean ans = false;
+		for(DirEntry de:modelItemList){
+			if(de.fileName.equals(fileName)){
+				ans = true;
+				break;
+			}//if
+		}//for
+		return ans;
+	}//exists
 }// class FileCpmModel

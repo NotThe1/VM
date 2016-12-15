@@ -96,7 +96,12 @@ public abstract class HexEditPanelBase extends JPanel
 		currentLineStart = 0;
 		prepareDoc(doc, (long) sourceSize);
 
-		fillPane();
+//		fillPane();
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				fillPane();
+			}// run
+		});
 		
 		calcHexMetrics(sourceSize);
 		setNavigationFilter(doc);

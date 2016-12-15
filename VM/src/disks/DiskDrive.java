@@ -225,7 +225,7 @@ public class DiskDrive {
 
 	public boolean setCurrentAbsoluteSector(int head, int track, int sector) {
 		boolean setCurrentAbsoluteSector = false;
-		if (validateHead(head) & validateSector(sector) & validateTrack(track)) {
+		if (validateHead(head) && validateSector(sector) && validateTrack(track)) {
 			int absoluteSector = (sector - 1) + (head * this.sectorsPerTrack)
 					+ (track * this.sectorsPerTrack * this.heads);
 			if (validateAbsoluteSector(absoluteSector)) {
