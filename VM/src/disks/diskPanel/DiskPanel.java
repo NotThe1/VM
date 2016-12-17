@@ -1,16 +1,17 @@
 package disks.diskPanel;
 
-import java.awt.GridBagLayout;
-
-import javax.swing.JPanel;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.TitledBorder;
 import java.awt.Color;
 import java.awt.Font;
-import javax.swing.border.LineBorder;
+
 import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+
+import hardware.Machine8080.DiskPanelAdapter;
 
 public class DiskPanel extends JPanel {
 	private JPanel panelDisksAB;
@@ -28,11 +29,11 @@ public class DiskPanel extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	public DiskPanel() {
-		DiskPanelAdapter diskDisplayAdapter = new DiskPanelAdapter();
+	public DiskPanel(DiskPanelAdapter diskPanelAdapter) {
+//		DiskPanelAdapter diskDisplayAdapter = new DiskPanelAdapter();
 		
 		
-		
+
 		//------------------
 		setFont(new Font("Tahoma", Font.PLAIN, 14));
 		setBorder(new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null), "Disks", TitledBorder.CENTER, TitledBorder.BELOW_TOP, null, new Color(0, 0, 255)));
@@ -59,7 +60,7 @@ public class DiskPanel extends JPanel {
 		txtDiskA = new JTextField();
 		txtDiskA.setEditable(false);
 		txtDiskA.setName(TXT_DISK_A);
-		txtDiskA.addMouseListener(diskDisplayAdapter);
+		txtDiskA.addMouseListener(diskPanelAdapter);
 		txtDiskA.setToolTipText(NO_DISK_HELP);
 		txtDiskA.setText(NO_DISK);
 		txtDiskA.setHorizontalAlignment(SwingConstants.CENTER);
@@ -70,7 +71,7 @@ public class DiskPanel extends JPanel {
 		txtDiskB = new JTextField();
 		txtDiskB.setEditable(false);
 		txtDiskB.setName(TXT_DISK_B);
-		txtDiskB.addMouseListener(diskDisplayAdapter);
+		txtDiskB.addMouseListener(diskPanelAdapter);
 		txtDiskB.setToolTipText(NO_DISK_HELP);
 		txtDiskB.setText(NO_DISK);
 		txtDiskB.setHorizontalAlignment(SwingConstants.CENTER);
@@ -99,7 +100,7 @@ public class DiskPanel extends JPanel {
 		txtDiskC = new JTextField();
 		txtDiskC.setEditable(false);
 		txtDiskC.setName(TXT_DISK_C);
-		txtDiskC.addMouseListener(diskDisplayAdapter);
+		txtDiskC.addMouseListener(diskPanelAdapter);
 		txtDiskC.setToolTipText(NO_DISK_HELP);
 		txtDiskC.setText(NO_DISK);
 		txtDiskC.setHorizontalAlignment(SwingConstants.CENTER);
@@ -110,7 +111,7 @@ public class DiskPanel extends JPanel {
 		txtDiskD = new JTextField();
 		txtDiskD.setEditable(false);
 		txtDiskD.setName(TXT_DISK_D);
-		txtDiskD.addMouseListener(diskDisplayAdapter);
+		txtDiskD.addMouseListener(diskPanelAdapter);
 		txtDiskD.setToolTipText(NO_DISK_HELP);
 		txtDiskD.setText(NO_DISK);
 		txtDiskD.setHorizontalAlignment(SwingConstants.CENTER);
@@ -119,9 +120,9 @@ public class DiskPanel extends JPanel {
 		panelDisksCD.add(txtDiskD);
 	}//Constructor
 	public static final String NO_DISK = "<No Disk>";
-	private static final String NO_DISK_HELP = "Double click to mount a disk";
-	private static final String TXT_DISK_A = "txtDiskA";
-	private static final String TXT_DISK_B = "txtDiskB";
-	private static final String TXT_DISK_C = "txtDiskC";
-	private static final String TXT_DISK_D = "txtDiskD";
+	public static final String NO_DISK_HELP = "Double click to mount a disk";
+	public static final String TXT_DISK_A = "txtDiskA";
+	public static final String TXT_DISK_B = "txtDiskB";
+	public static final String TXT_DISK_C = "txtDiskC";
+	public static final String TXT_DISK_D = "txtDiskD";
 }//class DiskDisplay

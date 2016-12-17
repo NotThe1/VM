@@ -11,38 +11,50 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-//import java.lang.reflect.InvocationTargetException;
 import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
+import disks.DiskControlUnit;
 import disks.diskPanel.DiskPanel;
+import disks.utility.DiskUtility;
 import memory.Core;
+import memory.MemoryLoaderFromFile;
+import utilities.FilePicker;
 import utilities.hexEdit.HexEditPanelConcurrent;
 import utilities.inLineDissembler.InLineDisassembler;
 
-public class Machine8080 implements ActionListener {
+public class Machine8080 {
 
 	private Machine8080MenuAdapter menuAdapter;
+	private Machine8080ActionAdapter actionAdapter;
+	private DiskPanelAdapter diskPanelAdapter;
 	private DiskPanel diskDisplay;
 	private StateDisplay stateDisplay;
 	// private Core core = Core.getInstance();
 	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
+	private DiskControlUnit diskControlUnit = DiskControlUnit.getgetInstance();
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
 	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
 	private JFrame frmMachine;
@@ -63,21 +75,6 @@ public class Machine8080 implements ActionListener {
 		});
 	}// main
 		// -------------------------------------------------------------------
-
-	@Override
-	public void actionPerformed(ActionEvent actionEvent) {
-		String name = ((Component) actionEvent.getSource()).getName();
-		switch (name) {
-		case BTN_STEP:
-			doStep();
-			break;
-		case BTN_RUN:
-			doRun();
-			break;
-		default:
-			assert false : name + " is not a valid button name";
-		}// switch name
-	}// actionPerformed
 
 	private void doStep() {
 		System.out.println("actionPerformed: doStep");
@@ -118,6 +115,29 @@ public class Machine8080 implements ActionListener {
 		disassembler.updateDisplay();
 	}// updateView
 
+	private void addDisk(JTextField source, int diskNumber) {
+		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
+				"F8SS", "F8DS");
+		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+			System.out.println("Bailed out of the open");
+			return;
+		} // if
+		if (!fc.getSelectedFile().exists()) {
+			return; // try again
+		} //
+		if (diskControlUnit.addDiskDrive(diskNumber, fc.getSelectedFile().getAbsolutePath())) {
+			source.setText(fc.getSelectedFile().getName());
+			source.setToolTipText(fc.getSelectedFile().getAbsolutePath());
+		}//if added 
+		
+	}// addDisk
+
+	private void removeDisk(JTextField source, int diskNumber) {
+		diskControlUnit.removeDiskDrive(diskNumber);
+		source.setText(DiskPanel.NO_DISK);
+		source.setToolTipText(DiskPanel.NO_DISK_HELP);
+	}// remove disk
+
 	// -------------------------------------------------------------------
 	private void appClose() {
 		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
@@ -132,6 +152,8 @@ public class Machine8080 implements ActionListener {
 
 	private void appInit0() {
 		menuAdapter = new Machine8080MenuAdapter();
+		actionAdapter = new Machine8080ActionAdapter();
+		diskPanelAdapter = new DiskPanelAdapter();
 	}// appInit0
 
 	private void appInit() {
@@ -141,7 +163,7 @@ public class Machine8080 implements ActionListener {
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 		hexEditPanelConcurrent.loadData(Core.getInstance().getStorage());
-		menuAdapter.setHexPanel( hexEditPanelConcurrent);
+		// menuAdapter.setHexPanel( hexEditPanelConcurrent);
 		EventQueue.invokeLater(disassembler);
 		// disassembler.updateDisplay();
 
@@ -211,6 +233,11 @@ public class Machine8080 implements ActionListener {
 		JMenu mnuTools = new JMenu("Tools");
 		menuBar.add(mnuTools);
 
+		JMenuItem mnuToolsDiskUtility = new JMenuItem("Disk Utility");
+		mnuToolsDiskUtility.setName(MNU_DISK_UTILITY);
+		mnuToolsDiskUtility.addActionListener(menuAdapter);
+		mnuTools.add(mnuToolsDiskUtility);
+
 		JMenu mnuWindows = new JMenu("Windows");
 		menuBar.add(mnuWindows);
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -250,7 +277,7 @@ public class Machine8080 implements ActionListener {
 		gbc_panelDisks.gridy = 0;
 		panelMiddle.add(panelDisks, gbc_panelDisks);
 
-		diskDisplay = new DiskPanel();
+		diskDisplay = new DiskPanel(diskPanelAdapter);
 		diskDisplay.setPreferredSize(new Dimension(275, 300));
 		diskDisplay.setBounds(5, 5, 275, 300);
 		panelDisks.add(diskDisplay);
@@ -378,13 +405,13 @@ public class Machine8080 implements ActionListener {
 		btnStep.setContentAreaFilled(false);
 		btnStep.setOpaque(true);
 		btnStep.setName(BTN_STEP);
-		btnStep.addActionListener(this);
+		btnStep.addActionListener(actionAdapter);
 		btnStep.setBounds(44, 60, 71, 63);
 		panel.add(btnStep);
 
 		btnRun1 = new JToggleButton();
 		btnRun1.setName(BTN_RUN);
-		btnRun1.addActionListener(this);
+		btnRun1.addActionListener(actionAdapter);
 		btnRun1.setContentAreaFilled(false);
 		btnRun1.setBorder(null);
 		btnRun1.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
@@ -418,6 +445,187 @@ public class Machine8080 implements ActionListener {
 		panelStatus.setLayout(gbl_panelStatus);
 	}// initialize
 
+	/* classes */
+	/* ............................. */
+	protected class Machine8080ActionAdapter implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent actionEvent) {
+			String name = ((Component) actionEvent.getSource()).getName();
+			switch (name) {
+			case BTN_STEP:
+				doStep();
+				break;
+			case BTN_RUN:
+				doRun();
+				break;
+			default:
+				assert false : name + " is not a valid button name";
+			}// switch name
+		}// actionPerformed
+	}// class Machine8080ActionAdapter
+	/* ............................. */
+
+	/* ............................. */
+	protected class Machine8080MenuAdapter implements ActionListener {
+		// private HexEditPanelConcurrent hexEditPanelConcurrent;
+		//
+		// public void setHexPanel(HexEditPanelConcurrent hexEditPanelConcurrent) {
+		// this.hexEditPanelConcurrent = hexEditPanelConcurrent;
+		// }//
+
+		@Override
+		public void actionPerformed(ActionEvent actionEvent) {
+			System.out.println("actionPerformed");
+			JMenuItem sourceMenu = null;
+			String sourceName = null;
+
+			if (actionEvent.getSource() instanceof JMenuItem) {
+				sourceMenu = (JMenuItem) actionEvent.getSource();
+				sourceName = sourceMenu.getName();
+			} // if JMenuItem
+
+			switch (sourceName) {
+			case Machine8080.MNU_MEMORY_LOAD_FROM_FILE:
+				doMemoryLoadFromFile(actionEvent);
+				EventQueue.invokeLater(hexEditPanelConcurrent);
+				InLineDisassembler.getInstance().refreshDisplay();
+				break;
+			case Machine8080.MNU_CLEAR_ALL_FILES:
+				removeAllFileItems((JPopupMenu) sourceMenu.getParent());
+				break;
+			case Machine8080.MNU_CLEAR_SELECTED_FILES:
+				removeSelectedFileItems((JPopupMenu) sourceMenu.getParent());
+				break;
+			case Machine8080.MNU_DISK_UTILITY:
+				Thread diskUtility = new Thread(new DiskUtility());
+				diskUtility.start();
+				break;
+			default:
+				assert false : sourceName + " is not a valid menu item\n";
+			}// Switch sourceName
+		}// actionPerformed
+
+		private void doMemoryLoadFromFile(ActionEvent actionEvent) {
+			JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
+			if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+				System.out.println("Bailed out of the open");
+				return;
+			} // if - open
+			String fileName = MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
+			System.out.printf("FileName: %s%n", fileName);
+
+			JMenuItem sourceMenu = (JMenuItem) actionEvent.getSource();
+			appendMenuItem(fileName, (JPopupMenu) sourceMenu.getParent());
+
+			// InLineDisassembler.getInstance().updateDisplay();
+
+		}// doMemoryLoadFromFile
+			// ----------------------------------
+
+		private void appendMenuItem(String name, JPopupMenu parentMenu) {
+
+			for (int i = parentMenu.getComponentCount() - 1; i > 0; i--) {
+				if (!(parentMenu.getComponent(i) instanceof JCheckBoxMenuItem)) {
+					continue;
+				} // if right type
+				if (((JCheckBoxMenuItem) parentMenu.getComponent(i)).getName().equals(name)) {
+					return;
+				} // if
+			} // for do we already have it?
+
+			JCheckBoxMenuItem mnuNew = new JCheckBoxMenuItem(name);
+			mnuNew.setName(name);
+			mnuNew.setActionCommand(name);
+			parentMenu.add(mnuNew);
+
+		}// appendMenuItem
+
+		private void removeSelectedFileItems(JPopupMenu parentMenu) {
+			for (int i = parentMenu.getComponentCount() - 1; i > 0; i--) {
+				if (!(parentMenu.getComponent(i) instanceof JCheckBoxMenuItem)) {
+					continue;
+				} // if right type
+				if (((JCheckBoxMenuItem) parentMenu.getComponent(i)).isSelected()) {
+					parentMenu.remove(i);
+				} // if do we remove it?
+			} // for
+
+		}// removeSelectedFileItem
+
+		private void removeAllFileItems(JPopupMenu parentMenu) {
+			for (int i = parentMenu.getComponentCount() - 1; i > 0; i--) {
+				if (parentMenu.getComponent(i) instanceof JCheckBoxMenuItem) {
+					parentMenu.remove(i);
+				} // if right type
+			} // for
+		}// removeMenuItem
+
+	}// class Machine8080MenuAdapter.actionPerformed
+	/* ............................. */
+	/* ............................. */
+
+	public class DiskPanelAdapter implements MouseListener {
+
+		@Override
+		public void mouseClicked(MouseEvent mouseEvent) {
+			if (mouseEvent.getClickCount() >= 2) {
+				JTextField source = (JTextField) mouseEvent.getComponent();
+				int index = getIndex(source);
+				if (source.getText().equals(DiskPanel.NO_DISK)) {
+					addDisk(source, index);
+				} else {
+					removeDisk(source, index);
+				} // if no disk
+			} // if 2 or more
+
+		}// mouseClicked
+
+		private int getIndex(JTextField source) {
+			int index = 0;
+			String name = source.getName();
+			switch (name) {
+			case DiskPanel.TXT_DISK_A:
+				index = 0;
+				break;
+			case DiskPanel.TXT_DISK_B:
+				index = 1;
+				break;
+			case DiskPanel.TXT_DISK_C:
+				index = 2;
+				break;
+			case DiskPanel.TXT_DISK_D:
+				index = 3;
+				break;
+			}// switch
+			return index;
+		}// getIndex
+
+		@Override
+		public void mouseEntered(MouseEvent arg0) {
+			// TODO Auto-generated method stub
+		}// mouseEntered
+
+		@Override
+		public void mouseExited(MouseEvent arg0) {
+			// TODO Auto-generated method stub
+		}// mouseExited
+
+		@Override
+		public void mousePressed(MouseEvent arg0) {
+			// TODO Auto-generated method stub
+		}// mousePressed
+
+		@Override
+		public void mouseReleased(MouseEvent arg0) {
+			// TODO Auto-generated method stub
+		}// mouseReleased
+
+	}// DiskDisplayAdapter
+	/* ............................. */
+
+	/* classes */
+
 	public static final String BTN_STEP = "btnStep";
 	public static final String BTN_RUN = "btnRun";
 	// public static final String BTN_RUN_TEXT = "Run";
@@ -430,6 +638,7 @@ public class Machine8080 implements ActionListener {
 
 	public static final String MNU_CLEAR_ALL_FILES = "mnuClearAllFiles";
 	public static final String MNU_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
+	public static final String MNU_DISK_UTILITY = "mnuToolsDiskUtility";
 
 	private JPanel panelMiddle;
 	private JPanel panelDisks;

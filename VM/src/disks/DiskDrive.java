@@ -53,7 +53,7 @@ public class DiskDrive {
 			fileLocalName = file.getName();
 
 		} catch (IOException e) {
-			fireVDiskError((long) 1, "Physical I/O error" + e.getMessage());
+			fireVDiskError((long) 1, ERR_IO + e.getMessage());
 			System.err.printf("Physical I/O error - %s%n", e.getMessage());
 		} // try
 		readSector = new byte[bytesPerSector];
@@ -88,7 +88,7 @@ public class DiskDrive {
 	private void resolveDiskType(String drive) {
 		String[] fileNameComponents = drive.split("\\.");
 		if (fileNameComponents.length != 2) {
-			fireVDiskError((long) 0, "Bad Disk - " + drive);
+			fireVDiskError((long) 0, ERR_DISK + drive);
 			return;
 		} // if
 		String fileExtension = fileNameComponents[1]; // have the file extension
@@ -152,7 +152,7 @@ public class DiskDrive {
 	public void write(byte[] sector) {
 		writeSector.clear();
 		if (sector.length != bytesPerSector) {
-			fireVDiskError((long) sector.length, "Wrong sized sector");
+			fireVDiskError((long) sector.length, ERR_SECTOR_SIZE);
 		} else {
 			setSectorPosition();
 			disk.put(sector);
@@ -244,7 +244,7 @@ public class DiskDrive {
 		// between 0 and heads-1
 		if (!((head >= 0) & (head < heads))) {
 			homeHeads();
-			fireVDiskError((long) head, "Bad head");
+			fireVDiskError((long) head, ERR_HEAD);
 			validateHead = false;
 		} // if
 		return validateHead;
@@ -255,7 +255,7 @@ public class DiskDrive {
 		// between 0 and tracksPerHead-1
 		if (!((track >= 0) & (track < tracksPerHead))) {
 			homeHeads();
-			fireVDiskError((long) track, "Bad track");
+			fireVDiskError((long) track, ERR_TRACK);
 			validateTrack = false;
 		} // if
 		return validateTrack;
@@ -266,7 +266,7 @@ public class DiskDrive {
 		boolean validateSector = true;
 		if (!((sector > 0) & (sector <= sectorsPerTrack))) {
 			homeHeads();
-			fireVDiskError((long) sector, "Bad Sector");
+			fireVDiskError((long) sector, ERR_SECTOR);
 			validateSector = false;
 		} // if
 		return validateSector;
@@ -277,7 +277,7 @@ public class DiskDrive {
 		boolean validateAbsoluteSector = true;
 		if (!((absoluteSector >= 0) & (absoluteSector < totalSectorsOnDisk))) {
 			homeHeads();
-			fireVDiskError((long) absoluteSector, "Bad absoluteSector");
+			fireVDiskError((long) absoluteSector, ERR_ABSOLUTE_SECTOR);
 			validateAbsoluteSector = false;
 		} // if
 		return validateAbsoluteSector;
@@ -316,5 +316,14 @@ public class DiskDrive {
 		} // for
 
 	}// fireVDsikError
+	
+	private static final String ERR_TRACK = "Invalid Track";
+	private static final String ERR_HEAD = "Invalid Head";
+	private static final String ERR_SECTOR = "Invalid Sector";
+	private static final String ERR_ABSOLUTE_SECTOR = "Invalid Absolute Sector";
+	private static final String ERR_DISK = "Invalid Disk - ";
+	private static final String ERR_SECTOR_SIZE = "Write buffer size does not match disk sector size";
+	private static final String ERR_IO = "Physical I/O Error - ";
+	
 
 }// MyDiskDrive

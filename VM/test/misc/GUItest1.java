@@ -1,11 +1,16 @@
 package misc;
 
-import hardware.RoundIcon1;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -14,33 +19,17 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-
-import codeSupport.TableMaker;
-
-import javax.swing.JMenuBar;
-
-import java.awt.GridBagLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import javax.swing.JComboBox;
-
-import java.awt.GridBagConstraints;
-
-import javax.swing.JMenu;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
 import javax.swing.JLabel;
-
-import java.awt.Insets;
-
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 
+import disks.DiskMetrics;
+import hardware.RoundIcon1;
 import utilities.FilePicker;
 
 
@@ -106,6 +95,8 @@ public class GUItest1 extends Observable{
 		Set<String> insKeys = baseInstructions.keySet();
 		baseInstructionModel = new DefaultComboBoxModel<>(insKeys.toArray((new String[insKeys.size()])));
 		cbIns.setModel(baseInstructionModel);
+		DiskMetrics test = DiskMetrics.getDiskMetric("F5DD");
+		int a = 0;
 //		watchButtons = new WatchButtons();
 		
 //		window.addObserver(watchButtons);

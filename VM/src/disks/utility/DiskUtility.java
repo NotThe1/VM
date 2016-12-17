@@ -75,7 +75,7 @@ import utilities.hdNumberBox.HDNumberValueChangeListener;
 import utilities.hdNumberBox.HDSeekPanel;
 import utilities.hexEdit.HexEditPanelSimple;
 
-public class DiskUtility {
+public class DiskUtility implements Runnable {
 
 	File testDisk;
 
@@ -926,6 +926,13 @@ public class DiskUtility {
 		manageFileMenus(MNU_DISK_CLOSE);
 		// panelSectorDisplay.loadData(NO_FILE);
 	}// appInit
+	
+	@Override
+	public void run() {
+		String[] param = new String[] {"arg0","arg1"};
+		main(param);
+		
+	}
 
 	/**
 	 * Create the application.
@@ -2268,5 +2275,7 @@ public class DiskUtility {
 			showDirectoryDetail(dirTable.getSelectedRow());
 		}// valueChanged
 	}// class RowListener
+
+
 
 }// class DiskUtility
