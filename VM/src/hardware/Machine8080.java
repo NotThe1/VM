@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 import javax.swing.ImageIcon;
@@ -22,6 +23,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -36,6 +38,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
+import disks.DCUActionEvent;
+import disks.DCUActionListener;
 import disks.DiskControlUnit;
 import disks.diskPanel.DiskPanel;
 import disks.utility.DiskUtility;
@@ -128,9 +132,55 @@ public class Machine8080 {
 		if (diskControlUnit.addDiskDrive(diskNumber, fc.getSelectedFile().getAbsolutePath())) {
 			source.setText(fc.getSelectedFile().getName());
 			source.setToolTipText(fc.getSelectedFile().getAbsolutePath());
-		}//if added 
-		
+		} // if added
 	}// addDisk
+	
+	private void doDiskEffects(int diskIndex,int actionType){
+		 JLabel target = diskDisplay.lblA;	// default
+		switch(diskIndex){
+		case 0:
+			target = diskDisplay.lblA;
+			break;
+		case 1:
+			target = diskDisplay.lblB;
+			break;
+		case 2:
+			target = diskDisplay.lblC;
+			break;
+		case 3:
+			target = diskDisplay.lblD;
+			break;
+		}//switch
+		
+		Blink blink = new Blink(target,Color.RED);
+		Thread thread = new Thread(blink);
+		thread.start();
+	
+		
+		
+		
+	}//doDiskEffects
+	
+	public class Blink implements Runnable{
+		JLabel label;
+		Color color;
+		public Blink(JLabel label,Color color){
+			this.label= label;
+			this.color=color;
+		}//Constructor
+		@Override
+		public void run() {
+			label.setForeground(color);
+			try {
+				TimeUnit.MILLISECONDS.sleep(400);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}//try
+			label.setForeground(Color.BLACK);
+		}//run
+		
+	}//class blink
 
 	private void removeDisk(JTextField source, int diskNumber) {
 		diskControlUnit.removeDiskDrive(diskNumber);
@@ -310,6 +360,15 @@ public class Machine8080 {
 		stateDisplay.setBounds(5, 5, 600, 300);
 		panelStateDisplay.add(stateDisplay);
 		stateDisplay.setLayout(null);
+		
+		JButton btnTest = new JButton("New button");
+		btnTest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				doDiskEffects(0,1);
+			}
+		});
+		btnTest.setBounds(925, 11, 89, 23);
+		panelTop.add(btnTest);
 
 		panelBottom = new JPanel();
 		panelBottom.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
@@ -565,7 +624,7 @@ public class Machine8080 {
 	/* ............................. */
 	/* ............................. */
 
-	public class DiskPanelAdapter implements MouseListener {
+	public class DiskPanelAdapter implements MouseListener, DCUActionListener {
 
 		@Override
 		public void mouseClicked(MouseEvent mouseEvent) {
@@ -620,6 +679,13 @@ public class Machine8080 {
 		public void mouseReleased(MouseEvent arg0) {
 			// TODO Auto-generated method stub
 		}// mouseReleased
+
+		/* DCU Actions */
+
+		@Override
+		public void dcuAction(DCUActionEvent dcuEvent) {
+			doDiskEffects(dcuEvent.getDiskIndex(), dcuEvent.getActionType());
+		}//dcuAction
 
 	}// DiskDisplayAdapter
 	/* ............................. */

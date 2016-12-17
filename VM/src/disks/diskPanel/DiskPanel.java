@@ -15,13 +15,13 @@ import hardware.Machine8080.DiskPanelAdapter;
 
 public class DiskPanel extends JPanel {
 	private JPanel panelDisksAB;
-	private JLabel lblA;
-	private JLabel lblB;
+	public JLabel lblA;
+	public JLabel lblB;
 	private JTextField txtDiskA;
 	private JTextField txtDiskB;
 	private JPanel panelDisksCD;
-	private JLabel lblC;
-	private JLabel lblD;
+	public JLabel lblC;
+	public JLabel lblD;
 	private JTextField txtDiskC;
 	private JTextField txtDiskD;
 	

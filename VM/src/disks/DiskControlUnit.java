@@ -3,6 +3,7 @@ package disks;
 import java.nio.ByteBuffer;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
@@ -30,8 +31,8 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 	private int currentByteCount;
 	private int currentDMAAddress;
 	private boolean goodOperation;
-	
-	private static DiskControlUnit instance = new DiskControlUnit(CpuBuss.getInstance(),4);
+
+	private static DiskControlUnit instance = new DiskControlUnit(CpuBuss.getInstance(), 4);
 
 	//
 	private DiskControlUnit(CpuBuss cpuBuss, int maxNumberOfDrives) {
@@ -39,7 +40,6 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 		this.ioBuss = IoBuss.getInstance();
 		cpuBuss.addObserver(this);
 		cpuBuss.addTrap(DISK_CONTROL_BYTE_5, Core.Trap.IO);
-		// cpuBuss.addTrap(DISK_CONTROL_BYTE_5, Core.Trap.IO);
 		this.maxNumberOfDrives = maxNumberOfDrives;
 		drives = new DiskDrive[maxNumberOfDrives];
 	}// Constructor
@@ -47,8 +47,8 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 	private DiskControlUnit(CpuBuss cpuBuss) {
 		this(cpuBuss, 4);
 	}// Constructor
-	
-	public static DiskControlUnit getgetInstance(){
+
+	public static DiskControlUnit getgetInstance() {
 		return instance;
 	}//
 
@@ -64,23 +64,24 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 	}// close
 
 	public boolean addDiskDrive(int index, String fileName) {
-		
+
 		if (drives[index] != null) {
 			JOptionPane.showMessageDialog(null, "Drive has disk already", "addDiskDrive", JOptionPane.WARNING_MESSAGE);
 			return false;
 		} // if
-		
-		for (DiskDrive d:drives){
-			if(d == null){
+
+		for (DiskDrive d : drives) {
+			if (d == null) {
 				continue;
-			}// if skip empty slots
-			
-			if(d.getFileAbsoluteName().equals(fileName)){
-				JOptionPane.showMessageDialog(null, " Disk is already Mounted", "addDiskDrive", JOptionPane.WARNING_MESSAGE);
-				return false;	
-			}//if - used 2X
-			
-		}//for
+			} // if skip empty slots
+
+			if (d.getFileAbsoluteName().equals(fileName)) {
+				JOptionPane.showMessageDialog(null, " Disk is already Mounted", "addDiskDrive",
+						JOptionPane.WARNING_MESSAGE);
+				return false;
+			} // if - used 2X
+
+		} // for
 		drives[index] = new DiskDrive(fileName);
 		drives[index].addVDiskErroListener(this);
 		return true;
@@ -172,6 +173,8 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 		if (!goodOperation) {
 			return; // return if any problems - don't do any I/O
 		} // if
+		
+		fireDCUAction(currentDrive,currentCommand); // notify the listeners
 
 		// ----- now get to work
 
@@ -204,7 +207,7 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 		} //
 		if (goodOperation) {
 			reportStatus((byte) 0X80, (byte) 00); // reset - operation is over
-		} //if 
+		} // if
 
 	}// update
 
@@ -213,7 +216,7 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 		diskErrorReport(ERROR_INVALID_SECTOR_DESIGNAMTOR, vdee.getMessage());
 		return;
 	}// vdiskError
-		
+
 	private void reportStatus(byte firstCode, byte secondCode) {
 		ioBuss.write(DISK_STATUS_BLOCK, firstCode);
 		ioBuss.write(DISK_STATUS_BLOCK + 1, secondCode);
@@ -240,7 +243,42 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 		System.out.printf("currentSector: %02X%n", currentSector);
 		System.out.printf("currentByteCount: %04X%n", currentByteCount);
 		System.out.printf("currentDMAAddress: %04X%n", currentDMAAddress);
-	}
+	}// debugShowControlTable
+
+	/* \/ Event Handling Routines \/ */
+
+	private Vector<DCUActionListener> dcuActionListeners = new Vector<DCUActionListener>();
+
+	public synchronized void addDCUActionListener(DCUActionListener dcuListener) {
+		if (dcuActionListeners.contains(dcuListener)) {
+			return; // Already has it
+		} // if
+		dcuActionListeners.addElement(dcuListener);
+	}// addVDiskErroListener
+
+	public synchronized void removeDCUActionListener(DCUActionListener dcuListener) {
+		dcuActionListeners.remove(dcuListener);
+	}// addVDiskErroListener
+
+	private void fireDCUAction(int diskIndex, int actionType) {
+		Vector<DCUActionListener> actionListeners;
+		synchronized (this) {
+			actionListeners = (Vector<DCUActionListener>) dcuActionListeners.clone();
+		} // sync
+		int size = actionListeners.size();
+		if (size == 0) {
+			return; // no listeners
+		} // if
+
+		DCUActionEvent dcuActionEvent = new DCUActionEvent(this, diskIndex, actionType);
+		for (int i = 0; i < size; i++) {
+			DCUActionListener listener = (DCUActionListener) actionListeners.elementAt(i);
+			listener.dcuAction(dcuActionEvent);
+		} // for
+
+	}// fireDCUAction
+
+	/* /\ Event Handling Routines /\ */
 
 	private static final int ERROR_NO_DISK = 10;
 	private static final int ERROR_INVALID_SECTOR_DESIGNAMTOR = 11;
