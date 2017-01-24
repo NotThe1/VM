@@ -1,21 +1,20 @@
 package misc;
 
-import hardware.ArithmeticUnit;
-import hardware.CalculateCC;
-import hardware.CentralProcessingUnit;
-import hardware.ConditionCodeRegister;
-
-import java.io.InputStream;
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
+import hardware.ArithmeticUnit;
+import hardware.CalculateCC;
+import hardware.ConditionCodeRegister;
+import ioSystem.serialPort.PortSetupDialog;
+import ioSystem.serialPort.SerialPortSettings;
+
 public class PlainTest {
 
 	public static void main(String[] args) {
-		test9();
+		test10();
+		// test9();
 		// test8();
 		// test7();
 		// test6();
@@ -24,19 +23,29 @@ public class PlainTest {
 		// test3();
 		// test2();
 		// test1();
+		System.exit(0);
 	}// main
+
+	public static void test10() {
+		SerialPortSettings serialPortSettings = new SerialPortSettings();
+//		serialPortSettings.setPortName("COM2");
+		PortSetupDialog name = new PortSetupDialog(serialPortSettings);
+		SerialPortSettings xx = name.showDialog();
+		System.out.printf("[PlainTest.main] xx.getPortName() %s%n", xx.getPortName());
+		System.out.printf("[PlainTest.main] serialPortSettings.getPortName() %s%n", serialPortSettings.getPortName());
+		name = new PortSetupDialog(xx);
+		name.showDialog();
+		// name.setVisible(true);
+
+	}// test10
 
 	public static void test9() {
 		final int buffSize = 16;
-		byte[] original = new byte[] { (byte) 0X00, (byte) 0X01, (byte) 0X02, (byte) 0X03,
-				(byte) 0X04, (byte) 0X05, (byte) 0X06, (byte) 0X07,
-				(byte) 0X08, (byte) 0X09, (byte) 0X0A, (byte) 0X0B,
-				(byte) 0X0C, (byte) 0X0D, (byte) 0X0E, (byte) 0X0F,
-				(byte) 0X10, (byte) 0X11, (byte) 0X12, (byte) 0X13,
-				(byte) 0X14, (byte) 0X15, (byte) 0X16, (byte) 0X17,
-				(byte) 0X18, (byte) 0X19, (byte) 0X1A, (byte) 0X1B,
-				(byte) 0X1C, (byte) 0X1D, (byte) 0X1E, (byte) 0X1F,
-				(byte) 0X20, (byte) 0X21, (byte) 0X22, (byte) 0X23 };
+		byte[] original = new byte[] { (byte) 0X00, (byte) 0X01, (byte) 0X02, (byte) 0X03, (byte) 0X04, (byte) 0X05,
+				(byte) 0X06, (byte) 0X07, (byte) 0X08, (byte) 0X09, (byte) 0X0A, (byte) 0X0B, (byte) 0X0C, (byte) 0X0D,
+				(byte) 0X0E, (byte) 0X0F, (byte) 0X10, (byte) 0X11, (byte) 0X12, (byte) 0X13, (byte) 0X14, (byte) 0X15,
+				(byte) 0X16, (byte) 0X17, (byte) 0X18, (byte) 0X19, (byte) 0X1A, (byte) 0X1B, (byte) 0X1C, (byte) 0X1D,
+				(byte) 0X1E, (byte) 0X1F, (byte) 0X20, (byte) 0X21, (byte) 0X22, (byte) 0X23 };
 		byte[] myBuff = new byte[buffSize];
 		int srcPos = 0;
 		int bytesToRead = buffSize;
@@ -48,11 +57,11 @@ public class PlainTest {
 
 			for (int i = 0; i < bytesToRead; i++) {
 				System.out.printf("i: %d, myBuff: %02X%n", i, myBuff[i]);
-			}// for
+			} // for
 			srcPos += bytesToRead;
-			bytesRemaining = originalNumberOfBytes- srcPos;
+			bytesRemaining = originalNumberOfBytes - srcPos;
 
-		}// while
+		} // while
 		System.out.printf("%nbytesToRead: % d%n", bytesToRead);
 
 	}
@@ -73,7 +82,7 @@ public class PlainTest {
 			strFileSize = String.format("%,.2f KB", (float) (value / 1024));
 		} else {
 			strFileSize = String.format("%,f MB", (float) (value / 1048576));
-		}// if
+		} // if
 
 		System.out.printf("%d:  %s%n", value, strFileSize);
 
@@ -98,10 +107,10 @@ public class PlainTest {
 		Deque<Integer> myStack = new ArrayDeque<Integer>();
 		for (int i = 0; i < 20; i++) {
 			myStack.push(i);
-		}// for
+		} // for
 		while (!myStack.isEmpty()) {
 			System.out.printf("Value = %d%n", myStack.pop());
-		}// while
+		} // while
 	}// test6
 
 	public static void test5() {
@@ -124,7 +133,8 @@ public class PlainTest {
 		String msg;
 		byte valueAns;
 		byte[] valueAcc = new byte[] { (byte) 0XF8, (byte) 0XF8, (byte) 0X10, (byte) 0X10, (byte) 0X00, (byte) 0X00 };
-		byte[] valueSource = new byte[] { (byte) 0X60, (byte) 0X61, (byte) 0X20, (byte) 0X21, (byte) 0X00, (byte) 0X01 };
+		byte[] valueSource = new byte[] { (byte) 0X60, (byte) 0X61, (byte) 0X20, (byte) 0X21, (byte) 0X00,
+				(byte) 0X01 };
 		// byte[] valueAns = new byte[] { (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF, (byte) 0XFF
 		// };
 
@@ -132,10 +142,10 @@ public class PlainTest {
 			isFlagSet = CalculateCC.isAuxCarrySub(valueAcc[i], valueSource[i], carryIn);
 			valueAns = au.subtract(valueAcc[i], valueSource[i]);
 			System.out.printf("au says %s.%n", ccr.isAuxilaryCarryFlagSet());
-			msg = String.format("AuxCarry %s, Acc: %02X, Source: %02X, Result: %02X .%n",
-					isFlagSet, valueAcc[i], valueSource[i], valueAns);
+			msg = String.format("AuxCarry %s, Acc: %02X, Source: %02X, Result: %02X .%n", isFlagSet, valueAcc[i],
+					valueSource[i], valueAns);
 			System.out.println(msg);
-		}// for i
+		} // for i
 
 	}// test4
 
@@ -154,8 +164,8 @@ public class PlainTest {
 				mem[(2 * i) + 1] = values[i];
 				System.out.printf("%2X %2X%n", opCode, values[i]);
 				i++;
-			}// for opCode
-		}// for i
+			} // for opCode
+		} // for i
 
 	}// /test 3
 
@@ -163,12 +173,12 @@ public class PlainTest {
 		for (int i = 0; i <= 0XFF; i++) {
 			byte opCode = (byte) i;
 
-			System.out.printf("opCode : %02X( %8s ) , Index45 = %d,, Index012 = %d, Index345 = %d%n",
-					i, Integer.toBinaryString(i), getIndex45(opCode), getIndex012(opCode), getIndex345(opCode));
+			System.out.printf("opCode : %02X( %8s ) , Index45 = %d,, Index012 = %d, Index345 = %d%n", i,
+					Integer.toBinaryString(i), getIndex45(opCode), getIndex012(opCode), getIndex345(opCode));
 			if ((i % 16) == 0) {
 				System.out.println();
 			}
-		}// for
+		} // for
 	}// test2
 
 	private static int getIndex45(byte opCode) {
@@ -188,7 +198,7 @@ public class PlainTest {
 		Random random = new Random();
 		for (int i = 0; i < 100; i++) {
 			System.out.printf(" i = %d, Value = %02X%n", i, random.nextInt(0XFFFF));
-		}// for
+		} // for
 	}// test1
 
 }

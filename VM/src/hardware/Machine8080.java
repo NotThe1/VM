@@ -15,6 +15,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.net.URL;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
@@ -216,6 +218,16 @@ public class Machine8080 {
 		// menuAdapter.setHexPanel( hexEditPanelConcurrent);
 		EventQueue.invokeLater(disassembler);
 		// disassembler.updateDisplay();
+		
+		/* get resources  */
+		Class thisClass = Machine8080.class;
+		btnStep.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Next-icon-48.png")));
+		btnRun1.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
+		btnRun1.setSelectedIcon(
+				new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
+		URL  rom = thisClass.getResource("/hardware/resources/ROM.mem");
+		MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
+		
 
 	}// appInit
 
@@ -459,7 +471,7 @@ public class Machine8080 {
 		panel.add(spinnerStepCount);
 
 		btnStep = new JButton();
-		btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
+//		btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
 		btnStep.setBorder(null);
 		btnStep.setContentAreaFilled(false);
 		btnStep.setOpaque(true);
@@ -473,9 +485,9 @@ public class Machine8080 {
 		btnRun1.addActionListener(actionAdapter);
 		btnRun1.setContentAreaFilled(false);
 		btnRun1.setBorder(null);
-		btnRun1.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
-		btnRun1.setSelectedIcon(
-				new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
+//		btnRun1.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
+//		btnRun1.setSelectedIcon(
+//				new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
 		btnRun1.setBounds(44, 181, 71, 71);
 		panel.add(btnRun1);
 
