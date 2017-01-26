@@ -45,6 +45,7 @@ import disks.DCUActionListener;
 import disks.DiskControlUnit;
 import disks.diskPanel.DiskPanel;
 import disks.utility.DiskUtility;
+import ioSystem.IOController;
 import memory.Core;
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
@@ -53,9 +54,9 @@ import utilities.inLineDissembler.InLineDisassembler;
 
 public class Machine8080 {
 
-	private Machine8080MenuAdapter menuAdapter;
-	private Machine8080ActionAdapter actionAdapter;
-	private DiskPanelAdapter diskPanelAdapter;
+	private Machine8080MenuAdapter menuAdapter = new Machine8080MenuAdapter();
+	private Machine8080ActionAdapter actionAdapter = new Machine8080ActionAdapter();
+	private DiskPanelAdapter diskPanelAdapter = new DiskPanelAdapter();
 	private DiskPanel diskDisplay;
 	private StateDisplay stateDisplay;
 	// private Core core = Core.getInstance();
@@ -63,7 +64,7 @@ public class Machine8080 {
 	private DiskControlUnit diskControlUnit = DiskControlUnit.getgetInstance();
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
 	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
-	private JFrame frmMachine;
+	private IOController ioController = IOController.getInstance();
 
 	/**
 	 * Launch the application.
@@ -101,7 +102,7 @@ public class Machine8080 {
 
 	private void doRunTimeError() {
 		System.out.println("doRunTimeError!");
-	}//
+	}// doRunTimeError
 
 	private void doRun() {
 		if (btnRun1.isSelected()) {
@@ -115,6 +116,10 @@ public class Machine8080 {
 			updateView();
 		} // if
 	}// doRun
+
+	private void doReset() {
+		loadROM();
+	}// doReset
 
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
@@ -136,10 +141,10 @@ public class Machine8080 {
 			source.setToolTipText(fc.getSelectedFile().getAbsolutePath());
 		} // if added
 	}// addDisk
-	
-	private void doDiskEffects(int diskIndex,int actionType){
-		 JLabel target = diskDisplay.lblA;	// default
-		switch(diskIndex){
+
+	private void doDiskEffects(int diskIndex, int actionType) {
+		JLabel target = diskDisplay.lblA; // default
+		switch (diskIndex) {
 		case 0:
 			target = diskDisplay.lblA;
 			break;
@@ -152,24 +157,23 @@ public class Machine8080 {
 		case 3:
 			target = diskDisplay.lblD;
 			break;
-		}//switch
-		
-		Blink blink = new Blink(target,Color.RED);
+		}// switch
+
+		Blink blink = new Blink(target, Color.RED);
 		Thread thread = new Thread(blink);
 		thread.start();
-	
-		
-		
-		
-	}//doDiskEffects
-	
-	public class Blink implements Runnable{
+
+	}// doDiskEffects
+
+	public class Blink implements Runnable {
 		JLabel label;
 		Color color;
-		public Blink(JLabel label,Color color){
-			this.label= label;
-			this.color=color;
-		}//Constructor
+
+		public Blink(JLabel label, Color color) {
+			this.label = label;
+			this.color = color;
+		}// Constructor
+
 		@Override
 		public void run() {
 			label.setForeground(color);
@@ -178,17 +182,27 @@ public class Machine8080 {
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}//try
+			} // try
 			label.setForeground(Color.BLACK);
-		}//run
-		
-	}//class blink
+		}// run
+
+	}// class blink
 
 	private void removeDisk(JTextField source, int diskNumber) {
 		diskControlUnit.removeDiskDrive(diskNumber);
 		source.setText(DiskPanel.NO_DISK);
 		source.setToolTipText(DiskPanel.NO_DISK_HELP);
 	}// remove disk
+	
+	private void loadROM(){
+		Class thisClass = Machine8080.class;
+		URL rom = thisClass.getResource("/hardware/resources/ROM.mem");
+		MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
+		
+		hexEditPanelConcurrent.loadData(Core.getInstance().getStorage());
+		InLineDisassembler.getInstance().refreshDisplay();
+
+	}//loadROM
 
 	// -------------------------------------------------------------------
 	private void appClose() {
@@ -202,12 +216,6 @@ public class Machine8080 {
 		myPrefs = null;
 	}// appClose
 
-	private void appInit0() {
-		menuAdapter = new Machine8080MenuAdapter();
-		actionAdapter = new Machine8080ActionAdapter();
-		diskPanelAdapter = new DiskPanelAdapter();
-	}// appInit0
-
 	private void appInit() {
 		// manage preferences
 		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
@@ -218,16 +226,16 @@ public class Machine8080 {
 		// menuAdapter.setHexPanel( hexEditPanelConcurrent);
 		EventQueue.invokeLater(disassembler);
 		// disassembler.updateDisplay();
-		
-		/* get resources  */
+
+		/* get resources */
 		Class thisClass = Machine8080.class;
 		btnStep.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Next-icon-48.png")));
 		btnRun1.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
 		btnRun1.setSelectedIcon(
 				new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
-		URL  rom = thisClass.getResource("/hardware/resources/ROM.mem");
-		MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
-		
+		loadROM();
+		lblSerialConnection.setText(NO_CONNECTION);
+		lblSerialConnection.setText(ioController.getConnectionString());
 
 	}// appInit
 
@@ -235,7 +243,6 @@ public class Machine8080 {
 	 * Create the application.
 	 */
 	public Machine8080() {
-		appInit0();
 		initialize();
 		appInit();
 	}// Constructor
@@ -296,9 +303,18 @@ public class Machine8080 {
 		menuBar.add(mnuTools);
 
 		JMenuItem mnuToolsDiskUtility = new JMenuItem("Disk Utility");
-		mnuToolsDiskUtility.setName(MNU_DISK_UTILITY);
+		mnuToolsDiskUtility.setName(MNU_TOOLS_DISK_UTILITY);
 		mnuToolsDiskUtility.addActionListener(menuAdapter);
 		mnuTools.add(mnuToolsDiskUtility);
+
+		JSeparator separator_1 = new JSeparator();
+		mnuTools.add(separator_1);
+
+		JMenuItem mnuToolsReset = new JMenuItem("Reset");
+		mnuToolsReset.setName(MNU_TOOLS_RESET);
+		mnuToolsReset.addActionListener(menuAdapter);
+		mnuToolsReset.setToolTipText("Clear Memory and reload Rom");
+		mnuTools.add(mnuToolsReset);
 
 		JMenu mnuWindows = new JMenu("Windows");
 		menuBar.add(mnuWindows);
@@ -372,11 +388,11 @@ public class Machine8080 {
 		stateDisplay.setBounds(5, 5, 600, 300);
 		panelStateDisplay.add(stateDisplay);
 		stateDisplay.setLayout(null);
-		
+
 		JButton btnTest = new JButton("New button");
 		btnTest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				doDiskEffects(0,1);
+				doDiskEffects(0, 1);
 			}
 		});
 		btnTest.setBounds(925, 11, 89, 23);
@@ -471,7 +487,7 @@ public class Machine8080 {
 		panel.add(spinnerStepCount);
 
 		btnStep = new JButton();
-//		btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
+		// btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
 		btnStep.setBorder(null);
 		btnStep.setContentAreaFilled(false);
 		btnStep.setOpaque(true);
@@ -485,9 +501,10 @@ public class Machine8080 {
 		btnRun1.addActionListener(actionAdapter);
 		btnRun1.setContentAreaFilled(false);
 		btnRun1.setBorder(null);
-//		btnRun1.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
-//		btnRun1.setSelectedIcon(
-//				new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
+		// btnRun1.setIcon(new
+		// ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
+		// btnRun1.setSelectedIcon(
+		// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
 		btnRun1.setBounds(44, 181, 71, 71);
 		panel.add(btnRun1);
 
@@ -509,11 +526,17 @@ public class Machine8080 {
 		gbc_panelStatus.gridy = 2;
 		frmMachine.getContentPane().add(panelStatus, gbc_panelStatus);
 		GridBagLayout gbl_panelStatus = new GridBagLayout();
-		gbl_panelStatus.columnWidths = new int[] { 0 };
-		gbl_panelStatus.rowHeights = new int[] { 0 };
-		gbl_panelStatus.columnWeights = new double[] { Double.MIN_VALUE };
-		gbl_panelStatus.rowWeights = new double[] { Double.MIN_VALUE };
+		gbl_panelStatus.columnWidths = new int[] { 0, 0 };
+		gbl_panelStatus.rowHeights = new int[] { 0, 0 };
+		gbl_panelStatus.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panelStatus.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panelStatus.setLayout(gbl_panelStatus);
+
+		lblSerialConnection = new JLabel("New label");
+		GridBagConstraints gbc_lblSerialConnection = new GridBagConstraints();
+		gbc_lblSerialConnection.gridx = 0;
+		gbc_lblSerialConnection.gridy = 0;
+		panelStatus.add(lblSerialConnection, gbc_lblSerialConnection);
 	}// initialize
 
 	/* classes */
@@ -568,9 +591,12 @@ public class Machine8080 {
 			case Machine8080.MNU_CLEAR_SELECTED_FILES:
 				removeSelectedFileItems((JPopupMenu) sourceMenu.getParent());
 				break;
-			case Machine8080.MNU_DISK_UTILITY:
+			case Machine8080.MNU_TOOLS_DISK_UTILITY:
 				Thread diskUtility = new Thread(new DiskUtility());
 				diskUtility.start();
+				break;
+			case Machine8080.MNU_TOOLS_RESET:
+				doReset();
 				break;
 			default:
 				assert false : sourceName + " is not a valid menu item\n";
@@ -697,7 +723,7 @@ public class Machine8080 {
 		@Override
 		public void dcuAction(DCUActionEvent dcuEvent) {
 			doDiskEffects(dcuEvent.getDiskIndex(), dcuEvent.getActionType());
-		}//dcuAction
+		}// dcuAction
 
 	}// DiskDisplayAdapter
 	/* ............................. */
@@ -710,14 +736,18 @@ public class Machine8080 {
 	// public static final String BTN_STOP = "btnStop";
 	// public static final String BTN_STOP_TEXT = "Stop";
 
+	public static final String NO_CONNECTION = "<<No Connection>>";
+
 	public static final String MNU_FILE_NEW = "mnuFileNew";
 
 	public static final String MNU_MEMORY_LOAD_FROM_FILE = "mnuMemoryLoadFromFile";
 
 	public static final String MNU_CLEAR_ALL_FILES = "mnuClearAllFiles";
 	public static final String MNU_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
-	public static final String MNU_DISK_UTILITY = "mnuToolsDiskUtility";
+	public static final String MNU_TOOLS_DISK_UTILITY = "mnuToolsDiskUtility";
+	public static final String MNU_TOOLS_RESET = "mnuToolsReset";
 
+	private JFrame frmMachine;
 	private JPanel panelMiddle;
 	private JPanel panelDisks;
 
@@ -738,4 +768,5 @@ public class Machine8080 {
 	private JPanel panelBottomLeft;
 	private JSpinner spinnerStepCount;
 	private JToggleButton btnRun1;
+	private JLabel lblSerialConnection;
 }// class Machine8080

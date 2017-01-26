@@ -5,7 +5,7 @@ import java.util.HashMap;
 import ioSysem.console.Console;
 
 public class IOController {
-	private IOController instance = new IOController();
+	private static IOController instance = new IOController();
 	
 	private HashMap<Byte,Device8080> devicesInput = new HashMap<Byte,Device8080>();
 	private HashMap<Byte,Device8080> devicesOutput = new HashMap<Byte,Device8080>();
@@ -20,7 +20,7 @@ public class IOController {
 		addConsole();
 	}//constructor
 	
-	public IOController getInstance(){
+	public static IOController getInstance(){
 		return instance;
 	}//getInstance
 	
@@ -35,13 +35,13 @@ public class IOController {
 		console.close();
 	}//close
 	
-//	public void setConsoleSerialSettings(){
-//		console.setSerialPortSettings();
-//	}//setConsoleSerialSettings
-//	
-//	public String getConnectionString(){
-//		return console.getConnectionString();
-//	}//getConnectionString
+	public void setConsoleSerialSettings(){
+		console.setSerialPortSettings();
+	}//setConsoleSerialSettings
+	
+	public String getConnectionString(){
+		return console.getConnectionString();
+	}//getConnectionString
 	
 	public void closeConnection(){
 		console.close();

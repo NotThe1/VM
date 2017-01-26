@@ -1,5 +1,6 @@
 package hardware;
 
+import ioSystem.IOController;
 import memory.CpuBuss;
 
 /**
@@ -12,12 +13,12 @@ import memory.CpuBuss;
 
 public class CentralProcessingUnit implements Runnable{
 	private static CentralProcessingUnit instance = new CentralProcessingUnit();
-	CpuBuss cpuBuss;
-	ConditionCodeRegister ccr;
-	WorkingRegisterSet wrs;
-	ArithmeticUnit au;
-	ErrorType error;
-
+	private CpuBuss cpuBuss;
+	private ConditionCodeRegister ccr;
+	private WorkingRegisterSet wrs;
+	private ArithmeticUnit au;
+	private ErrorType error;
+	private IOController ioController;
 	
 	public static CentralProcessingUnit getInstance(){
 		return instance;
@@ -28,7 +29,7 @@ public class CentralProcessingUnit implements Runnable{
 		this.wrs = WorkingRegisterSet.getInstance();
 		this.au = ArithmeticUnit.getInstance();
 		this.ccr = ConditionCodeRegister.getInstance();
-
+		this.ioController = IOController.getInstance();
 		this.error = ErrorType.NONE;
 	}// Constructor
 /**
@@ -376,11 +377,13 @@ public class CentralProcessingUnit implements Runnable{
 				codeLength = 0;
 				break;
 			case 2: // yyy 010 OUT
-				System.out.println("Not yet implemented");
+				Byte IOaddress = cpuBuss.read(wrs.getProgramCounter() + 1);
+				ioController.byteToDevice(IOaddress, wrs.getReg(Register.A));
 				codeLength = 2;
 				break;
 			case 3: // yyy 011 IN
-				System.out.println("Not yet implemented");
+				IOaddress = cpuBuss.read(wrs.getProgramCounter() + 1);
+				wrs.setReg(Register.A, ioController.byteFromDevice(IOaddress));
 				codeLength = 2;
 				break;
 			case 4: // yyy 100 XTHL
