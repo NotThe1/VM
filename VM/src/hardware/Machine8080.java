@@ -15,9 +15,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,7 +74,7 @@ public class Machine8080 {
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
 	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
 	private IOController ioController = IOController.getInstance();
-	
+
 	private Path pathMemLoad = null;
 
 	/**
@@ -135,8 +138,9 @@ public class Machine8080 {
 	}// updateView
 
 	private void addDisk(JTextField source, int diskNumber) {
-		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
-				"F8SS", "F8DS");
+//		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
+//				"F8SS", "F8DS");
+		JFileChooser fc = FilePicker.getDiskPicker();
 		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
@@ -215,10 +219,10 @@ public class Machine8080 {
 		InLineDisassembler.getInstance().refreshDisplay();
 
 	}// loadROM
-	
-//	private File getListFile(){
-//		
-//	}//getListFile
+
+	// private File getListFile(){
+	//
+	// }//getListFile
 
 	// -------------------------------------------------------------------
 	private void appClose() {
@@ -315,10 +319,10 @@ public class Machine8080 {
 		mnuMemory.add(separator);
 		mnuMemory.add(mnuMemorySaveSelectedToList);
 
-		JMenuItem mnuMemoryRemoveSelectedFromList = new JMenuItem("Remove Selected From List");
-		mnuMemoryRemoveSelectedFromList.setName(MNU_MEMORY_REMOVE_FROM_LIST);
-		mnuMemoryRemoveSelectedFromList.addActionListener(menuAdapter);
-		mnuMemory.add(mnuMemoryRemoveSelectedFromList);
+//		JMenuItem mnuMemoryRemoveSelectedFromList = new JMenuItem("Remove Selected From List");
+//		mnuMemoryRemoveSelectedFromList.setName(MNU_MEMORY_REMOVE_FROM_LIST);
+//		mnuMemoryRemoveSelectedFromList.addActionListener(menuAdapter);
+//		mnuMemory.add(mnuMemoryRemoveSelectedFromList);
 
 		mnuMemorySeparatorFileStart = new JSeparator();
 		mnuMemorySeparatorFileStart.setVisible(false);
@@ -551,14 +555,6 @@ public class Machine8080 {
 		btnRun1.setBounds(44, 181, 71, 71);
 		panel.add(btnRun1);
 
-		// InLineDisassembler disassembler = InLineDisassembler.getInstance();
-		// GridBagLayout gbl_disassembler = new GridBagLayout();
-		// gbl_disassembler.columnWidths = new int[]{0};
-		// gbl_disassembler.rowHeights = new int[]{0};
-		// gbl_disassembler.columnWeights = new double[]{1.0,Double.MIN_VALUE};
-		// gbl_disassembler.rowWeights = new double[]{1.0,Double.MIN_VALUE};
-		// disassembler.setLayout(new GridLayout(1, 0, 0, 0));
-
 		panelStatus = new JPanel();
 		panelStatus.setPreferredSize(new Dimension(10, 25));
 		panelStatus.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -637,13 +633,10 @@ public class Machine8080 {
 				// removeSelectedFileItems((JPopupMenu) sourceMenu.getParent());
 				break;
 			case Machine8080.MNU_MEMORY_LOAD_FROM_LIST:
-				// doMemoryLoadFromList( actionEvent);
+				 doMemoryLoadFromList( actionEvent);
 				break;
 			case Machine8080.MNU_MEMORY_SAVE_TO_LIST:
-				// doMemoryAddSelectedToList(actionEvent);
-				break;
-			case Machine8080.MNU_MEMORY_REMOVE_FROM_LIST:
-				// doMemoryRemoveSelectedFromList(actionEvent);
+				doMemoryAddSelectedToList(actionEvent);
 				break;
 
 			case Machine8080.MNU_TOOLS_DISK_UTILITY:
@@ -659,50 +652,71 @@ public class Machine8080 {
 		}// actionPerformed
 
 		private void doMemoryLoadFromFile(ActionEvent actionEvent) {
-			
-			JFileChooser fc = pathMemLoad == null?FilePicker.getMemPicker():FilePicker.getMemPicker(pathMemLoad);
+
+			JFileChooser fc = pathMemLoad == null ? FilePicker.getMemPicker() : FilePicker.getMemPicker(pathMemLoad);
 			if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 				System.out.println("Bailed out of the open");
 				return;
 			} // if - open
 			pathMemLoad = Paths.get(fc.getSelectedFile().getParent());
-
-			MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
-			MenuUtility.addItemToList(mnuMemory, fc.getSelectedFile(), new JCheckBoxMenuItem());
-
-
+			loadMemoryFromFile(fc.getSelectedFile());
 		}// doMemoryLoadFromFile
+		
+		private void loadMemoryFromFile(File selectedFile){
+			MemoryLoaderFromFile.loadMemoryImage(selectedFile);
+			MenuUtility.addItemToList(mnuMemory, selectedFile, new JCheckBoxMenuItem());
+		}//loadMemoryFromFile
 
 		private void doMemoryLoadFromList(ActionEvent actionEvent) {
+			JFileChooser fc = FilePicker.getListMemPicker();
+			if (fc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+				System.out.printf("You cancelled the Load Memory from File List...%n", "");
+			} else {
+				FileReader fileReader;
+				String rawFilePathName = null;
+				String filePathName = null;
+				File currentFile;
+				try {
+					fileReader = new FileReader((fc.getSelectedFile().getAbsolutePath()));
+					BufferedReader reader = new BufferedReader(fileReader);
+					while ((filePathName = reader.readLine()) != null) {
+						currentFile = new File(filePathName);
+						loadMemoryFromFile(currentFile);
+					} // while
+				} catch (IOException e1) {
+					System.out.printf(e1.getMessage() + "%n", "");
+				} // try
+			} // if
 
+			return;
 		}
 
 		private void doMemoryAddSelectedToList(ActionEvent actionEvent) {
-				JFileChooser fc = FilePicker.getListMemPicker();
-				if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
-					System.out.printf("You cancelled Save Selected as List...%n", "");
-					return;
-				}// if
-				String destinationPath = fc.getSelectedFile().getAbsolutePath();
-				try {
-					FileWriter fileWriter = new FileWriter(destinationPath + FilePicker.LIST_MEM_SUFFIX);
-					BufferedWriter writer = new BufferedWriter(fileWriter);
-					
-					ArrayList<String> selectedFiles = MenuUtility.getFilePathsSelected(mnuMemory);
-					for (String selectedFile: selectedFiles){
-						writer.write(selectedFile + System.lineSeparator());
-					}//for
-					writer.close();
+			JFileChooser fc = FilePicker.getListMemPicker();
+			if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+				System.out.printf("You cancelled Save Selected as List...%n", "");
+				return;
+			} // if
+			String listFile = fc.getSelectedFile().getAbsolutePath();
+			String completeSuffix = DOT + FilePicker.LIST_MEM_SUFFIX;
+			listFile = listFile.replace("//" + completeSuffix + "$", EMPTY_STRING);
+			try {
+				FileWriter fileWriter = new FileWriter(listFile + completeSuffix);
+				BufferedWriter writer = new BufferedWriter(fileWriter);
 
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					return;
-				}// try
-			}//doMemoryAddSelectedToList
+				ArrayList<String> selectedFiles = MenuUtility.getFilePathsSelected(mnuMemory);
+				for (String selectedFile : selectedFiles) {
+					writer.write(selectedFile + System.lineSeparator());
+				} // for
+				writer.close();
 
-		private void doMemoryRemoveSelectedFromList(ActionEvent actionEvent) {
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				return;
+			} // try
+		}// doMemoryAddSelectedToList
 
-		}
+
 		// ----------------------------------
 
 		private void removeSelectedFileItems(JPopupMenu parentMenu) {
@@ -810,6 +824,10 @@ public class Machine8080 {
 
 	/* classes */
 
+	public static final String DOT = "."; // Period
+	public static final String PERIOD = "."; // Period
+	public static final String EMPTY_STRING = "";
+
 	public static final String BTN_STEP = "btnStep";
 	public static final String BTN_RUN = "btnRun";
 	// public static final String BTN_RUN_TEXT = "Run";
@@ -823,7 +841,6 @@ public class Machine8080 {
 	public static final String MNU_MEMORY_LOAD_FROM_FILE = "mnuMemoryLoadFromFile";
 	public static final String MNU_MEMORY_LOAD_FROM_LIST = "mnuMemoryLoadFromList";
 	public static final String MNU_MEMORY_SAVE_TO_LIST = "mnuMemorySaveSelectedToList";
-	public static final String MNU_MEMORY_REMOVE_FROM_LIST = "mnuMemoryRemoveFromList";
 
 	public static final String MNU_MEMORY_CLEAR_ALL_FILES = "mnuClearAllFiles";
 	public static final String MNU_MEMORY_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
