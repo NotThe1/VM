@@ -1,52 +1,40 @@
 package misc;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.prefs.Preferences;
-
-import javax.swing.JFrame;
-
-import java.awt.GridBagLayout;
-
-import javax.swing.JMenuBar;
-import javax.swing.JToolBar;
-
-import java.awt.GridBagConstraints;
-
-import javax.swing.JPanel;
-
-import java.awt.Insets;
-
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JSeparator;
-import javax.swing.JTextPane;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JSplitPane;
-import javax.swing.JScrollPane;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.prefs.Preferences;
 
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
+import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-
-import java.awt.Color;
-
 import javax.swing.border.BevelBorder;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -96,10 +84,11 @@ public class HexEditorPrototype {
 	}// main
 	
 	private void addFileToMenu(JMenu menu,File file){
-		MenuUtility.addFile(mnuFile, file);
+//		MenuUtility.addFile(mnuFile, file);
+		MenuUtility.addItemToList(mnuFile, file);
 //		menu.get
 	}//
-
+;
 	/* Standard Stuff */
 
 	private void doButton1() {

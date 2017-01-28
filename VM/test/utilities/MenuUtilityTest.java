@@ -76,7 +76,7 @@ public class MenuUtilityTest {
 		}// if quit - get out
 		activeFile = fc.getSelectedFile();
 		frmTemplate.setTitle(TITLE + ": " + activeFile.getName());
-		MenuUtility.addFile(mnuFile, activeFile);
+		MenuUtility.addItemToList(mnuFile, activeFile,new JMenuItem());
 	}// doFileOpen
 
 	private void doFileSave() {
@@ -164,11 +164,11 @@ public class MenuUtilityTest {
 		btnOne.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				File file = new File("C:\\Users\\admin\\TestLogger3.log");
-				MenuUtility.addFile(mnuFile, file);
+				MenuUtility.addItemToList(mnuFile, file);
 				file = new File("C:\\Users\\admin\\TestLogger2.log");
-				MenuUtility.addFile(mnuFile, file);
+				MenuUtility.addItemToList(mnuFile, file);
 				file = new File("C:\\Users\\admin\\TestLogger1.log");
-				MenuUtility.addFile(mnuFile, file);
+				MenuUtility.addItemToList(mnuFile, file);
 			}// action Performed
 		});
 		btnOne.setMaximumSize(new Dimension(8888888, 20));
