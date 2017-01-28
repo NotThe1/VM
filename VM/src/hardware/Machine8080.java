@@ -15,8 +15,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
@@ -67,6 +71,8 @@ public class Machine8080 {
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
 	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
 	private IOController ioController = IOController.getInstance();
+	
+	private Path pathMemLoad = null;
 
 	/**
 	 * Launch the application.
@@ -653,16 +659,17 @@ public class Machine8080 {
 		}// actionPerformed
 
 		private void doMemoryLoadFromFile(ActionEvent actionEvent) {
-			JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
+			
+			JFileChooser fc = pathMemLoad == null?FilePicker.getMemPicker():FilePicker.getMemPicker(pathMemLoad);
 			if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 				System.out.println("Bailed out of the open");
 				return;
 			} // if - open
+			pathMemLoad = Paths.get(fc.getSelectedFile().getParent());
 
 			MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
 			MenuUtility.addItemToList(mnuMemory, fc.getSelectedFile(), new JCheckBoxMenuItem());
 
-			int a = 9;
 
 		}// doMemoryLoadFromFile
 
@@ -671,8 +678,27 @@ public class Machine8080 {
 		}
 
 		private void doMemoryAddSelectedToList(ActionEvent actionEvent) {
+				JFileChooser fc = FilePicker.getListMemPicker();
+				if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+					System.out.printf("You cancelled Save Selected as List...%n", "");
+					return;
+				}// if
+				String destinationPath = fc.getSelectedFile().getAbsolutePath();
+				try {
+					FileWriter fileWriter = new FileWriter(destinationPath + FilePicker.LIST_MEM_SUFFIX);
+					BufferedWriter writer = new BufferedWriter(fileWriter);
+					
+					ArrayList<String> selectedFiles = MenuUtility.getFilePathsSelected(mnuMemory);
+					for (String selectedFile: selectedFiles){
+						writer.write(selectedFile + System.lineSeparator());
+					}//for
+					writer.close();
 
-		}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					return;
+				}// try
+			}//doMemoryAddSelectedToList
 
 		private void doMemoryRemoveSelectedFromList(ActionEvent actionEvent) {
 

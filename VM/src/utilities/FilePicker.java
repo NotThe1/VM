@@ -194,7 +194,7 @@ public class FilePicker {
 //	private static final String LIST_MEM = "listMem";
 	private static final String CODE_PATH = "C:\\Users\\admin\\git\\assembler8080\\assembler8080\\Code";
 
-	private static final String LIST_ASM_SUFFIX = "ListAsm";
-	private static final String LIST_MEM_SUFFIX = "ListMem";
+	public static final String LIST_ASM_SUFFIX = "ListAsm";
+	public static final String LIST_MEM_SUFFIX = "ListMem";
 
 }// class FilePicker

@@ -33,7 +33,6 @@ import hardware.RoundIcon1;
 import utilities.FilePicker;
 
 
-
 public class GUItest1 extends Observable{
 	static class menuAdapter implements ActionListener {
 		@Override
