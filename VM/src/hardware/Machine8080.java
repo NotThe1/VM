@@ -47,7 +47,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
-import codeSupport.debug.TrapManager;
+import codeSupport.debug.TrapManager0;
 import disks.DCUActionEvent;
 import disks.DCUActionListener;
 import disks.DiskControlUnit;
@@ -646,7 +646,7 @@ public class Machine8080 {
 				
 				
 			case Machine8080.MNU_TOOLS_TRAP_MANAGER:
-				TrapManager trapManager = TrapManager.getInstance();
+				TrapManager0 trapManager = TrapManager0.getInstance();
 				break;
 
 			case Machine8080.MNU_TOOLS_DISK_UTILITY:
