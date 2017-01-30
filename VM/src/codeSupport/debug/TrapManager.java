@@ -81,7 +81,7 @@ public class TrapManager extends JDialog {
 	}// close
 
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(TrapManager0.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(TrapManager.class);
 		Dimension dim = getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -119,6 +119,7 @@ public class TrapManager extends JDialog {
 
 	private void initialize() {
 		// setBounds(100, 100, 150, 522);
+		setTitle("Trap Manager");
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 140, 0 };
 		gridBagLayout.rowHeights = new int[] { 0, 0, 10, 0, 0, 20, 0, 20, 33, 0 };
