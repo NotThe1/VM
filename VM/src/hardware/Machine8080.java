@@ -38,7 +38,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
@@ -48,6 +47,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
+import codeSupport.debug.TrapManager;
 import disks.DCUActionEvent;
 import disks.DCUActionListener;
 import disks.DiskControlUnit;
@@ -95,7 +95,7 @@ public class Machine8080 {
 		// -------------------------------------------------------------------
 
 	private void doStep() {
-		System.out.println("actionPerformed: doStep");
+//		System.out.println("actionPerformed: doStep");
 		cpu.setError(ErrorType.NONE);
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -138,8 +138,6 @@ public class Machine8080 {
 	}// updateView
 
 	private void addDisk(JTextField source, int diskNumber) {
-//		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
-//				"F8SS", "F8DS");
 		JFileChooser fc = FilePicker.getDiskPicker();
 		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
@@ -196,7 +194,6 @@ public class Machine8080 {
 			try {
 				TimeUnit.MILLISECONDS.sleep(400);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} // try
 			label.setForeground(Color.BLACK);
@@ -211,7 +208,7 @@ public class Machine8080 {
 	}// remove disk
 
 	private void loadROM() {
-		Class thisClass = Machine8080.class;
+		Class<Machine8080> thisClass = Machine8080.class;
 		URL rom = thisClass.getResource("/hardware/resources/ROM.mem");
 		MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
 
@@ -251,7 +248,7 @@ public class Machine8080 {
 		// disassembler.updateDisplay();
 
 		/* get resources */
-		Class thisClass = Machine8080.class;
+		Class<Machine8080> thisClass = Machine8080.class;
 		btnStep.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Next-icon-48.png")));
 		btnRun1.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
 		btnRun1.setSelectedIcon(
@@ -319,10 +316,10 @@ public class Machine8080 {
 		mnuMemory.add(separator);
 		mnuMemory.add(mnuMemorySaveSelectedToList);
 
-//		JMenuItem mnuMemoryRemoveSelectedFromList = new JMenuItem("Remove Selected From List");
-//		mnuMemoryRemoveSelectedFromList.setName(MNU_MEMORY_REMOVE_FROM_LIST);
-//		mnuMemoryRemoveSelectedFromList.addActionListener(menuAdapter);
-//		mnuMemory.add(mnuMemoryRemoveSelectedFromList);
+		// JMenuItem mnuMemoryRemoveSelectedFromList = new JMenuItem("Remove Selected From List");
+		// mnuMemoryRemoveSelectedFromList.setName(MNU_MEMORY_REMOVE_FROM_LIST);
+		// mnuMemoryRemoveSelectedFromList.addActionListener(menuAdapter);
+		// mnuMemory.add(mnuMemoryRemoveSelectedFromList);
 
 		mnuMemorySeparatorFileStart = new JSeparator();
 		mnuMemorySeparatorFileStart.setVisible(false);
@@ -352,6 +349,14 @@ public class Machine8080 {
 		JMenuItem mnuToolsDiskUtility = new JMenuItem("Disk Utility");
 		mnuToolsDiskUtility.setName(MNU_TOOLS_DISK_UTILITY);
 		mnuToolsDiskUtility.addActionListener(menuAdapter);
+		
+		JMenuItem mnuToolsTrapManager = new JMenuItem("Trap Manager");
+		mnuToolsTrapManager.setName(MNU_TOOLS_TRAP_MANAGER);
+		mnuToolsTrapManager.addActionListener(menuAdapter);
+		mnuTools.add(mnuToolsTrapManager);
+		
+		JSeparator separator_2 = new JSeparator();
+		mnuTools.add(separator_2);
 		mnuTools.add(mnuToolsDiskUtility);
 
 		JSeparator separator_1 = new JSeparator();
@@ -435,15 +440,6 @@ public class Machine8080 {
 		stateDisplay.setBounds(5, 5, 600, 300);
 		panelStateDisplay.add(stateDisplay);
 		stateDisplay.setLayout(null);
-
-		JButton btnTest = new JButton("New button");
-		btnTest.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				doDiskEffects(0, 1);
-			}
-		});
-		btnTest.setBounds(925, 11, 89, 23);
-		panelTop.add(btnTest);
 
 		panelBottom = new JPanel();
 		panelBottom.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
@@ -554,6 +550,15 @@ public class Machine8080 {
 		// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
 		btnRun1.setBounds(44, 181, 71, 71);
 		panel.add(btnRun1);
+		
+				JButton btnTest = new JButton("New button");
+				btnTest.setBounds(48, 343, 89, 23);
+				panelRun.add(btnTest);
+				btnTest.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						doDiskEffects(0, 1);
+					}
+				});
 
 		panelStatus = new JPanel();
 		panelStatus.setPreferredSize(new Dimension(10, 25));
@@ -633,10 +638,15 @@ public class Machine8080 {
 				// removeSelectedFileItems((JPopupMenu) sourceMenu.getParent());
 				break;
 			case Machine8080.MNU_MEMORY_LOAD_FROM_LIST:
-				 doMemoryLoadFromList( actionEvent);
+				doMemoryLoadFromList(actionEvent);
 				break;
 			case Machine8080.MNU_MEMORY_SAVE_TO_LIST:
 				doMemoryAddSelectedToList(actionEvent);
+				break;
+				
+				
+			case Machine8080.MNU_TOOLS_TRAP_MANAGER:
+				TrapManager trapManager = TrapManager.getInstance();
 				break;
 
 			case Machine8080.MNU_TOOLS_DISK_UTILITY:
@@ -661,11 +671,11 @@ public class Machine8080 {
 			pathMemLoad = Paths.get(fc.getSelectedFile().getParent());
 			loadMemoryFromFile(fc.getSelectedFile());
 		}// doMemoryLoadFromFile
-		
-		private void loadMemoryFromFile(File selectedFile){
+
+		private void loadMemoryFromFile(File selectedFile) {
 			MemoryLoaderFromFile.loadMemoryImage(selectedFile);
 			MenuUtility.addItemToList(mnuMemory, selectedFile, new JCheckBoxMenuItem());
-		}//loadMemoryFromFile
+		}// loadMemoryFromFile
 
 		private void doMemoryLoadFromList(ActionEvent actionEvent) {
 			JFileChooser fc = FilePicker.getListMemPicker();
@@ -673,7 +683,6 @@ public class Machine8080 {
 				System.out.printf("You cancelled the Load Memory from File List...%n", "");
 			} else {
 				FileReader fileReader;
-				String rawFilePathName = null;
 				String filePathName = null;
 				File currentFile;
 				try {
@@ -683,6 +692,7 @@ public class Machine8080 {
 						currentFile = new File(filePathName);
 						loadMemoryFromFile(currentFile);
 					} // while
+					reader.close();
 				} catch (IOException e1) {
 					System.out.printf(e1.getMessage() + "%n", "");
 				} // try
@@ -716,41 +726,8 @@ public class Machine8080 {
 			} // try
 		}// doMemoryAddSelectedToList
 
-
 		// ----------------------------------
 
-		private void removeSelectedFileItems(JPopupMenu parentMenu) {
-			for (int i = parentMenu.getComponentCount() - 1; i > 0; i--) {
-				if (!(parentMenu.getComponent(i) instanceof JCheckBoxMenuItem)) {
-					continue;
-				} // if right type
-				if (((JCheckBoxMenuItem) parentMenu.getComponent(i)).isSelected()) {
-					parentMenu.remove(i);
-				} // if do we remove it?
-			} // for
-
-		}// removeSelectedFileItem
-
-		private void removeAllFileItems(JPopupMenu parentMenu) {
-			for (int i = parentMenu.getComponentCount() - 1; i > 0; i--) {
-				if (parentMenu.getComponent(i) instanceof JCheckBoxMenuItem) {
-					parentMenu.remove(i);
-				} // if right type
-			} // for
-		}// removeMenuItem
-
-		private ArrayList<String> getAllSelectedFiles(JPopupMenu parentMenu) {
-			ArrayList<String> paths = null;
-			for (int i = parentMenu.getComponentCount() - 1; i > 0; i--) {
-				if (!(parentMenu.getComponent(i) instanceof JCheckBoxMenuItem)) {
-					continue;
-				} // if right type
-				if (((JCheckBoxMenuItem) parentMenu.getComponent(i)).isSelected()) {
-					paths.add(parentMenu.getComponent(i).getName());
-				} // if do we add it to list
-			} // for
-			return paths;
-		}// getAllSelectedFiles
 
 	}// class Machine8080MenuAdapter.actionPerformed
 	/* ............................. */
@@ -841,9 +818,10 @@ public class Machine8080 {
 	public static final String MNU_MEMORY_LOAD_FROM_FILE = "mnuMemoryLoadFromFile";
 	public static final String MNU_MEMORY_LOAD_FROM_LIST = "mnuMemoryLoadFromList";
 	public static final String MNU_MEMORY_SAVE_TO_LIST = "mnuMemorySaveSelectedToList";
-
 	public static final String MNU_MEMORY_CLEAR_ALL_FILES = "mnuClearAllFiles";
 	public static final String MNU_MEMORY_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
+	
+	public static final String MNU_TOOLS_TRAP_MANAGER = "mnuToolsTrapManager";
 	public static final String MNU_TOOLS_DISK_UTILITY = "mnuToolsDiskUtility";
 	public static final String MNU_TOOLS_RESET = "mnuToolsReset";
 

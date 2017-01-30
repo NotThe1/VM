@@ -21,21 +21,18 @@ import javax.swing.text.PlainDocument;
 
 /**
  * 
- * @author Frank Martyn This is a text box that only accepts either decimal or
- *         hexadecimal numbers. It supports a JSpinnerNumberModel to manage the
- *         values range of input data. The value input is limited byte the
- *         NumberModel. if value is greater than Max the value will be fixed to
- *         Max Value. Similarly if less than Min the value will be fixed at Min
- *         Value.
+ * @author Frank Martyn. This is a text box that only accepts either decimal or hexadecimal numbers. It supports a
+ *         JSpinnerNumberModel to manage the values range of input data. The value input is limited byte the
+ *         NumberModel. if value is greater than Max the value will be fixed to Max Value. Similarly if less than Min
+ *         the value will be fixed at Min Value.
  * 
  *         The range of the value is Integer.Min to Integer.MAX.
  * 
- *         This class supports a HDNumberValueChangeListener that will fire a
- *         HDNumberValueChangeEvent when the value changes
+ *         This class supports a HDNumberValueChangeListener that will fire a HDNumberValueChangeEvent when the value
+ *         changes
  * 
- *         the method mute(boolean state) disables/enables the
- *         fireSeekValueChanged() method, so values can be changed without
- *         triggering events
+ *         the method mute(boolean state) disables/enables the fireSeekValueChanged() method, so values can be changed
+ *         without triggering events
  *
  */
 public class HDNumberBox extends JPanel {
@@ -66,6 +63,13 @@ public class HDNumberBox extends JPanel {
 	public int getValue() {
 		return currentValue;
 	}// getValue
+	
+	public String getStringValue(){
+		String displayFormat = showDecimal ? decimalDisplayFormat : hexDisplayFormat;
+		currentValue = (int) numberModel.getValue();
+		return String.format(displayFormat, currentValue);
+
+	}//getStringValue
 
 	public int getPriorValue() {
 		return (int) numberModel.getPreviousValue();
@@ -200,8 +204,12 @@ public class HDNumberBox extends JPanel {
 					return;
 				} // if null
 				int radix = showDecimal ? 10 : 16;
-				setNewValue(Integer.valueOf(txtValueDisplay.getText(), radix));
-			}
+				try {
+					setNewValue(Integer.valueOf(txtValueDisplay.getText(), radix));
+				} catch (Exception e) {
+					setNewValue(getPriorValue());
+				}//try
+			}//focusLost
 		});
 
 		txtValueDisplay.setHorizontalAlignment(SwingConstants.RIGHT);

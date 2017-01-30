@@ -132,7 +132,7 @@ public class IoBuss  implements ICore, IioBuss {
 		boolean isValidAddressDMA;
 		if (!isValidAddress(location)) {	// starting location
 			isValidAddressDMA = false;
-		} else if (!isValidAddress(location + length)) {	// ending location
+		} else if (!isValidAddress(location + length-1)) {	// ending location
 			isValidAddressDMA = false;
 		} else {		// all is well
 			isValidAddressDMA = true;
