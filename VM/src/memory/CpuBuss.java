@@ -27,7 +27,7 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	private boolean isDebug = false;
 	private boolean isDebugEnabled = false;
 
-	private static final byte HALT = (byte) 0X76; // Halt opcode
+	private static final byte DEBUG_CODE = (byte) 0X30; // DEBUG opCode
 
 	public static CpuBuss getInstance() {
 		return instance;
@@ -55,13 +55,13 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 				if (!isDebug) {// is this the first encounter ?
 					isDebug = true; // then set the flag
 					tellObservers(location, Trap.DEBUG);
-					ans = HALT; // replace with fake halt
+					ans = DEBUG_CODE; // replace with fake halt
 				} else {
 					isDebug = false; // else reset set the flag and return the actual value
-				}// inner if
+				} // inner if
 					// may want to fire trap - fireMemoryTrap(location, Trap.DEBUG);
-			}// inner if
-		}// outer if
+			} // inner if
+		} // outer if
 
 		return ans;
 	}// read
@@ -80,7 +80,7 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 		if (isDiskTrapLocation(location, value)) {
 			tellObservers(location, Trap.IO);
 			// fireMemoryTrap(location, Trap.IO);
-		}// if
+		} // if
 	}// write
 
 	/**
@@ -111,7 +111,19 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	 * @return true if the program is to halt
 	 */
 	private boolean isDebugLocation(int location) {
-		return traps.get(location).equals(Trap.DEBUG) ? true : false;
+		Trap t = traps.get(location);
+		
+//		if (t.equals(Trap.DEBUG))
+//			return true;
+//		return false;
+		
+		if ((t == null) || !t.equals(Trap.DEBUG))
+			return false;
+
+		return true;
+
+		// return traps.get(location).equals(Trap.DEBUG) ? true : false;
+
 	}// isDebugLocation
 
 	/**
@@ -127,7 +139,7 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 			return thisTrap.equals(Trap.IO) ? true : false;
 		} else {
 			return false;
-		}//
+		} //
 	}// isDiskTrapLocation
 
 	/**
@@ -141,7 +153,7 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	public void addTrap(int location, Trap trap) {
 		if (isValidAddress(location)) {
 			traps.put(location, trap); // may be different trap type
-		}// if
+		} // if
 
 	}// addTrapLocation
 
@@ -184,10 +196,8 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	 * @return ArrayList of traps specified by type
 	 */
 	public List<Integer> getTraps(Trap trap) {
-		List<Integer> getTrapLocations = traps.entrySet().stream()
-				.filter((t) -> t.getValue().equals(trap))
-				.map((t) -> t.getKey())
-				.collect(Collectors.toList());
+		List<Integer> getTrapLocations = traps.entrySet().stream().filter((t) -> t.getValue().equals(trap))
+				.map((t) -> t.getKey()).collect(Collectors.toList());
 
 		return getTrapLocations;
 	}// getTrapLocations
@@ -208,7 +218,7 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	@Override
 	public int popWord(int location) {
 		int loByte = (int) core.read(location + 1) & 0X00FF;
-		int hiByte = (int) (core.read(location ) << 8) & 0XFF00;
+		int hiByte = (int) (core.read(location) << 8) & 0XFF00;
 		return 0XFFFF & (hiByte + loByte);
 	}// popWord used for stack work
 
@@ -222,10 +232,11 @@ public class CpuBuss extends Observable implements ICore, IcpuBuss {
 	 */
 	@Override
 	public void pushWord(int location, int value) {
-		byte hiByte = (byte) ((value & 0XFF00)>> 8);
+		byte hiByte = (byte) ((value & 0XFF00) >> 8);
 		byte loByte = (byte) (value & 0X00FF);
-		pushWord(location,hiByte,loByte);
+		pushWord(location, hiByte, loByte);
 	}// pushWord used for stack work
+
 	/**
 	 * Writes bytes in location -1 and location-2. Primarily used for stack work. Does not check for traps
 	 * 

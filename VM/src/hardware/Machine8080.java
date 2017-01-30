@@ -25,6 +25,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
@@ -47,7 +49,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
-import codeSupport.debug.TrapManager0;
+import codeSupport.debug.TrapManager;
 import disks.DCUActionEvent;
 import disks.DCUActionListener;
 import disks.DiskControlUnit;
@@ -55,13 +57,14 @@ import disks.diskPanel.DiskPanel;
 import disks.utility.DiskUtility;
 import ioSystem.IOController;
 import memory.Core;
+import memory.CpuBuss;
 import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 import utilities.hexEdit.HexEditPanelConcurrent;
 import utilities.inLineDissembler.InLineDisassembler;
 import utilities.menus.MenuUtility;
 
-public class Machine8080 {
+public class Machine8080 implements  Observer {
 
 	private Machine8080MenuAdapter menuAdapter = new Machine8080MenuAdapter();
 	private Machine8080ActionAdapter actionAdapter = new Machine8080ActionAdapter();
@@ -74,6 +77,9 @@ public class Machine8080 {
 	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
 	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
 	private IOController ioController = IOController.getInstance();
+	private CpuBuss cpuBuss = CpuBuss.getInstance();
+	
+	private TrapManager trapManager;
 
 	private Path pathMemLoad = null;
 
@@ -220,6 +226,13 @@ public class Machine8080 {
 	// private File getListFile(){
 	//
 	// }//getListFile
+	
+	@Override
+	public void update(Observable cpuBuss, Object mte) {
+		System.out.printf("[update]  %s%n", mte.toString());
+		btnRun1.setSelected(false);
+		updateView();
+	}//update
 
 	// -------------------------------------------------------------------
 	private void appClose() {
@@ -231,7 +244,16 @@ public class Machine8080 {
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
 		myPrefs = null;
+		cleanupObjects();
 	}// appClose
+	
+	private void cleanupObjects(){
+		cpuBuss.deleteObserver(this);
+		if (trapManager!= null){
+			trapManager.close();
+			trapManager = null;
+		}//if trapManager
+	}//cleanupObjects
 
 	private void appInit() {
 		// manage preferences
@@ -256,7 +278,8 @@ public class Machine8080 {
 		loadROM();
 		lblSerialConnection.setText(NO_CONNECTION);
 		lblSerialConnection.setText(ioController.getConnectionString());
-
+		
+		cpuBuss.addObserver(this);
 	}// appInit
 
 	/**
@@ -646,7 +669,8 @@ public class Machine8080 {
 				
 				
 			case Machine8080.MNU_TOOLS_TRAP_MANAGER:
-				TrapManager0 trapManager = TrapManager0.getInstance();
+				TrapManager trapManager = TrapManager.getInstance();
+				trapManager.setVisible(true);
 				break;
 
 			case Machine8080.MNU_TOOLS_DISK_UTILITY:
@@ -850,4 +874,6 @@ public class Machine8080 {
 	private JSeparator mnuMemorySeparatorFileStart;
 	private JSeparator mnuMemorySeparatorFileEnd;
 	private JMenu mnuMemory;
+
+
 }// class Machine8080

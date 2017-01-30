@@ -94,7 +94,16 @@ public class CentralProcessingUnit implements Runnable{
 		switch (zzz) {
 		case 0: // zzz = 000 (NOP)
 			// NOP
-			codeLength = 1;
+			if (yyy == 0) {// its a NOP OO length =1, cycles = 4
+				// 00 real NOP
+				codeLength = 1;
+			} else if (yyy == 6) {// Opcode "30" special for debugging **** act like a halt
+				codeLength = 0;
+				setError(ErrorType.STOP);
+			} else {// treat as if it is a NOP
+				// 08,10,18,20,28,30,38 - not implemented. treat as NOP
+				codeLength = 1;
+			}//
 			break;
 		case 1: // zzz = 001 (LXI & DAD)- Register Pair (BC,DE,HL,SP)
 			if ((yyy & 0X01) == 0) { // LXI
@@ -598,6 +607,8 @@ public class CentralProcessingUnit implements Runnable{
 	public void setError(ErrorType error) {
 		this.error = error;
 	}// setErrorFlag
+	
+
 
 	/**
 	 * indicated if an error is recorded
