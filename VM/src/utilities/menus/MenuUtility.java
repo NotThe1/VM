@@ -249,7 +249,7 @@ public class MenuUtility {
 			} // if
 			if (isFile) {
 
-				filePaths.add(((AbstractButton) menu.getMenuComponent(i)).getActionCommand() + System.lineSeparator());
+				filePaths.add(((AbstractButton) menu.getMenuComponent(i)).getActionCommand());
 			} // if isFile
 		} // for
 		return filePaths;

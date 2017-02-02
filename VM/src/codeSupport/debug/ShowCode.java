@@ -13,12 +13,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.prefs.Preferences;
@@ -39,10 +42,19 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
+import hardware.WorkingRegisterSet;
 import utilities.FilePicker;
 import utilities.menus.MenuUtility;
 
-public class ShowCode extends JDialog {
+public class ShowCode extends JDialog implements Runnable{
+	
+	private static ShowCode instance = new ShowCode();
+	
+	public static ShowCode getInstance(){
+		return instance;
+	}//getInstance
+	
+	private WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
 
 	private ShowFileAdapter showFileAdapter = new ShowFileAdapter();
 	// private StyledDocument doc;
@@ -69,8 +81,8 @@ public class ShowCode extends JDialog {
 					dialog.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
-				}//try
-			}//run
+				} // try
+			}// run
 		});
 	}// main
 
@@ -105,7 +117,7 @@ public class ShowCode extends JDialog {
 					addressOnThisLine = Integer.valueOf(matcherForHotLine.group("address"), 16);
 					endAddress = addressOnThisLine;
 					startAddress = startAddress == -1 ? addressOnThisLine : startAddress;
-				}//if - its a hot line
+				} // if - its a hot line
 				stringBuilder.append(line + System.lineSeparator());
 			} // while
 			reader.close();
@@ -165,16 +177,76 @@ public class ShowCode extends JDialog {
 	}// doAddFilesFromList
 
 	private void doSaveSelectedToList() {
+		JFileChooser fc = FilePicker.getListAsmPicker();
+		if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+			System.out.printf("You cancelled Save Selected as List...%n", "");
+			return;
+		} // if
+		String listFile = fc.getSelectedFile().getAbsolutePath();
+		String completeSuffix = DOT + FilePicker.LIST_ASM_SUFFIX;
+		listFile = listFile.replace("//" + completeSuffix + "$", EMPTY_STRING);
+		try {
+			FileWriter fileWriter = new FileWriter(listFile + completeSuffix);
+			BufferedWriter writer = new BufferedWriter(fileWriter);
 
+			ArrayList<String> selectedFiles = MenuUtility.getFilePathsSelected(mnuFiles);
+			for (String selectedFile : selectedFiles) {
+				writer.write(selectedFile + System.lineSeparator());
+			} // for
+			writer.close();
+
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			return;
+		} // try
 	}// doSaveSelectedTOList
 
 	private void doClearSelectedFiles() {
+		ArrayList<String> filesToBeCleared = MenuUtility.getFilePathsSelected(mnuFiles);
+		for (String fileToBeCleared : filesToBeCleared) {
+			clearFile(fileToBeCleared);
+		} // for each
 		MenuUtility.clearListSelected(mnuFiles);
+		adjustTheDisplay();
 	}// doClearSelectedFiles
 
 	private void doClearAllFiles() {
+		ArrayList<String> filesToBeCleared = MenuUtility.getFilePaths(mnuFiles);
+		for (String fileToBeCleared : filesToBeCleared) {
+			clearFile(fileToBeCleared);
+		} // for each
 		MenuUtility.clearList(mnuFiles);
+		adjustTheDisplay();
 	}// doClearFiles
+
+	private void clearFile(String filePath) {
+		if (filePath.equals(currentFilePath)) {
+			clearCurrentIndicaters();
+		} // if current path
+		fileList.remove(filePath);
+		listings.remove(filePath);
+	}// clearFile
+
+	private void adjustTheDisplay() {
+		if (fileList.isEmpty()) {
+			lblHeader.setText(NO_ACTIVE_FILE);
+			lblStatus.setText(NO_ACTIVE_FILE);
+			tpDisplay.setText(EMPTY_STRING);
+		} else if (!fileList.containsKey(currentFilePath)) {
+
+			Set<String> keys = fileList.keySet();
+			String filePath = null;
+			for (String key : keys) {
+				filePath = key;
+				break;
+			} // for get a valid filePath
+			loadDisplay(filePath);
+		} // if
+		else {
+			// leave it alone.
+		} //
+
+	}// adjustTheDisplay
 
 	// -------------------------------------------------------------------------------
 	private void clearCurrentIndicaters() {
@@ -265,6 +337,12 @@ public class ShowCode extends JDialog {
 		} //
 
 	}// selectTheCorrectLine
+	//''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+	@Override
+	public void run() {
+		setProgramCounter(wrs.getProgramCounter());
+	}// run
+
 
 	// ===============================================================================
 	public void close() {
@@ -299,18 +377,18 @@ public class ShowCode extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public ShowCode() {
+	private ShowCode() {
+		initialize();
+		appInit();
+	}//
+
+	public void initialize() {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
 				appClose();
 			}//
 		});
-		initialize();
-		appInit();
-	}//
-
-	public void initialize() {
 		setTitle("Show Code");
 		// setBounds(100, 100, 450, 300);
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -333,7 +411,7 @@ public class ShowCode extends JDialog {
 		tpDisplay.setFont(new Font("Courier New", Font.PLAIN, 14));
 		scrollPane.setViewportView(tpDisplay);
 
-		lblHeader = new JLabel("No Active File");
+		lblHeader = new JLabel(NO_ACTIVE_FILE);
 		lblHeader.setHorizontalAlignment(SwingConstants.CENTER);
 		lblHeader.setForeground(Color.BLUE);
 		lblHeader.setFont(new Font("Courier New", Font.BOLD, 16));
@@ -352,7 +430,7 @@ public class ShowCode extends JDialog {
 		gbl_panel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
 
-		lblStatus = new JLabel("-");
+		lblStatus = new JLabel(NO_ACTIVE_FILE);
 		lblStatus.setForeground(Color.RED);
 		lblStatus.setFont(new Font("Arial", Font.BOLD, 17));
 		GridBagConstraints gbc_lblStatus = new GridBagConstraints();
@@ -455,9 +533,15 @@ public class ShowCode extends JDialog {
 	private static final String LEFT_P = "(";
 	private static final String RIGHT_P = ")";
 	private static final String MID_P = RIGHT_P + LEFT_P;
+
+	private static final String NO_ACTIVE_FILE = "<< No Active FIle >>";
+	private static final String EMPTY_STRING = "";
+	private static final String DOT = ".";
+
 	private JMenu mnuFiles;
 	private JTextArea tpDisplay;
 	private JLabel lblHeader;
 	private JLabel lblStatus;
+
 
 }// class ShowCode

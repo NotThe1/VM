@@ -49,6 +49,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
+import codeSupport.debug.ShowCode;
 import codeSupport.debug.TrapManager;
 import disks.DCUActionEvent;
 import disks.DCUActionListener;
@@ -64,7 +65,7 @@ import utilities.hexEdit.HexEditPanelConcurrent;
 import utilities.inLineDissembler.InLineDisassembler;
 import utilities.menus.MenuUtility;
 
-public class Machine8080 implements  Observer {
+public class Machine8080 implements Observer {
 
 	private Machine8080MenuAdapter menuAdapter = new Machine8080MenuAdapter();
 	private Machine8080ActionAdapter actionAdapter = new Machine8080ActionAdapter();
@@ -78,8 +79,9 @@ public class Machine8080 implements  Observer {
 	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
 	private IOController ioController = IOController.getInstance();
 	private CpuBuss cpuBuss = CpuBuss.getInstance();
-	
+
 	private TrapManager trapManager;
+	private ShowCode showCode;
 
 	private Path pathMemLoad = null;
 
@@ -101,7 +103,7 @@ public class Machine8080 implements  Observer {
 		// -------------------------------------------------------------------
 
 	private void doStep() {
-//		System.out.println("actionPerformed: doStep");
+		// System.out.println("actionPerformed: doStep");
 		cpu.setError(ErrorType.NONE);
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -141,6 +143,15 @@ public class Machine8080 implements  Observer {
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
 		disassembler.updateDisplay();
+		
+		if (showCode == null){
+			return;
+		}else if (!showCode.isVisible()){
+			return;
+		}else {
+			Thread task = new Thread(showCode);
+			task.start();
+		}// if ....
 	}// updateView
 
 	private void addDisk(JTextField source, int diskNumber) {
@@ -226,13 +237,13 @@ public class Machine8080 implements  Observer {
 	// private File getListFile(){
 	//
 	// }//getListFile
-	
+
 	@Override
 	public void update(Observable cpuBuss, Object mte) {
 		System.out.printf("[update]  %s%n", mte.toString());
 		btnRun1.setSelected(false);
 		updateView();
-	}//update
+	}// update
 
 	// -------------------------------------------------------------------
 	private void appClose() {
@@ -246,14 +257,14 @@ public class Machine8080 implements  Observer {
 		myPrefs = null;
 		cleanupObjects();
 	}// appClose
-	
-	private void cleanupObjects(){
+
+	private void cleanupObjects() {
 		cpuBuss.deleteObserver(this);
-		if (trapManager!= null){
+		if (trapManager != null) {
 			trapManager.close();
 			trapManager = null;
-		}//if trapManager
-	}//cleanupObjects
+		} // if trapManager
+	}// cleanupObjects
 
 	private void appInit() {
 		// manage preferences
@@ -278,7 +289,7 @@ public class Machine8080 implements  Observer {
 		loadROM();
 		lblSerialConnection.setText(NO_CONNECTION);
 		lblSerialConnection.setText(ioController.getConnectionString());
-		
+
 		cpuBuss.addObserver(this);
 	}// appInit
 
@@ -372,12 +383,17 @@ public class Machine8080 implements  Observer {
 		JMenuItem mnuToolsDiskUtility = new JMenuItem("Disk Utility");
 		mnuToolsDiskUtility.setName(MNU_TOOLS_DISK_UTILITY);
 		mnuToolsDiskUtility.addActionListener(menuAdapter);
-		
+
 		JMenuItem mnuToolsTrapManager = new JMenuItem("Trap Manager");
 		mnuToolsTrapManager.setName(MNU_TOOLS_TRAP_MANAGER);
 		mnuToolsTrapManager.addActionListener(menuAdapter);
 		mnuTools.add(mnuToolsTrapManager);
-		
+
+		JMenuItem mntmNewMenuItem = new JMenuItem("Show Listing");
+		mntmNewMenuItem.setName(MNU_TOOLS_SHOW_LISTING);
+		mntmNewMenuItem.addActionListener(menuAdapter);
+		mnuTools.add(mntmNewMenuItem);
+
 		JSeparator separator_2 = new JSeparator();
 		mnuTools.add(separator_2);
 		mnuTools.add(mnuToolsDiskUtility);
@@ -573,15 +589,22 @@ public class Machine8080 implements  Observer {
 		// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
 		btnRun1.setBounds(44, 181, 71, 71);
 		panel.add(btnRun1);
-		
-				JButton btnTest = new JButton("New button");
-				btnTest.setBounds(48, 343, 89, 23);
-				panelRun.add(btnTest);
-				btnTest.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						doDiskEffects(0, 1);
-					}
-				});
+
+		JButton btnTest = new JButton("New button");
+		btnTest.setBounds(48, 343, 89, 23);
+		panelRun.add(btnTest);
+		btnTest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String msg;
+				if(showCode.isVisible()){
+					msg = "Visible";
+				}else{
+					msg = "NOT Visible";
+				}
+				System.out.printf("[btnTest] showCode -  %s%n",msg );
+				doDiskEffects(0, 1);
+			}
+		});
 
 		panelStatus = new JPanel();
 		panelStatus.setPreferredSize(new Dimension(10, 25));
@@ -666,11 +689,13 @@ public class Machine8080 implements  Observer {
 			case Machine8080.MNU_MEMORY_SAVE_TO_LIST:
 				doMemoryAddSelectedToList(actionEvent);
 				break;
-				
-				
-			case Machine8080.MNU_TOOLS_TRAP_MANAGER:
+
+			case Machine8080.MNU_TOOLS_TRAP_MANAGER:// MNU_TOOLS_SHOW_LISTING
 				TrapManager trapManager = TrapManager.getInstance();
 				trapManager.setVisible(true);
+				break;
+			case Machine8080.MNU_TOOLS_SHOW_LISTING:
+				showCode = ShowCode.getInstance();
 				break;
 
 			case Machine8080.MNU_TOOLS_DISK_UTILITY:
@@ -751,7 +776,6 @@ public class Machine8080 implements  Observer {
 		}// doMemoryAddSelectedToList
 
 		// ----------------------------------
-
 
 	}// class Machine8080MenuAdapter.actionPerformed
 	/* ............................. */
@@ -844,8 +868,9 @@ public class Machine8080 implements  Observer {
 	public static final String MNU_MEMORY_SAVE_TO_LIST = "mnuMemorySaveSelectedToList";
 	public static final String MNU_MEMORY_CLEAR_ALL_FILES = "mnuClearAllFiles";
 	public static final String MNU_MEMORY_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
-	
+
 	public static final String MNU_TOOLS_TRAP_MANAGER = "mnuToolsTrapManager";
+	public static final String MNU_TOOLS_SHOW_LISTING = "mnuToolsShowListing";
 	public static final String MNU_TOOLS_DISK_UTILITY = "mnuToolsDiskUtility";
 	public static final String MNU_TOOLS_RESET = "mnuToolsReset";
 
@@ -874,6 +899,4 @@ public class Machine8080 implements  Observer {
 	private JSeparator mnuMemorySeparatorFileStart;
 	private JSeparator mnuMemorySeparatorFileEnd;
 	private JMenu mnuMemory;
-
-
 }// class Machine8080

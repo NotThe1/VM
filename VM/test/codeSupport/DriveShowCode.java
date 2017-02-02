@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,7 +38,8 @@ public class DriveShowCode {
 				try {
 					DriveShowCode window = new DriveShowCode();
 					window.frame.setVisible(true);
-					showCode = new ShowCode();
+					showCode = ShowCode.getInstance();
+					showCode.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -57,6 +60,12 @@ public class DriveShowCode {
 	 */
 	
 		frame = new JFrame();
+		frame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent arg0) {
+				showCode.close();
+			}
+		});
 		frame.setBounds(100, 100, 429, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -69,7 +78,8 @@ public class DriveShowCode {
 		JButton btnStart = new JButton("Start");
 		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				showCode = new ShowCode();
+				Thread task = new Thread(showCode);
+				task.start();
 			}
 		});
 		GridBagConstraints gbc_btnStart = new GridBagConstraints();
