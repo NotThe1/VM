@@ -10,6 +10,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
@@ -46,14 +48,14 @@ import hardware.WorkingRegisterSet;
 import utilities.FilePicker;
 import utilities.menus.MenuUtility;
 
-public class ShowCode extends JDialog implements Runnable{
-	
+public class ShowCode extends JDialog implements Runnable {
+
 	private static ShowCode instance = new ShowCode();
-	
-	public static ShowCode getInstance(){
+
+	public static ShowCode getInstance() {
 		return instance;
-	}//getInstance
-	
+	}// getInstance
+
 	private WorkingRegisterSet wrs = WorkingRegisterSet.getInstance();
 
 	private ShowFileAdapter showFileAdapter = new ShowFileAdapter();
@@ -66,8 +68,6 @@ public class ShowCode extends JDialog implements Runnable{
 	private int currentStart, currentEnd;
 	private String currentFilePath = null;
 	private boolean fileIsCurrent;
-
-	private boolean showLineNumber = true;
 
 	/**
 	 * Launch the application.
@@ -92,7 +92,6 @@ public class ShowCode extends JDialog implements Runnable{
 			System.out.println("Bailed out of the open");
 			return;
 		} // if - open
-			// fc.getSelectedFile().getAbsolutePath()
 		newListPath = Paths.get(fc.getSelectedFile().getParent());
 		addFile(fc.getSelectedFile().getAbsolutePath());
 	}// doAddFile()
@@ -121,7 +120,7 @@ public class ShowCode extends JDialog implements Runnable{
 				stringBuilder.append(line + System.lineSeparator());
 			} // while
 			reader.close();
-			tpDisplay.setText(stringBuilder.toString());
+			taDisplay.setText(stringBuilder.toString());
 		} catch (FileNotFoundException fnfe) {
 			JOptionPane.showMessageDialog(null, listFileFullPath + "not found", "unable to locate",
 					JOptionPane.ERROR_MESSAGE);
@@ -134,8 +133,7 @@ public class ShowCode extends JDialog implements Runnable{
 		fileList.put(listFileFullPath, new Limits(startAddress, endAddress));
 		listings.put(listFileFullPath, stringBuilder.toString());
 		loadDisplay(listFileFullPath);
-		tpDisplay.setCaretPosition(0);
-		// reader.close();
+		taDisplay.setCaretPosition(0);
 		MenuUtility.addItemToList(mnuFiles, new File(listFileFullPath), new JCheckBoxMenuItem());
 
 	}// addFile
@@ -144,7 +142,7 @@ public class ShowCode extends JDialog implements Runnable{
 		lblHeader.setText(new File(filePath).getName());
 		lblHeader.setToolTipText(filePath);
 
-		tpDisplay.setText(listings.get(filePath));
+		taDisplay.setText(listings.get(filePath));
 		Limits limits = fileList.get(filePath);
 		currentStart = limits.start;
 		currentEnd = limits.end;
@@ -158,14 +156,11 @@ public class ShowCode extends JDialog implements Runnable{
 		} else {
 			FileReader fileReader;
 			String filePathName = null;
-			File currentFile;
 			try {
 				fileReader = new FileReader((fc.getSelectedFile().getAbsolutePath()));
 				BufferedReader reader = new BufferedReader(fileReader);
 				while ((filePathName = reader.readLine()) != null) {
 					addFile(filePathName);
-					// currentFile = new File(filePathName);
-					// loadMemoryFromFile(currentFile);
 				} // while
 				reader.close();
 			} catch (IOException e1) {
@@ -231,7 +226,7 @@ public class ShowCode extends JDialog implements Runnable{
 		if (fileList.isEmpty()) {
 			lblHeader.setText(NO_ACTIVE_FILE);
 			lblStatus.setText(NO_ACTIVE_FILE);
-			tpDisplay.setText(EMPTY_STRING);
+			taDisplay.setText(EMPTY_STRING);
 		} else if (!fileList.containsKey(currentFilePath)) {
 
 			Set<String> keys = fileList.keySet();
@@ -325,11 +320,11 @@ public class ShowCode extends JDialog implements Runnable{
 		String targetAddressRegex = String.format("\\d{4}: %04X [A-Fa-f\\d]{2}.*\r", programCounter);
 		Pattern targetAddressPattern = Pattern.compile(targetAddressRegex);
 		Matcher targetAddressMatcher;
-		targetAddressMatcher = targetAddressPattern.matcher(tpDisplay.getText());
+		targetAddressMatcher = targetAddressPattern.matcher(taDisplay.getText());
 		if (targetAddressMatcher.find()) {
 			// System.out.printf("[selectTheCorrectLine] |%s|%n", targetAddressMatcher.group(0));
-			tpDisplay.setSelectionStart(targetAddressMatcher.start());
-			tpDisplay.setSelectionEnd(targetAddressMatcher.end());
+			taDisplay.setSelectionStart(targetAddressMatcher.start());
+			taDisplay.setSelectionEnd(targetAddressMatcher.end());
 			lblStatus.setText("-");
 		} else {
 			String status = String.format("Target line: %04X Not Start of Instruction%n", programCounter);
@@ -337,12 +332,12 @@ public class ShowCode extends JDialog implements Runnable{
 		} //
 
 	}// selectTheCorrectLine
-	//''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+		// ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
 	@Override
 	public void run() {
 		setProgramCounter(wrs.getProgramCounter());
 	}// run
-
 
 	// ===============================================================================
 	public void close() {
@@ -368,7 +363,8 @@ public class ShowCode extends JDialog implements Runnable{
 		myPrefs = null;
 		this.setVisible(true);
 		// addFile1("C:\\Users\\admin\\git\\assembler8080\\assembler8080\\Code\\currentOS\\ROM.list");
-
+		taDisplay.setSelectedTextColor(Color.BLUE);
+		//Highlighter h = new Highlighter();
 		clearCurrentIndicaters();
 	}// appInit
 
@@ -406,10 +402,17 @@ public class ShowCode extends JDialog implements Runnable{
 		gbc_scrollPane.gridy = 0;
 		getContentPane().add(scrollPane, gbc_scrollPane);
 
-		tpDisplay = new JTextArea();
-		tpDisplay.setEditable(false);
-		tpDisplay.setFont(new Font("Courier New", Font.PLAIN, 14));
-		scrollPane.setViewportView(tpDisplay);
+		taDisplay = new JTextArea();
+		taDisplay.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent mouseEvent) {
+				if(mouseEvent.getClickCount() > 1)
+				setProgramCounter(programCounter);
+			}
+		});
+		taDisplay.setEditable(false);
+		taDisplay.setFont(new Font("Courier New", Font.PLAIN, 14));
+		scrollPane.setViewportView(taDisplay);
 
 		lblHeader = new JLabel(NO_ACTIVE_FILE);
 		lblHeader.setHorizontalAlignment(SwingConstants.CENTER);
@@ -539,9 +542,8 @@ public class ShowCode extends JDialog implements Runnable{
 	private static final String DOT = ".";
 
 	private JMenu mnuFiles;
-	private JTextArea tpDisplay;
+	private JTextArea taDisplay;
 	private JLabel lblHeader;
 	private JLabel lblStatus;
-
 
 }// class ShowCode
