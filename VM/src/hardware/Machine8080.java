@@ -137,6 +137,10 @@ public class Machine8080 implements Observer {
 	}// doRun
 
 	private void doReset() {
+		byte[] storage = Core.getInstance().getStorage();
+		for (int i = 0; i < storage.length;i++){
+			storage[i] = 0;
+		}//for
 		loadROM();
 	}// doReset
 
@@ -264,6 +268,16 @@ public class Machine8080 implements Observer {
 			trapManager.close();
 			trapManager = null;
 		} // if trapManager
+		if (ioController !=null){
+			ioController.closeConnection();
+			ioController = null;
+		}// if ioController
+		if(trapManager!= null){
+			trapManager = null;
+		}//if trapManager
+		if(showCode!= null){
+			showCode = null;
+		}//if showCode
 	}// cleanupObjects
 
 	private void appInit() {
@@ -324,6 +338,7 @@ public class Machine8080 implements Observer {
 		menuBar.add(mnuFile);
 
 		mnuFileNew = new JMenuItem("New");
+		mnuFileNew.setToolTipText("Reload Rom");
 		mnuFileNew.setName(MNU_FILE_NEW);
 		mnuFileNew.addActionListener(menuAdapter);
 
