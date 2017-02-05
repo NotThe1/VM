@@ -88,7 +88,7 @@ public class ShowCode extends JDialog implements Runnable {
 
 	private void doAddFile() {
 		JFileChooser fc = (newListPath) == null ? FilePicker.getAsmPicker() : FilePicker.getAsmPicker(newListPath);
-		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+		if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
 		} // if - open
@@ -150,8 +150,8 @@ public class ShowCode extends JDialog implements Runnable {
 	}// loadDisplay
 
 	private void doAddFilesFromList() {
-		JFileChooser fc = FilePicker.getListAsmPicker();
-		if (fc.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+		JFileChooser fc = FilePicker.getAnyListPicker();
+		if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
 			System.out.printf("You cancelled the Load Asm from File List...%n", "");
 		} else {
 			FileReader fileReader;
@@ -160,6 +160,7 @@ public class ShowCode extends JDialog implements Runnable {
 				fileReader = new FileReader((fc.getSelectedFile().getAbsolutePath()));
 				BufferedReader reader = new BufferedReader(fileReader);
 				while ((filePathName = reader.readLine()) != null) {
+					filePathName = filePathName.replaceFirst("(?i)\\.mem$","\\.list");
 					addFile(filePathName);
 				} // while
 				reader.close();
@@ -173,7 +174,7 @@ public class ShowCode extends JDialog implements Runnable {
 
 	private void doSaveSelectedToList() {
 		JFileChooser fc = FilePicker.getListAsmPicker();
-		if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+		if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
 			System.out.printf("You cancelled Save Selected as List...%n", "");
 			return;
 		} // if

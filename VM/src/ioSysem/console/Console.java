@@ -133,7 +133,7 @@ public class Console extends Device8080 {
 			try {
 				serialPort.closePort();
 			} catch (SerialPortException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			}// try
 			serialPort = null;
 		}// if

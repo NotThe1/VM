@@ -9,7 +9,6 @@ import java.nio.channels.FileChannel;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-//import javax.swing.filechooser.FileNameExtensionFilter;
 
 import disks.DiskMetrics;
 import utilities.FilePicker;
@@ -17,14 +16,13 @@ import utilities.FilePicker;
 public class MakeNewDisk {
 
 	public static File makeNewDisk() {
-
 		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
 				"F8SS", "F8DS");
 		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return null;
 		} // if
-
+		
 		File selectedFile = fc.getSelectedFile();
 		String fileName = selectedFile.getName();
 		String fileExtension = "";

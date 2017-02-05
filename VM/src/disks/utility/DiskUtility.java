@@ -189,7 +189,7 @@ public class DiskUtility implements Runnable {
 	public void diskLoad() {
 		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
 				"F8SS", "F8DS");
-		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+		if (fc.showOpenDialog(frmDiskUtility) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
 		} // if
@@ -253,7 +253,7 @@ public class DiskUtility implements Runnable {
 	private void diskSaveAs() {
 		String diskType = diskDrive.getDiskType();
 		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", diskType);
-		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
+		if (fc.showOpenDialog(frmDiskUtility) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
 		} // if fc
@@ -763,7 +763,7 @@ public class DiskUtility implements Runnable {
 
 		JFileChooser nativeChooser = new JFileChooser(startingDir);
 		nativeChooser.setMultiSelectionEnabled(false);
-		if (nativeChooser.showDialog(null, "Select the file") != JFileChooser.APPROVE_OPTION) {
+		if (nativeChooser.showDialog(frmDiskUtility, "Select the file") != JFileChooser.APPROVE_OPTION) {
 			btnImport.setEnabled(false);
 			btnExport.setEnabled(false);
 			txtNativeFileInOut.setText("");

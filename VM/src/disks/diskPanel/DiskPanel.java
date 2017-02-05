@@ -25,6 +25,13 @@ public class DiskPanel extends JPanel {
 	private JTextField txtDiskC;
 	private JTextField txtDiskD;
 	
+	public void noDisks(){
+		txtDiskA.setText(NO_DISK);
+		txtDiskB.setText(NO_DISK);
+		txtDiskC.setText(NO_DISK);
+		txtDiskD.setText(NO_DISK);
+	}//noDisks
+	
 
 	/**
 	 * Create the panel.

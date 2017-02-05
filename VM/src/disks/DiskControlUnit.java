@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
+import disks.diskPanel.DiskPanel;
 import memory.Core;
 import memory.CpuBuss;
 import memory.IoBuss;
@@ -96,6 +97,16 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 		drives[index].dismount();
 		drives[index] = null;
 	}// removeDiskDrive
+	
+	public void removeAllDiskDrives(DiskPanel diskPanel){
+		for (int i = 0; i < drives.length; i++) {
+			if (drives[i] != null) {
+				//drives[i].removeVDiskErroListener(this);
+				removeDiskDrive(i);
+			} // if
+		} // for
+		diskPanel.noDisks();
+	}//removeAllDiskDrives
 
 	public int getMaxNumberOfDrives() {
 		return maxNumberOfDrives;

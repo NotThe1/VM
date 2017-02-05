@@ -147,6 +147,11 @@ public class FilePicker {
 		return customizeChooser(listPath, "Memory Files Lists", LIST_MEM_SUFFIX);
 	}// getDiskPicker customize
 	
+	public static JFileChooser getAnyListPicker() {
+		setTargetPaths(LISTS);
+		return customizeChooser(listPath, "Memory and Listing Files Lists", LIST_MEM_SUFFIX, LIST_ASM_SUFFIX);
+	}// getDiskPicker customize
+	
 	public static JFileChooser getMemPicker() {
 		memoryPath = Paths.get(CODE_PATH);
 		return customizeChooser(memoryPath, "Memory Files ", "mem","hex");
