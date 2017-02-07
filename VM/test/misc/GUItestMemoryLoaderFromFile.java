@@ -48,8 +48,8 @@ public class GUItestMemoryLoaderFromFile {
 			return;
 		}//if - open
 		
-		String fileName = MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
-		System.out.printf("FileName: %s%n", fileName);
+		MemoryLoaderFromFile.loadMemoryImage(fc.getSelectedFile());
+//		System.out.printf("FileName: %s%n", fileName);
 		
 	}//doOpen
 	//----------------------------------------------------------------
