@@ -3,6 +3,8 @@ package disks;
 import java.util.EventObject;
 
 public class DCUActionEvent extends EventObject {
+	private static final long serialVersionUID = 1L;
+
 	int diskIndex;
 	int command;
 
@@ -12,14 +14,14 @@ public class DCUActionEvent extends EventObject {
 		this.command = actionType;
 		// TODO Auto-generated constructor stub
 	}// DCUActionEvent
-	
-	public int getDiskIndex(){
+
+	public int getDiskIndex() {
 		return this.diskIndex;
-	}//getDiskIndex
-	
-	public int getActionType(){
+	}// getDiskIndex
+
+	public int getActionType() {
 		return this.command;
-	}//getActionType
+	}// getActionType
 
 	public static final int COMMAND_READ = 01;
 	public static final int COMMAND_Write = 02;

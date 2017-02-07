@@ -1,82 +1,56 @@
 package codeSupport;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.List;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
-
-import javax.swing.JFrame;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.prefs.Preferences;
-import java.awt.GridBagLayout;
-
-import javax.swing.JMenuBar;
-import javax.swing.JLabel;
-
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
-import javax.swing.JList;
-import javax.swing.SpinnerListModel;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.JSpinner;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 import java.awt.print.PrinterException;
-
-import javax.swing.border.TitledBorder;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.MatteBorder;
-
-import java.awt.Color;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.prefs.Preferences;
 
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.JTable;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
-import javax.swing.JSeparator;
-import javax.swing.border.EtchedBorder;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class TableMaker {
 	private JFrame frmOpcodeTableMaker;

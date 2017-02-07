@@ -66,7 +66,7 @@ public class DiskDrive {
 			raf.close();
 			raf = null;
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -77,7 +77,7 @@ public class DiskDrive {
 			try {
 				fileChannel.close();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				//  Auto-generated catch block
 				e.printStackTrace();
 			}
 			fileChannel = null;

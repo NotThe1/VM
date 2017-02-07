@@ -15,12 +15,12 @@ public class CPMDirectory {
 	private int directoryBlockCount;
 	private int sectorsPerBlock;
 	private int bytesPerSector;
-	private int trackOffset; // ofs
+//	private int trackOffset; // ofs
 	public int sectorsOffset;
 	private int maxBlocks;
 	private int logicalRecordsPerSector;
 
-	private int directoryEntryNumber;
+//	private int directoryEntryNumber;
 	private int directoryStartSector;
 	private int directoryLastSector;
 
@@ -40,7 +40,7 @@ public class CPMDirectory {
 		this.maxEntries = diskMetric.getDRM() + 1;
 		this.sectorsPerBlock = diskMetric.sectorsPerBlock;
 		this.bytesPerSector = diskMetric.bytesPerSector;
-		this.trackOffset = diskMetric.getOFS();
+//		this.trackOffset = diskMetric.getOFS();
 		this.maxBlocks = diskMetric.getDSM() + 1;
 		this.directoryBlockCount = diskMetric.directoryBlockCount;
 		this.sectorsOffset = diskMetric.getDirectoryStartSector();

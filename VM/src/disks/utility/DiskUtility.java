@@ -129,8 +129,8 @@ public class DiskUtility extends JDialog {
 	private int totalSectors;
 	private int maxDirectoryEntry;
 	private int maxBlockNumber;
-	private int logicalRecordsPerSector;
-	private int linesPerLogicalRecord = Disk.LOGICAL_SECTOR_SIZE / CHARACTERS_PER_LINE;
+//	private int logicalRecordsPerSector;
+//	private int linesPerLogicalRecord = Disk.LOGICAL_SECTOR_SIZE / CHARACTERS_PER_LINE;
 
 	private byte[] diskSector;
 
@@ -358,7 +358,7 @@ public class DiskUtility extends JDialog {
 		lblDiskName.setToolTipText(state ? currentDisk.getPath() : NO_ACTIVE_FILE);
 
 		// linesToDisplay = state ? bytesPerSector / CHARACTERS_PER_LINE : 0;
-		logicalRecordsPerSector = state ? diskMetrics.getLSperPS() : 0;
+//		logicalRecordsPerSector = state ? diskMetrics.getLSperPS() : 0;
 
 		setDisplayRadix();
 

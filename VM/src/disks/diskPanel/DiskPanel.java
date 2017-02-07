@@ -14,6 +14,7 @@ import javax.swing.border.TitledBorder;
 import hardware.Machine8080.DiskPanelAdapter;
 
 public class DiskPanel extends JPanel {
+	private static final long serialVersionUID = 1L;
 	private JPanel panelDisksAB;
 	public JLabel lblA;
 	public JLabel lblB;

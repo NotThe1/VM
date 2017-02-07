@@ -50,6 +50,8 @@ import utilities.menus.MenuUtility;
 
 public class ShowCode extends JDialog implements Runnable {
 
+	private static final long serialVersionUID = 1L;
+
 	private static ShowCode instance = new ShowCode();
 
 	public static ShowCode getInstance() {
@@ -317,7 +319,6 @@ public class ShowCode extends JDialog implements Runnable {
 	}// isLineInThisFile
 
 	private void selectTheCorrectLine() {
-		String line;
 		String targetAddressRegex = String.format("\\d{4}: %04X [A-Fa-f\\d]{2}.*\r", programCounter);
 		Pattern targetAddressPattern = Pattern.compile(targetAddressRegex);
 		Matcher targetAddressMatcher;
@@ -533,10 +534,6 @@ public class ShowCode extends JDialog implements Runnable {
 	private static final String MNU_FILE_SAVE_SELECTED_TO_LIST = "mnuFilSaveSelectedToList";
 	private static final String MNU_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
 	private static final String MNU_CLEAR_ALL_FILES = "mnuClearAllFiles";
-
-	private static final String LEFT_P = "(";
-	private static final String RIGHT_P = ")";
-	private static final String MID_P = RIGHT_P + LEFT_P;
 
 	private static final String NO_ACTIVE_FILE = "<< No Active FIle >>";
 	private static final String EMPTY_STRING = "";

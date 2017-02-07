@@ -254,9 +254,7 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 		System.out.printf("currentSector: %02X%n", currentSector);
 		System.out.printf("currentByteCount: %04X%n", currentByteCount);
 		System.out.printf("currentDMAAddress: %04X%n", currentDMAAddress);
-		if (currentByteCount == 0X1000){
-			int a = 0;
-		}
+
 	}// debugShowControlTable
 
 	/* \/ Event Handling Routines \/ */

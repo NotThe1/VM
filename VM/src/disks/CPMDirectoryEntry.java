@@ -2,8 +2,6 @@ package disks;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.SortedMap;
 
 public class CPMDirectoryEntry {
 //	private byte userNumber;
@@ -68,7 +66,7 @@ public class CPMDirectoryEntry {
 		try {
 			strEntry = new String(rawDirectory, "US-ASCII");
 		} catch (UnsupportedEncodingException e1) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e1.printStackTrace();
 		}//try
 
@@ -177,7 +175,7 @@ public class CPMDirectoryEntry {
 				rawDirectory[Disk.DIR_TYPE + i] = type[i];
 			}//for
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e.printStackTrace();
 		}//try
 		if (wasReadOnly) {
