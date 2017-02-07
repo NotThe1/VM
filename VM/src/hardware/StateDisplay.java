@@ -38,6 +38,24 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	}// run
 
 	@Override
+	public void setDisplayComponentsEnabled(boolean state) {
+		rbCarry.setEnabled(state);
+		rbParity.setEnabled(state);
+		rbAuxCarry.setEnabled(state);
+		rbZero.setEnabled(state);
+		rbSign.setEnabled(state);
+		ftfRegL.setEnabled(state);
+		ftfRegH.setEnabled(state);
+		ftfRegE.setEnabled(state);
+		ftfRegD.setEnabled(state);
+		ftfRegC.setEnabled(state);
+		ftfRegB.setEnabled(state);
+		ftfRegA.setEnabled(state);
+		ftfSP.setEnabled(state);
+		ftfPC.setEnabled(state);
+	}// setDisplayComponentsEnabled
+
+	@Override
 	public void updateDisplayAll() {
 		updateDisplayAllFlags();
 		updateDisplayAllRegisters();
@@ -152,18 +170,18 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	 * Create the panel.
 	 */
 	public StateDisplay() {
-		
+
 		Font fontDigital = null;
 		URL fontUrl = StateDisplay.class.getResource("/hardware/resources/Digit.ttf");
 		try {
-			 fontDigital = Font.createFont(Font.TRUETYPE_FONT,fontUrl.openStream());
-			 fontDigital = fontDigital.deriveFont(Font.BOLD,DIGITAL_FONT_SIZE);
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		ge.registerFont(fontDigital);
+			fontDigital = Font.createFont(Font.TRUETYPE_FONT, fontUrl.openStream());
+			fontDigital = fontDigital.deriveFont(Font.BOLD, DIGITAL_FONT_SIZE);
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			ge.registerFont(fontDigital);
 		} catch (FontFormatException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}//try
+		} // try
 
 		stateAdapter = new StateAdapter();
 		HexFormatter format2HexDigits = new HexFormatter(2);
@@ -206,7 +224,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfPC.setBounds(52, 2, 110, 52);
 		panelPC.add(ftfPC);
 		ftfPC.setValue(0000);
-//		ftfPC.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfPC.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfPC.setFont(fontDigital);
 
 		JPanel panelSP = new JPanel();
@@ -230,13 +248,14 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfSP.setBounds(52, 2, 110, 52);
 		panelSP.add(ftfSP);
 		ftfSP.setValue(0000);
-//		ftfSP.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfSP.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfSP.setFont(fontDigital);
 
 		JPanel panelGeneralPurposeRegisters = new JPanel();
 		panelGeneralPurposeRegisters.setBounds(45, 100, 510, 115);
-		panelGeneralPurposeRegisters.setBorder(new TitledBorder(new BevelBorder(BevelBorder.RAISED, null, null, null,
-				null), "General Purpose Registers", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, Color.BLUE));
+		panelGeneralPurposeRegisters
+				.setBorder(new TitledBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null),
+						"General Purpose Registers", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, Color.BLUE));
 		add(panelGeneralPurposeRegisters);
 		panelGeneralPurposeRegisters.setLayout(null);
 
@@ -259,7 +278,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfRegA.addFocusListener(stateAdapter);
 		ftfRegA.setName(FTF_REG_A);
 		ftfRegA.setHorizontalAlignment(SwingConstants.LEFT);
-//		ftfRegA.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfRegA.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfRegA.setFont(fontDigital);
 		ftfRegA.setBounds(2, 34, 60, 52);
 		ftfRegA.setValue((byte) 00);
@@ -284,7 +303,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfRegB.addFocusListener(stateAdapter);
 		ftfRegB.setName(FTF_REG_B);
 		ftfRegB.setHorizontalAlignment(SwingConstants.LEFT);
-//		ftfRegB.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfRegB.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfRegB.setFont(fontDigital);
 		ftfRegB.setBounds(2, 34, 60, 52);
 		ftfRegB.setValue((byte) 00);
@@ -309,7 +328,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfRegC.addFocusListener(stateAdapter);
 		ftfRegC.setName(FTF_REG_C);
 		ftfRegC.setHorizontalAlignment(SwingConstants.LEFT);
-//		ftfRegC.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfRegC.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfRegC.setFont(fontDigital);
 		ftfRegC.setBounds(2, 34, 60, 52);
 		ftfRegC.setValue((byte) 00);
@@ -334,7 +353,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfRegD.addFocusListener(stateAdapter);
 		ftfRegD.setName(FTF_REG_D);
 		ftfRegD.setHorizontalAlignment(SwingConstants.LEFT);
-//		ftfRegD.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfRegD.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfRegD.setFont(fontDigital);
 		ftfRegD.setBounds(2, 34, 60, 52);
 		ftfRegD.setValue((byte) 00);
@@ -359,7 +378,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfRegE.addFocusListener(stateAdapter);
 		ftfRegE.setName(FTF_REG_E);
 		ftfRegE.setHorizontalAlignment(SwingConstants.LEFT);
-//		ftfRegE.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfRegE.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfRegE.setFont(fontDigital);
 		ftfRegE.setBounds(2, 34, 60, 52);
 		ftfRegE.setValue((byte) 00);
@@ -384,7 +403,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfRegH.addFocusListener(stateAdapter);
 		ftfRegH.setName(FTF_REG_H);
 		ftfRegH.setHorizontalAlignment(SwingConstants.LEFT);
-//		ftfRegH.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfRegH.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfRegH.setFont(fontDigital);
 		ftfRegH.setBounds(2, 34, 60, 52);
 		ftfRegH.setValue((byte) 00);
@@ -409,7 +428,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 		ftfRegL.addFocusListener(stateAdapter);
 		ftfRegL.setName(FTF_REG_L);
 		ftfRegL.setHorizontalAlignment(SwingConstants.LEFT);
-//		ftfRegL.setFont(new Font("Tahoma", Font.PLAIN, 38));
+		// ftfRegL.setFont(new Font("Tahoma", Font.PLAIN, 38));
 		ftfRegL.setFont(fontDigital);
 		ftfRegL.setBounds(2, 34, 60, 52);
 		ftfRegL.setValue((byte) 00);
@@ -492,18 +511,18 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 					return (byte) ((int) (Integer.valueOf(workingText, 16)));
 				} else {
 					return Integer.valueOf(workingText, 16);
-				}// if Byte or Integer
+				} // if Byte or Integer
 
 			} catch (NumberFormatException nfe) {
 				throw new ParseException(text, 0);
-			}// try
+			} // try
 		}// stringToValue
 
 		public String valueToString(Object value) throws ParseException {
 			String ans = String.format(formatString, value);
 			if (ans.length() > numberOfDigits) {
-				ans =ans.substring(ans.length() - numberOfDigits);
-			}// if
+				ans = ans.substring(ans.length() - numberOfDigits);
+			} // if
 			return ans;
 		}// valueToString
 	}// class HexFormatter
@@ -539,13 +558,13 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 					textComponent.selectAll();
 					textComponent.setSelectedTextColor(INVALID_COLOR);
 					return false;
-				}// if
+				} // if
 			} catch (Exception e) {
 				textComponent.setForeground(INVALID_COLOR);
 				textComponent.selectAll();
 				textComponent.setSelectedTextColor(INVALID_COLOR);
 				return false;
-			}// try - catch
+			} // try - catch
 			textComponent.setForeground(VALID_COLOR);
 			textComponent.setSelectedTextColor(VALID_COLOR);
 
@@ -594,7 +613,7 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	// ----------------------------- Classes ----------------------------------------
 
 	public final static int DIGITAL_FONT_SIZE = 40;
-	
+
 	public final static String FTF_PC = "ftfPC";
 	public final static String FTF_SP = "ftfSP";
 	public final static String FTF_REG_A = "ftfRegA";
@@ -627,5 +646,4 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	private JFormattedTextField ftfPC;
 
 }// class StateDisplay
-// ----------------------------- Classes class StateDisplay end ----------------------------------------
-
+	// ----------------------------- Classes class StateDisplay end ----------------------------------------

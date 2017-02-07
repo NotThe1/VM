@@ -1,6 +1,7 @@
 
 package disks.utility;
 
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -31,11 +32,11 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -76,19 +77,11 @@ import utilities.hdNumberBox.HDNumberValueChangeListener;
 import utilities.hdNumberBox.HDSeekPanel;
 import utilities.hexEdit.HexEditPanelSimple;
 
-public class DiskUtility extends JDialog  {
-	
-	private static DiskUtility instance = new DiskUtility();
+public class DiskUtility0 implements Runnable {
 
-	public static DiskUtility getInstance() {
-		return instance;
-	}// getInstance
+	File testDisk;
 
-
-	private static final long serialVersionUID = 1L;
-	// File testDisk;
-
-	// private JFrame frmDiskUtility;
+	private JFrame frmDiskUtility;
 	private HexEditPanelSimple panelFileHex;
 	private HexEditPanelSimple panelSectorDisplay;
 
@@ -106,7 +99,7 @@ public class DiskUtility extends JDialog  {
 	private String radixFormat;
 	private boolean dirtyFile;
 	// ....
-	private DiskUtilityAdapter diskUtilityAdapter = new DiskUtilityAdapter();
+	private DiskUtilityAdapter diskUtilityAdapter;
 
 	private ArrayList<HDNumberBox> hdNumberBoxs;
 	private HDSeekPanel hdSeekPanel;
@@ -181,7 +174,7 @@ public class DiskUtility extends JDialog  {
 
 		return workDisk;
 	}// useBackup
-		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	private void diskNew() {
 		File newFile = MakeNewDisk.makeNewDisk();
@@ -196,7 +189,7 @@ public class DiskUtility extends JDialog  {
 	public void diskLoad() {
 		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
 				"F8SS", "F8DS");
-		if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+		if (fc.showOpenDialog(frmDiskUtility) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
 		} // if
@@ -228,9 +221,9 @@ public class DiskUtility extends JDialog  {
 			}// switch
 		} // if
 			// -------------------------------------------------------
-			// if (dirtyFile) {
-			// updateDisk();
-			// } // if
+		// if (dirtyFile) {
+		// updateDisk();
+		// } // if
 
 		if (diskDrive != null) {
 			diskDrive.dismount();
@@ -260,7 +253,7 @@ public class DiskUtility extends JDialog  {
 	private void diskSaveAs() {
 		String diskType = diskDrive.getDiskType();
 		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", diskType);
-		if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+		if (fc.showOpenDialog(frmDiskUtility) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
 		} // if fc
@@ -287,7 +280,7 @@ public class DiskUtility extends JDialog  {
 		try {
 			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
-			//
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} // try
 	}// updateDisk
@@ -308,14 +301,14 @@ public class DiskUtility extends JDialog  {
 			dirtyFile = false;
 		} else {
 			manageFileMenus(MNU_DISK_CLOSE);
-			panelSectorDisplay.loadData(NO_ACTIVE_FILE.getBytes());
+			panelSectorDisplay.loadData(NO_FILE);
 			btnExport.setEnabled(false);
 			btnImport.setEnabled(false);
 
 			scrollDirectoryTable.setViewportView(null);
 			showDirectoryDetail(new byte[32]);
 
-			panelFileHex.loadData(NO_ACTIVE_FILE.getBytes());
+			panelFileHex.loadData(NO_FILE);
 			cbFileNames.setModel(new FileCpmModel());
 			// cbCpmFileInOut.setModel(new FileCpmModel());
 			lblRecordCount.setText("0");
@@ -415,7 +408,7 @@ public class DiskUtility extends JDialog  {
 
 		String fileName = ((String) cbCpmFileInOut.getSelectedItem()).toUpperCase();
 		cbCpmFileInOut.setSelectedItem(fileName);
-
+		
 		if (fileCpmModel.exists(fileName)) {
 			int ans = JOptionPane.showConfirmDialog(null, "File Exits, Do you want to overwrite?",
 					"Copying a Native File to a CPM file", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -424,32 +417,32 @@ public class DiskUtility extends JDialog  {
 			} // if
 			deleteFile = true;
 		} // if
-
+		
 		// do we have enough space on the CP/M disk to do this?
-		if (!enoughSpaceOnCPM(deleteFile, fileName)) {
+		if (!enoughSpaceOnCPM(deleteFile,fileName)) {
 			return;
-		} // if - space
+		}// if - space
 		if (deleteFile) {
 			directory.deleteFile(fileName);
-		} // if
+		}//if
 
 		// now we have all the pieces needed to actually move the file
 		// now we need to get a directory entry and some storage for the file
-
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		// ByteArrayInputStream bis = new ByteArrayInputStream(cpmFile.readNet());
+		
+		 ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		//ByteArrayInputStream bis = new ByteArrayInputStream(cpmFile.readNet());
 		try {
-			Files.copy(Paths.get(nativeFile.getAbsolutePath()), bos);
+			Files.copy(Paths.get(nativeFile.getAbsolutePath()),bos);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} // try
-
+		
 		byte[] dataToWrite = bos.toByteArray();
-
+		
 		CPMFile newFile = CPMFile.createCPMFile(diskDrive, directory, fileName);
 		boolean result = newFile.writeNewFile(dataToWrite);
-
+		
 		// need the two display... methods run on different threads
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -459,27 +452,28 @@ public class DiskUtility extends JDialog  {
 		displayDirectoryView(); // Directory View
 		// need the two display... methods run on different threads
 
+		
+		
 		System.out.printf("[DiskUtility.fileInport] CPM file: %s, nativeFile: %s%n\tdeleteFile: %s, writeNewFile: %s%n",
-				fileName, nativeFile, deleteFile, result);
-
+				fileName, nativeFile,deleteFile,result);
+		
 	}// fileInport
-		// ...............................................................
-
-	private boolean enoughSpaceOnCPM(boolean deleteFile, String fileName) {
-		int blocksNeeded = (int) Math.ceil(nativeFile.length() / (float) diskMetrics.getBytesPerBlock());
+	//...............................................................
+	private boolean enoughSpaceOnCPM(boolean deleteFile,String fileName) {
+		int blocksNeeded = (int) Math.ceil(nativeFile.length() / (float) diskMetrics.getBytesPerBlock());	
 		int availableBlocks = directory.getAvailableBlockCount();
-		if (availableBlocks > blocksNeeded) {
+		if(availableBlocks > blocksNeeded){
 			return true;
-		} //
+		}//
 		availableBlocks = deleteFile ? availableBlocks + directory.getFileBlocksCount(fileName) : availableBlocks;
 		boolean result = true;
-
+		
 		if (blocksNeeded > directory.getAvailableBlockCount()) {
-			String msg = String.format("Not enough space on CPM disk%n" + "Blocks Available: %,d -Blocks  Need: %,d",
-					availableBlocks, blocksNeeded);
+			String msg = String.format("Not enough space on CPM disk%n"
+					+ "Blocks Available: %,d -Blocks  Need: %,d", availableBlocks, blocksNeeded);
 			JOptionPane.showMessageDialog(null, msg, "Copying a file to CPM", JOptionPane.WARNING_MESSAGE);
 			result = false;
-		} // if
+		}// if
 		return result;
 	}// enoughSpaceOnCPM
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -508,7 +502,7 @@ public class DiskUtility extends JDialog  {
 
 		byte[] dataToDisplay;
 		if (cpmFile.getRecordCount() == 0) {
-			dataToDisplay = NO_ACTIVE_FILE.getBytes();
+			dataToDisplay = NO_FILE;
 		} else {
 			dataToDisplay = cpmFile.readRaw();
 		} // if
@@ -769,7 +763,7 @@ public class DiskUtility extends JDialog  {
 
 		JFileChooser nativeChooser = new JFileChooser(startingDir);
 		nativeChooser.setMultiSelectionEnabled(false);
-		if (nativeChooser.showDialog(this, "Select the file") != JFileChooser.APPROVE_OPTION) {
+		if (nativeChooser.showDialog(frmDiskUtility, "Select the file") != JFileChooser.APPROVE_OPTION) {
 			btnImport.setEnabled(false);
 			btnExport.setEnabled(false);
 			txtNativeFileInOut.setText("");
@@ -841,8 +835,8 @@ public class DiskUtility extends JDialog  {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					DiskUtility window = new DiskUtility();
-					window.setVisible(true);
+					DiskUtility0 window = new DiskUtility0();
+					window.frmDiskUtility.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -853,11 +847,11 @@ public class DiskUtility extends JDialog  {
 
 	private void appClose() {
 		diskClose();
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
-		Dimension dim = this.getSize();
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility0.class);
+		Dimension dim = frmDiskUtility.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
-		Point point = this.getLocation();
+		Point point = frmDiskUtility.getLocation();
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
 		myPrefs.putInt("Tab", tabbedPane.getSelectedIndex());
@@ -871,7 +865,7 @@ public class DiskUtility extends JDialog  {
 				e.printStackTrace();
 			} // try
 		} // if
-		dispose();
+		System.exit(0);
 	}// appClose
 
 	/**
@@ -884,7 +878,7 @@ public class DiskUtility extends JDialog  {
 
 		String tempFullPath;
 		for (String tempFile : tempFiles) {
-			tempFullPath = strTempDir + File.separator + tempFile;
+			tempFullPath = strTempDir + FILE_SEPARTOR + tempFile;
 			try {
 				boolean wasDeleted = Files.deleteIfExists(Paths.get(tempFullPath));
 				System.out.printf("[DiskUtility.cleanUpOldFiles] wasDeleted %-10s  %s%n", wasDeleted, tempFullPath);
@@ -908,16 +902,16 @@ public class DiskUtility extends JDialog  {
 			// return name.endsWith(ext);
 		}// accept
 	}// class PrefixFilter
-		// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+	// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	// private void appInit0() {
-	// diskUtilityAdapter = new DiskUtilityAdapter();
-	// }// appInit0
+	private void appInit0() {
+		diskUtilityAdapter = new DiskUtilityAdapter();
+	}// appInit0
 
 	private void appInit() {
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
-		this.setSize(895, 895);
-		this.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility0.class);
+		frmDiskUtility.setSize(895, 895);
+		frmDiskUtility.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		tabbedPane.setSelectedIndex(myPrefs.getInt("Tab", 0));
 		// splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
 		myPrefs = null;
@@ -928,27 +922,25 @@ public class DiskUtility extends JDialog  {
 		hdNumberBoxs.add(hdSeekPanel);
 
 		cleanUpOldFiles();
-		 byte[] FRED = "<No Active File>".getBytes();
-		byte[] BOB =  NO_ACTIVE_FILE.getBytes();
 
 		// setDisplayRadix();
 		haveDisk(false);
 		manageFileMenus(MNU_DISK_CLOSE);
 		// panelSectorDisplay.loadData(NO_FILE);
 	}// appInit
-
-//	@Override
-//	public void run() {
-//		String[] param = new String[] { "arg0", "arg1" };
-//		main(param);
-//
-//	}
+	
+	@Override
+	public void run() {
+		String[] param = new String[] {"arg0","arg1"};
+		main(param);
+		
+	}
 
 	/**
 	 * Create the application.
 	 */
-	private DiskUtility() {
-		// appInit0();
+	public DiskUtility0() {
+		appInit0();
 		initialize();
 		appInit();
 	}// Constructor
@@ -957,29 +949,22 @@ public class DiskUtility extends JDialog  {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		// frmDiskUtility = new JFrame();
-		// frmDiskUtility.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		// frmDiskUtility.addWindowListener(new WindowAdapter() {
-		// @Override
-		// public void windowClosing(WindowEvent arg0) {
-		// appClose();
-		// }
-		// });
-		addWindowListener(new WindowAdapter() {
+		frmDiskUtility = new JFrame();
+		frmDiskUtility.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmDiskUtility.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
 				appClose();
-			}//
+			}
 		});
-
-		setTitle("Disk Utility");
-		setBounds(100, 100, 450, 300);
+		frmDiskUtility.setTitle("Disk Utility");
+		frmDiskUtility.setBounds(100, 100, 450, 300);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
 		gridBagLayout.rowHeights = new int[] { 0, 0, 0 };
 		gridBagLayout.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
-		getContentPane().setLayout(gridBagLayout);
+		frmDiskUtility.getContentPane().setLayout(gridBagLayout);
 
 		JToolBar toolBar = new JToolBar();
 		GridBagConstraints gbc_toolBar = new GridBagConstraints();
@@ -987,7 +972,7 @@ public class DiskUtility extends JDialog  {
 		gbc_toolBar.insets = new Insets(0, 0, 5, 0);
 		gbc_toolBar.gridx = 0;
 		gbc_toolBar.gridy = 0;
-		getContentPane().add(toolBar, gbc_toolBar);
+		frmDiskUtility.getContentPane().add(toolBar, gbc_toolBar);
 
 		tbBootable = new JToggleButton("Bootable");
 		tbBootable.setName(TB_BOOTABLE);
@@ -1007,13 +992,13 @@ public class DiskUtility extends JDialog  {
 		btnNewButton.setVisible(false);
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-
-				// try {
-				// File tempFile = File.createTempFile("diskUtility", ".tmp");
-				// System.out.printf("[DiskUtility.btnNewButton] Temp File: %s%n", tempFile.getAbsolutePath());
-				// } catch (IOException e) {
-				// e.printStackTrace();
-				// } // try
+				
+//				try {
+//					File tempFile = File.createTempFile("diskUtility", ".tmp");
+//					System.out.printf("[DiskUtility.btnNewButton] Temp File: %s%n", tempFile.getAbsolutePath());
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				} // try
 			}
 		});
 		toolBar.add(btnNewButton);
@@ -1023,7 +1008,7 @@ public class DiskUtility extends JDialog  {
 		gbc_panelMain.fill = GridBagConstraints.VERTICAL;
 		gbc_panelMain.gridx = 0;
 		gbc_panelMain.gridy = 1;
-		getContentPane().add(panelMain, gbc_panelMain);
+		frmDiskUtility.getContentPane().add(panelMain, gbc_panelMain);
 		GridBagLayout gbl_panelMain = new GridBagLayout();
 		gbl_panelMain.columnWidths = new int[] { 0, 0 };
 		gbl_panelMain.rowHeights = new int[] { 0, 0, 0 };
@@ -1961,7 +1946,7 @@ public class DiskUtility extends JDialog  {
 		panel.add(btnImport, gbc_btnImport);
 
 		JMenuBar menuBar = new JMenuBar();
-		this.setJMenuBar(menuBar);
+		frmDiskUtility.setJMenuBar(menuBar);
 
 		JMenu mnuDisk = new JMenu("Disk");
 		menuBar.add(mnuDisk);
@@ -2165,13 +2150,11 @@ public class DiskUtility extends JDialog  {
 
 	// ---------------------------------------------------------------
 
-//	public static final byte[] NO_FILE = new byte[]  { (byte) 0X3C, (byte) 0X4E, (byte) 0X6F, (byte) 0X20, (byte) 0X41,
-//			(byte) 0X63, (byte) 0X74, (byte) 0X69, (byte) 0X76, (byte) 0X65, (byte) 0X20, (byte) 0X46, (byte) 0X69,
-//			(byte) 0X6C, (byte) 0X65, (byte) 0X3E };
+	public static final byte[] NO_FILE = new byte[] { (byte) 0X3C, (byte) 0X4E, (byte) 0X6F, (byte) 0X20, (byte) 0X41,
+			(byte) 0X63, (byte) 0X74, (byte) 0X69, (byte) 0X76, (byte) 0X65, (byte) 0X20, (byte) 0X46, (byte) 0X69,
+			(byte) 0X6C, (byte) 0X65, (byte) 0X3E };
 
 	public static final String NO_ACTIVE_FILE = "<No Active File>";
-	
-	public static final byte[] NO_FILE = NO_ACTIVE_FILE.getBytes();
 
 	public static final String HDN_HEAD = "hdnHead";
 	public static final String HDN_TRACK = "hdnTrack";
@@ -2294,5 +2277,7 @@ public class DiskUtility extends JDialog  {
 			showDirectoryDetail(dirTable.getSelectedRow());
 		}// valueChanged
 	}// class RowListener
+
+
 
 }// class DiskUtility

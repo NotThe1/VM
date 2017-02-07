@@ -59,8 +59,10 @@ import disks.utility.DiskUtility;
 import disks.utility.MakeNewDisk;
 import ioSystem.IOController;
 import memory.Core;
+import memory.Core.Trap;
 import memory.CpuBuss;
 import memory.MemoryLoaderFromFile;
+import memory.MemoryTrapEvent;
 import utilities.FilePicker;
 import utilities.hexEdit.HexEditPanelConcurrent;
 import utilities.inLineDissembler.InLineDisassembler;
@@ -130,7 +132,12 @@ public class Machine8080 implements Observer {
 			System.out.println("actionPerformed: doRun");
 			Thread t = new Thread(cpu);
 			t.start();
+			stateDisplay.setDisplayComponentsEnabled(false);
+//			hexEditPanelConcurrent.setEnabled(false);
 		} else {
+			stateDisplay.setDisplayComponentsEnabled(true);
+//			hexEditPanelConcurrent.setEnabled(true);
+
 			System.out.println("actionPerformed: doStop");
 			cpu.setError(ErrorType.STOP);
 			updateView();
@@ -139,9 +146,10 @@ public class Machine8080 implements Observer {
 
 	private void doReset() {
 		byte[] storage = Core.getInstance().getStorage();
-		for (int i = 0; i < storage.length;i++){
+		/** avoid IO trap locations **/
+		for (int i = 0X0080; i < storage.length; i++) {
 			storage[i] = 0;
-		}//for
+		} // for
 		loadROM();
 		removeAllDisks();
 		MenuUtility.clearList(mnuMemory);
@@ -150,15 +158,15 @@ public class Machine8080 implements Observer {
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
 		disassembler.updateDisplay();
-		
-		if (showCode == null){
+
+		if (showCode == null) {
 			return;
-		}else if (!showCode.isVisible()){
+		} else if (!showCode.isVisible()) {
 			return;
-		}else {
+		} else {
 			Thread task = new Thread(showCode);
 			task.start();
-		}// if ....
+		} // if ....
 	}// updateView
 
 	private void addDisk(JTextField source, int diskNumber) {
@@ -230,10 +238,10 @@ public class Machine8080 implements Observer {
 		source.setText(DiskPanel.NO_DISK);
 		source.setToolTipText(DiskPanel.NO_DISK_HELP);
 	}// remove disk
-	
-	private void removeAllDisks(){
+
+	private void removeAllDisks() {
 		diskControlUnit.removeAllDiskDrives(diskPanel);
-	}//removeAllDisks
+	}// removeAllDisks
 
 	private void loadROM() {
 		Class<Machine8080> thisClass = Machine8080.class;
@@ -251,9 +259,11 @@ public class Machine8080 implements Observer {
 
 	@Override
 	public void update(Observable cpuBuss, Object mte) {
-		System.out.printf("[update]  %s%n", mte.toString());
-		btnRun1.setSelected(false);
-		updateView();
+		if (((MemoryTrapEvent) mte).getTrap().equals(Trap.DEBUG)) {
+			System.out.printf("[update - DEBUG]  %s%n", mte.toString());
+			btnRun1.setSelected(false);
+			updateView();
+		} // if - debug
 	}// update
 
 	// -------------------------------------------------------------------
@@ -270,21 +280,22 @@ public class Machine8080 implements Observer {
 	}// appClose
 
 	private void cleanupObjects() {
+		removeAllDisks();
 		cpuBuss.deleteObserver(this);
 		if (trapManager != null) {
 			trapManager.close();
 			trapManager = null;
 		} // if trapManager
-		if (ioController !=null){
+		if (ioController != null) {
 			ioController.closeConnection();
 			ioController = null;
-		}// if ioController
-		if(trapManager!= null){
+		} // if ioController
+		if (trapManager != null) {
 			trapManager = null;
-		}//if trapManager
-		if(showCode!= null){
+		} // if trapManager
+		if (showCode != null) {
 			showCode = null;
-		}//if showCode
+		} // if showCode
 	}// cleanupObjects
 
 	private void appInit() {
@@ -398,7 +409,7 @@ public class Machine8080 implements Observer {
 
 		JMenu mnuDisks = new JMenu("Disks");
 		menuBar.add(mnuDisks);
-		
+
 		JMenuItem mnuMakeNewDisk = new JMenuItem("Make New Disk ...");
 		mnuMakeNewDisk.setName(MNU_DISKS_MAKE_NEW_DISK);
 		mnuMakeNewDisk.addActionListener(menuAdapter);
@@ -623,12 +634,12 @@ public class Machine8080 implements Observer {
 		btnTest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String msg;
-				if(showCode.isVisible()){
+				if (showCode.isVisible()) {
 					msg = "Visible";
-				}else{
+				} else {
 					msg = "NOT Visible";
 				}
-				System.out.printf("[btnTest] showCode -  %s%n",msg );
+				System.out.printf("[btnTest] showCode -  %s%n", msg);
 				doDiskEffects(0, 1);
 			}
 		});
@@ -716,11 +727,11 @@ public class Machine8080 implements Observer {
 			case Machine8080.MNU_MEMORY_SAVE_TO_LIST:
 				doMemoryAddSelectedToList(actionEvent);
 				break;
-				
+
 			case Machine8080.MNU_DISKS_MAKE_NEW_DISK:
 				MakeNewDisk.makeNewDisk();
 				break;
-				
+
 			case Machine8080.MNU_TOOLS_TRAP_MANAGER:// MNU_TOOLS_SHOW_LISTING
 				TrapManager trapManager = TrapManager.getInstance();
 				trapManager.setVisible(true);
@@ -729,8 +740,8 @@ public class Machine8080 implements Observer {
 				showCode = ShowCode.getInstance();
 				break;
 			case Machine8080.MNU_TOOLS_DISK_UTILITY:
-				Thread diskUtility = new Thread(new DiskUtility());
-				diskUtility.start();
+				DiskUtility diskUtility = DiskUtility.getInstance();
+				diskUtility.setVisible(true);
 				break;
 			case Machine8080.MNU_TOOLS_RESET:
 				doReset();
@@ -757,7 +768,7 @@ public class Machine8080 implements Observer {
 		}// loadMemoryFromFile
 
 		private void doMemoryLoadFromList(ActionEvent actionEvent) {
-//			JFileChooser fc = FilePicker.getListMemPicker();
+			// JFileChooser fc = FilePicker.getListMemPicker();
 			JFileChooser fc = FilePicker.getAnyListPicker();
 			if (fc.showOpenDialog(frmMachine) != JFileChooser.APPROVE_OPTION) {
 				System.out.printf("You cancelled the Load Memory from File List...%n", "");
@@ -769,7 +780,7 @@ public class Machine8080 implements Observer {
 					fileReader = new FileReader((fc.getSelectedFile().getAbsolutePath()));
 					BufferedReader reader = new BufferedReader(fileReader);
 					while ((filePathName = reader.readLine()) != null) {
-						filePathName = filePathName.replaceFirst("(?i)\\.list$","\\.mem");
+						filePathName = filePathName.replaceFirst("(?i)\\.list$", "\\.mem");
 						currentFile = new File(filePathName);
 						loadMemoryFromFile(currentFile);
 					} // while
@@ -887,7 +898,7 @@ public class Machine8080 implements Observer {
 
 	public static final String BTN_STEP = "btnStep";
 	public static final String BTN_RUN = "btnRun";
-	
+
 	// public static final String BTN_RUN_TEXT = "Run";
 	// public static final String BTN_STOP = "btnStop";
 	// public static final String BTN_STOP_TEXT = "Stop";
@@ -901,7 +912,7 @@ public class Machine8080 implements Observer {
 	public static final String MNU_MEMORY_SAVE_TO_LIST = "mnuMemorySaveSelectedToList";
 	public static final String MNU_MEMORY_CLEAR_ALL_FILES = "mnuClearAllFiles";
 	public static final String MNU_MEMORY_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
-	
+
 	public static final String MNU_DISKS_MAKE_NEW_DISK = "mnuMakeNewDisk";
 
 	public static final String MNU_TOOLS_TRAP_MANAGER = "mnuToolsTrapManager";

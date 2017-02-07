@@ -12,6 +12,11 @@ package hardware;
  */
 public interface IStateDisplay {
 	/**
+	 * enables/disables all the individual display components
+	 * @param state - enable/disable state
+	 */
+	public void setDisplayComponentsEnabled(boolean state);
+	/**
 	 * all registers and flags will be updated to current values.
 	 */
 	
