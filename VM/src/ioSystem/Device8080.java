@@ -30,17 +30,17 @@ abstract public class Device8080 {
 		this.output = output;
 		this.addressOut = addressOut;
 		this.addressStatus = addressStatus;
-		if (this.input & (this.addressIn == null)) {
+		if (this.input && (this.addressIn == null)) {
 			errMessage = String.format("Constuctor %s device error - input set true without an input address",
 					this.name);
 			throw new IOException(errMessage);
 		}//if - no input address
-		if (this.output & (this.addressOut == null)) {
+		if (this.output && (this.addressOut == null)) {
 			errMessage = String.format("Constuctor %s device error - output set true without an output address",
 					this.name);
 			throw new IOException(errMessage);
 		}//if - no output address
-		if (!this.output & !this.input) {
+		if (!this.output && !this.input) {
 			errMessage = String.format("Constuctor %s device error - need input or output or both",
 					this.name);
 			throw new IOException(errMessage);

@@ -1,47 +1,26 @@
 package hardware;
 
-import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-
-import java.awt.GridBagLayout;
-
-import javax.swing.JRadioButton;
-
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.Insets;
-
-import hardware.ConditionCodeRegister;
-import hardware.Register;
-import hardware.StateAdapter;
-import hardware.StateDisplay;
-import hardware.WorkingRegisterSet;
-
-import java.awt.Dimension;
-
-import javax.swing.JPanel;
-import javax.swing.JButton;
-import javax.swing.border.LineBorder;
-import javax.swing.text.MaskFormatter;
-
 import java.awt.Color;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.text.ParseException;
-
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-
+import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import codeSupport.HexSpinner;
-
-import javax.swing.SpinnerNumberModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
+
+import codeSupport.HexSpinner;
 
 public class StateDisplayAndAdapterTest {
 	
@@ -477,7 +456,7 @@ public class StateDisplayAndAdapterTest {
 				
 				Thread t = new Thread(stateDisplay);
 				t.setName("Fred");
-				t.run();
+				t.start();
 				SwingUtilities.invokeLater(stateDisplay);
 				
 //				stateDisplay.updateDisplayAllRegisters();

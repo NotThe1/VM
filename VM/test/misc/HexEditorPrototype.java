@@ -212,7 +212,7 @@ public class HexEditorPrototype {
 	
 	private void setDocumentFilter(StyledDocument doc){
 		if(doc ==null){
-			((AbstractDocument) doc).setDocumentFilter(null);
+//			((AbstractDocument) doc).setDocumentFilter(null);
 			return;
 		}//if null
 		

@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class OpCodeMap {
 	static HashMap<Byte, OperationStructure> codeMap;
 
-	//Constructor is at end of this file after class OperationStructure
+	// Constructor is at end of this file after class OperationStructure
 
 	static public int getSize(byte opCode) {
 		return codeMap.get(opCode).getSize();
@@ -34,83 +34,10 @@ public class OpCodeMap {
 		return codeMap.get(opCode).getAssemblerCode(plusOne, plusTwo);
 	}// getAssemblerCode - two arguments
 
-	// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-	class OperationStructure {
-		private byte opCode;
-		private int size;
-		private String instruction;
-		private String source;
-		private String destination;
-		private String function;
-
-		OperationStructure(byte opCode, int size,
-				String instruction, String destination, String source, String function) {
-			this.opCode = opCode;
-			this.size = size;
-			this.instruction = instruction;
-			this.source = source;
-			this.destination = destination;
-			this.function = function;
-		}// CONSTRUCTOR
-
-		 public byte getOpCode() {
-			return this.opCode;
-		}// getOpCode
-
-		public int getSize() {
-			return this.size;
-		}// getSize
-
-		private String getInstruction() {
-			return this.instruction;
-		}// getInstruction
-
-		private String getSource() {
-			return this.source;
-		}// getSource
-
-		private String getDestination() {
-			return this.destination;
-		}// getDestination
-
-		public String getFunction() {
-			return this.function;
-		}// getFunction
-
-		// public String getFunctionFormatted() {
-		// return String.format("%8s%s%n", "", this.function);
-		// }// getFunction
-
-		public String getAssemblerCode() {
-			return String.format("%-4s %s%s", getInstruction(), getDestination(), getSource());
-		}// getAssemblerCode
-
-		public String getAssemblerCode(byte plusOne) {
-			String ans;
-			if (getDestination().equals("D8")) {
-				ans = String.format("%-4s %02X", getInstruction(), plusOne);
-			} else {
-				ans = String.format("%-4s %s,%02X", getInstruction(), getDestination(), plusOne);
-			}// if
-			return ans;
-		}// getAssemblerCode
-
-		public String getAssemblerCode(byte plusOne, byte plusTwo) {
-			String ans;
-			if (getDestination().equals("addr")) {
-				ans = String.format("%-4s %02X%02X", getInstruction(), plusTwo, plusOne);
-			} else {
-				ans = String.format("%-4s %s,%02X%02X", getInstruction(), getDestination(), plusTwo, plusOne);
-			}// if
-			return ans;
-		}// getAssemblerCode
-
-	}// class operationStructure
-		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-		// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	public OpCodeMap() {
-		codeMap = new HashMap<Byte, OperationStructure>() ;
+		codeMap = new HashMap<Byte, OperationStructure>();
 		codeMap.put((byte) 0X00, new OperationStructure((byte) 0X00, 1, "NOP", "", "", ""));
 		codeMap.put((byte) 0X01, new OperationStructure((byte) 0X01, 3, "LXI", "B", "D16", "B<- byte3,C<- byte2"));
 		codeMap.put((byte) 0X02, new OperationStructure((byte) 0X02, 1, "STAX", "B", "", "(BC)<-A"));
@@ -147,8 +74,7 @@ public class OpCodeMap {
 
 		codeMap.put((byte) 0X20, new OperationStructure((byte) 0X20, 1, "NOP*", "", "", "Alt NOP (RIM)"));// special
 		codeMap.put((byte) 0X21, new OperationStructure((byte) 0X21, 3, "LXI", "H", "D16", "H<-byte3,L<-byte2"));
-		codeMap.put((byte) 0X22,
-				new OperationStructure((byte) 0X22, 3, "SHLD", "addr", "", "(addr)<-L;(addr+1)<-H"));
+		codeMap.put((byte) 0X22, new OperationStructure((byte) 0X22, 3, "SHLD", "addr", "", "(addr)<-L;(addr+1)<-H"));
 		codeMap.put((byte) 0X23, new OperationStructure((byte) 0X23, 1, "INX", "H", "", "HL<-HL + 1"));
 		codeMap.put((byte) 0X24, new OperationStructure((byte) 0X24, 1, "INR", "H", "", "H<-H+1"));
 		codeMap.put((byte) 0X25, new OperationStructure((byte) 0X25, 1, "DCR", "H", "", "H<-H-1"));
@@ -156,8 +82,7 @@ public class OpCodeMap {
 		codeMap.put((byte) 0X27, new OperationStructure((byte) 0X27, 1, "DAA", "", "", "")); // special
 		codeMap.put((byte) 0X28, new OperationStructure((byte) 0X28, 1, "Alt", "", "", "Alt NOP"));
 		codeMap.put((byte) 0X29, new OperationStructure((byte) 0X29, 1, "DAD", "H", "", "HL = HL + HL"));
-		codeMap.put((byte) 0X2A,
-				new OperationStructure((byte) 0X2A, 3, "LHLD", "addr", "", "L<-(addr);H<-(addr+1)"));
+		codeMap.put((byte) 0X2A, new OperationStructure((byte) 0X2A, 3, "LHLD", "addr", "", "L<-(addr);H<-(addr+1)"));
 		codeMap.put((byte) 0X2B, new OperationStructure((byte) 0X2B, 1, "DCX", "H", "", "HL = HL-1"));
 		codeMap.put((byte) 0X2C, new OperationStructure((byte) 0X2C, 1, "INR", "L", "", "L <-L+1"));
 		codeMap.put((byte) 0X2D, new OperationStructure((byte) 0X2D, 1, "DCR", "L", "", "L <-L-1"));
@@ -377,8 +302,8 @@ public class OpCodeMap {
 		codeMap.put((byte) 0XEF, new OperationStructure((byte) 0XEF, 1, "RST", "5", "", "CALL $28"));
 
 		codeMap.put((byte) 0XF0, new OperationStructure((byte) 0XF0, 1, "RP", "", "", "if P, ret"));
-		codeMap.put((byte) 0XF1, new OperationStructure((byte) 0XF1, 1, "POP", "PSW", "",
-				"flags<-(SP);A<-(SP+1); SP<-SP+2"));
+		codeMap.put((byte) 0XF1,
+				new OperationStructure((byte) 0XF1, 1, "POP", "PSW", "", "flags<-(SP);A<-(SP+1); SP<-SP+2"));
 		codeMap.put((byte) 0XF2, new OperationStructure((byte) 0XF2, 3, "JP", "addr", "", "if P,PC<-addr"));
 		codeMap.put((byte) 0XF3, new OperationStructure((byte) 0XF3, 1, "DI", "", "", "")); // Special
 		codeMap.put((byte) 0XF4, new OperationStructure((byte) 0XF4, 3, "CP", "addr", "", "if P,CALL addr"));

@@ -76,11 +76,11 @@ public class Console extends Device8080 {
 	@Override
 	public byte byteToCPU(Byte address) {//this is a blocking read
 		Byte byteToCPU = null;
-		if(address == getAddressIn()){	// actually read data
+		if(address.equals(getAddressIn())){	// actually read data
 			while(byteToCPU == null){
 				byteToCPU = inputBuffer.poll();
 			}//while
-		}else if(address == getAddressStatus()){ // return status byte
+		}else if(address.equals(getAddressStatus())){ // return status byte
 			byteToCPU = (byte) (CONSOLE_OUTPUT_STATUS_MASK |(byte) inputBuffer.size());
 		}else {	// not my input/status address
 			byteToCPU = 0X00;

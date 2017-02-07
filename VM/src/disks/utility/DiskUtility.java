@@ -76,14 +76,13 @@ import utilities.hdNumberBox.HDNumberValueChangeListener;
 import utilities.hdNumberBox.HDSeekPanel;
 import utilities.hexEdit.HexEditPanelSimple;
 
-public class DiskUtility extends JDialog  {
-	
+public class DiskUtility extends JDialog {
+
 	private static DiskUtility instance = new DiskUtility();
 
 	public static DiskUtility getInstance() {
 		return instance;
 	}// getInstance
-
 
 	private static final long serialVersionUID = 1L;
 	// File testDisk;
@@ -882,16 +881,18 @@ public class DiskUtility extends JDialog  {
 		File tempDir = new File(strTempDir);
 		String[] tempFiles = tempDir.list(new PrefixFilter(TEMP_PREFIX));
 
-		String tempFullPath;
-		for (String tempFile : tempFiles) {
-			tempFullPath = strTempDir + File.separator + tempFile;
-			try {
-				boolean wasDeleted = Files.deleteIfExists(Paths.get(tempFullPath));
-				System.out.printf("[DiskUtility.cleanUpOldFiles] wasDeleted %-10s  %s%n", wasDeleted, tempFullPath);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} // try
-		} // for
+		if (tempFiles != null) {
+			String tempFullPath;
+			for (String tempFile : tempFiles) {
+				tempFullPath = strTempDir + File.separator + tempFile;
+				try {
+					boolean wasDeleted = Files.deleteIfExists(Paths.get(tempFullPath));
+					System.out.printf("[DiskUtility.cleanUpOldFiles] wasDeleted %-10s  %s%n", wasDeleted, tempFullPath);
+				} catch (IOException e) {
+					e.printStackTrace();
+				} // try
+			} // for
+		} // if any files
 	}// cleanUpOldFiles
 		// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -928,8 +929,8 @@ public class DiskUtility extends JDialog  {
 		hdNumberBoxs.add(hdSeekPanel);
 
 		cleanUpOldFiles();
-		 byte[] FRED = "<No Active File>".getBytes();
-		byte[] BOB =  NO_ACTIVE_FILE.getBytes();
+		byte[] FRED = "<No Active File>".getBytes();
+		byte[] BOB = NO_ACTIVE_FILE.getBytes();
 
 		// setDisplayRadix();
 		haveDisk(false);
@@ -937,12 +938,12 @@ public class DiskUtility extends JDialog  {
 		// panelSectorDisplay.loadData(NO_FILE);
 	}// appInit
 
-//	@Override
-//	public void run() {
-//		String[] param = new String[] { "arg0", "arg1" };
-//		main(param);
-//
-//	}
+	// @Override
+	// public void run() {
+	// String[] param = new String[] { "arg0", "arg1" };
+	// main(param);
+	//
+	// }
 
 	/**
 	 * Create the application.
@@ -2165,12 +2166,13 @@ public class DiskUtility extends JDialog  {
 
 	// ---------------------------------------------------------------
 
-//	public static final byte[] NO_FILE = new byte[]  { (byte) 0X3C, (byte) 0X4E, (byte) 0X6F, (byte) 0X20, (byte) 0X41,
-//			(byte) 0X63, (byte) 0X74, (byte) 0X69, (byte) 0X76, (byte) 0X65, (byte) 0X20, (byte) 0X46, (byte) 0X69,
-//			(byte) 0X6C, (byte) 0X65, (byte) 0X3E };
+	// public static final byte[] NO_FILE = new byte[] { (byte) 0X3C, (byte) 0X4E, (byte) 0X6F, (byte) 0X20, (byte)
+	// 0X41,
+	// (byte) 0X63, (byte) 0X74, (byte) 0X69, (byte) 0X76, (byte) 0X65, (byte) 0X20, (byte) 0X46, (byte) 0X69,
+	// (byte) 0X6C, (byte) 0X65, (byte) 0X3E };
 
 	public static final String NO_ACTIVE_FILE = "<No Active File>";
-	
+
 	public static final byte[] NO_FILE = NO_ACTIVE_FILE.getBytes();
 
 	public static final String HDN_HEAD = "hdnHead";

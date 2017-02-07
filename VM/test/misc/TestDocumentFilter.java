@@ -122,7 +122,7 @@ public class TestDocumentFilter extends DocumentFilter {
 
 
 	public String convertToPrintable(int offset) {
-		String HexString = null;
+		String HexString = EMPTY_STRING;
 		try {
 			HexString = doc.getText(offset, 2).trim();
 		} catch (BadLocationException e) {
@@ -195,6 +195,7 @@ public class TestDocumentFilter extends DocumentFilter {
 //	private static String PATTERN_PRINTABLE = "^([a-zA-Z0-9!@#$%^&amp;*()-_=+;:'&quot;|~`&lt;&gt;?/{}]{1,1})$";
 
 	private final static String NON_PRINTABLE_CHAR = ".";
+	private final static String EMPTY_STRING = "";
 
 	private final static int ADDR = 0;
 	private final static int HEX1 = 1;

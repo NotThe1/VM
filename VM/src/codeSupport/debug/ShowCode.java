@@ -152,7 +152,7 @@ public class ShowCode extends JDialog implements Runnable {
 	private void doAddFilesFromList() {
 		JFileChooser fc = FilePicker.getAnyListPicker();
 		if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-			System.out.printf("You cancelled the Load Asm from File List...%n", "");
+			System.out.println("You cancelled the Load Asm from File List...");
 		} else {
 			FileReader fileReader;
 			String filePathName = null;
@@ -175,7 +175,7 @@ public class ShowCode extends JDialog implements Runnable {
 	private void doSaveSelectedToList() {
 		JFileChooser fc = FilePicker.getListAsmPicker();
 		if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
-			System.out.printf("You cancelled Save Selected as List...%n", "");
+			System.out.println("You cancelled Save Selected as List...");
 			return;
 		} // if
 		String listFile = fc.getSelectedFile().getAbsolutePath();
@@ -229,14 +229,14 @@ public class ShowCode extends JDialog implements Runnable {
 			lblStatus.setText(NO_ACTIVE_FILE);
 			taDisplay.setText(EMPTY_STRING);
 		} else if (!fileList.containsKey(currentFilePath)) {
-
+			/** does not have current path , but does have some other path to display **/
 			Set<String> keys = fileList.keySet();
-			String filePath = null;
-			for (String key : keys) {
-				filePath = key;
+			/** get one valid entry **/
+			for (String filePath : keys) {
+				loadDisplay(filePath);
 				break;
 			} // for get a valid filePath
-			loadDisplay(filePath);
+			
 		} // if
 		else {
 			// leave it alone.

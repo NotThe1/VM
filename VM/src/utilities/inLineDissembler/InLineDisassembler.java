@@ -46,21 +46,21 @@ public class InLineDisassembler extends JPanel implements Runnable {
 	SimpleAttributeSet boldAttributes;
 	// SimpleAttributeSet boldNotAttributes;
 
-	private static Position currentPosition;
+	private  Position currentPosition;
 
-	private static int priorProgramCounter = Integer.MAX_VALUE; // value of
+	private  int priorProgramCounter = Integer.MAX_VALUE; // value of
 																// previous
 																// update PC
-	private static int nextProgramCounter = Integer.MIN_VALUE; // value of
+	private  int nextProgramCounter = Integer.MIN_VALUE; // value of
 																// future update
 																// PC if
 																// straight line
 																// code
-	private static int futureProgramerCounter; // instruction +1 from last
+	private  int futureProgramerCounter; // instruction +1 from last
 												// displayed
 
-	private static boolean newDisplay;
-	private static String LINE_SEPARATOR = System.getProperty("line.separator", "\n");
+	private  boolean newDisplay;
+	private static String LINE_SEPARATOR = System.lineSeparator();
 	private JTextPane txtInstructions;
 
 	public static InLineDisassembler getInstance() {

@@ -700,13 +700,14 @@ public class Machine8080 implements Observer {
 		public void actionPerformed(ActionEvent actionEvent) {
 			System.out.println("actionPerformed");
 			JMenuItem sourceMenu = null;
-			String sourceName = null;
+			String sourceName = EMPTY_STRING;
 
 			if (actionEvent.getSource() instanceof JMenuItem) {
 				sourceMenu = (JMenuItem) actionEvent.getSource();
 				sourceName = sourceMenu.getName();
 			} // if JMenuItem
-
+			
+			
 			switch (sourceName) {
 			case Machine8080.MNU_MEMORY_LOAD_FROM_FILE:
 				doMemoryLoadFromFile(actionEvent);
@@ -771,7 +772,7 @@ public class Machine8080 implements Observer {
 			// JFileChooser fc = FilePicker.getListMemPicker();
 			JFileChooser fc = FilePicker.getAnyListPicker();
 			if (fc.showOpenDialog(frmMachine) != JFileChooser.APPROVE_OPTION) {
-				System.out.printf("You cancelled the Load Memory from File List...%n", "");
+				System.out.println("You cancelled the Load Memory from File List...");
 			} else {
 				FileReader fileReader;
 				String filePathName = null;
@@ -796,7 +797,7 @@ public class Machine8080 implements Observer {
 		private void doMemoryAddSelectedToList(ActionEvent actionEvent) {
 			JFileChooser fc = FilePicker.getListMemPicker();
 			if (fc.showSaveDialog(frmMachine) != JFileChooser.APPROVE_OPTION) {
-				System.out.printf("You cancelled Save Selected as List...%n", "");
+				System.out.println("You cancelled Save Selected as List...");
 				return;
 			} // if
 			String listFile = fc.getSelectedFile().getAbsolutePath();
