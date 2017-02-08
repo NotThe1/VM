@@ -84,7 +84,8 @@ public class MakeNewDisk {
 //			disk.position(0);
 			disk.put(dataBDOS);
 			/* BIOS */
-			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
+			 rom = thisClass.getResource("/disks/resources/BIOS3HD.mem");
+//			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
 			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0A00);
 //			disk.position(0);
 			disk.put(dataBIOS);

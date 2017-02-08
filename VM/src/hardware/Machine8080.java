@@ -133,10 +133,10 @@ public class Machine8080 implements Observer {
 			Thread t = new Thread(cpu);
 			t.start();
 			stateDisplay.setDisplayComponentsEnabled(false);
-//			hexEditPanelConcurrent.setEnabled(false);
+			// hexEditPanelConcurrent.setEnabled(false);
 		} else {
 			stateDisplay.setDisplayComponentsEnabled(true);
-//			hexEditPanelConcurrent.setEnabled(true);
+			// hexEditPanelConcurrent.setEnabled(true);
 
 			System.out.println("actionPerformed: doStop");
 			cpu.setError(ErrorType.STOP);
@@ -261,9 +261,12 @@ public class Machine8080 implements Observer {
 	public void update(Observable cpuBuss, Object mte) {
 		if (((MemoryTrapEvent) mte).getTrap().equals(Trap.DEBUG)) {
 			System.out.printf("[update - DEBUG]  %s%n", mte.toString());
+			stateDisplay.setDisplayComponentsEnabled(true);
 			btnRun1.setSelected(false);
+			cpu.setError(ErrorType.STOP);
 			updateView();
 		} // if - debug
+
 	}// update
 
 	// -------------------------------------------------------------------
@@ -706,8 +709,7 @@ public class Machine8080 implements Observer {
 				sourceMenu = (JMenuItem) actionEvent.getSource();
 				sourceName = sourceMenu.getName();
 			} // if JMenuItem
-			
-			
+
 			switch (sourceName) {
 			case Machine8080.MNU_MEMORY_LOAD_FROM_FILE:
 				doMemoryLoadFromFile(actionEvent);
