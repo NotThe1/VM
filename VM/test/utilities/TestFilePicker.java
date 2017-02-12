@@ -24,6 +24,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.JTextComponent;
 
+import disks.DiskMetrics;
+
 public class TestFilePicker implements ActionListener, MouseListener {
 
 	private JFrame frmWindowOneSimple;
@@ -50,12 +52,6 @@ public class TestFilePicker implements ActionListener, MouseListener {
 	}
 	
 	private void doButtonOne(){
-//		JFileChooser fc = FilePicker.getDataPicker("Memory Image Files", "mem", "hex");
-//		JFileChooser fc = FilePicker.getDiskPicker("Disk images", "F5DD", "F5HD");
-//		JFileChooser fc = FilePicker.getDiskPicker();
-//		JFileChooser fc = FilePicker.getDiskPicker("Disk images", "F5DD", "F5HD");
-//		JFileChooser fc = FilePicker.getListAsmPicker();
-//		JFileChooser fc = FilePicker.getMemPicker();
 		JFileChooser fc = FilePicker.getAsmPicker();
 		
 		if (fc.showOpenDialog(null)== JFileChooser.APPROVE_OPTION){
@@ -68,6 +64,43 @@ public class TestFilePicker implements ActionListener, MouseListener {
 		int c= 0;
 		
 	}//doButtonOne
+	
+	private void doDiskMetrics(){
+		String diskType = "f3hd";
+		txtLog.setText("");
+		DiskMetrics dm = DiskMetrics.getDiskMetric("f3hd");
+		txtLog.append(String.format("SPT: %1$04X (%1$d)%n", dm.getSPT()));
+		txtLog.append(String.format("BSH: %1$04X (%1$d)%n", dm.getBSH()));
+		txtLog.append(String.format("BLM: %1$04X (%1$d)%n", dm.getBLM()));
+		txtLog.append(String.format("EXM: %1$04X (%1$d)%n", dm.getEXM()));
+		txtLog.append(String.format("DSM: %1$04X (%1$d)%n", dm.getDSM()));
+		txtLog.append(String.format("DRM: %1$04X (%1$d)%n", dm.getDRM()));
+		txtLog.append(String.format("AL01: %1$04X (%1$d)%n", dm.getAL01()));
+		txtLog.append(String.format("CKS: %1$04X (%1$d)%n", dm.getCKS()));
+		txtLog.append(String.format("OFF*: %1$04X (%1$d)%n%n", dm.getDirectoryStartSector()));
+		
+		txtLog.append(String.format("getTotalSectorsPerHead: %1$04X (%1$d)%n", dm.getTotalSectorsPerHead()));
+
+		txtLog.append(String.format("getBytesPerBlock: %1$04X (%1$d)%n", dm.getBytesPerBlock()));
+		txtLog.append(String.format("getDirectoryBlockCount: %1$04X (%1$d)%n", dm.getDirectoryBlockCount()));
+		txtLog.append(String.format("getDirectorysLastSector: %1$04X (%1$d)%n", dm.getDirectorysLastSector()));
+		txtLog.append(String.format("getDirectoryStartSector: %1$04X (%1$d)%n", dm.getDirectoryStartSector()));
+		txtLog.append(String.format("getMaxDirectoryEntries: %1$04X (%1$d)%n", dm.getMaxDirectoryEntries()));
+		txtLog.append(String.format("getSectorsPerBlock: %1$04X (%1$d)%n", dm.getSectorsPerBlock()));
+		txtLog.append(String.format("getTotalSectorsOnDisk: %1$04X (%1$d)%n", dm.getTotalSectorsOnDisk()));
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	
+	}//doDiskMetrics
 	
 	private void doButtonTwo(){
 //		JFileChooser fc = new JFileChooser(FileSystemView.getFileSystemView());
@@ -147,6 +180,7 @@ public class TestFilePicker implements ActionListener, MouseListener {
 		ftfThree.setText(myPrefs.get("ftfThree", EMPTY_SPACE));
 		ftfFour.setText(myPrefs.get("ftfFour", EMPTY_SPACE));
 		myPrefs = null;
+		doDiskMetrics();
 	}
 	// ------------------------------------------------------------------------
 

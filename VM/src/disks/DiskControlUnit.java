@@ -143,8 +143,8 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 
 		goodOperation = true; // assume all goes well
 
-		System.out.printf("DCU: Location: %04X, Value: %02X%n", currentDiskControlByte,
-				ioBuss.read(currentDiskControlByte));
+//		System.out.printf("DCU: Location: %04X, Value: %02X%n", currentDiskControlByte,
+//				ioBuss.read(currentDiskControlByte));
 
 		int controlTableLocation = cpuBuss.readWordReversed(currentDiskControlByte + 1);
 		currentCommand = ioBuss.read(controlTableLocation + DCT_COMMAND);
@@ -179,8 +179,8 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 			return;
 		} // if - bad byte count
 
-		System.out.printf("DCU: Head: %d, Track: %d, Sector: %d AbsoluteSector: %d%n", currentHead, currentTrack,
-				currentSector, drives[currentDrive].getCurrentAbsoluteSector());
+//		System.out.printf("DCU: Head: %d, Track: %d, Sector: %d AbsoluteSector: %d%n", currentHead, currentTrack,
+//				currentSector, drives[currentDrive].getCurrentAbsoluteSector());
 		if (!goodOperation) {
 			return; // return if any problems - don't do any I/O
 		} // if
@@ -197,7 +197,7 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 			} // for
 			byte[] readBuffer = readByteBuffer.array();
 			ioBuss.writeDMA(currentDMAAddress, readBuffer);
-			System.out.printf("DCU:Value: %02X, length = %d%n", readBuffer[1], readBuffer.length);
+//			System.out.printf("DCU:Value: %02X, length = %d%n", readBuffer[1], readBuffer.length);
 		} else { // its a COMMAND_WRITE
 			// byte[] writeBuffer = core.readDMA(currentDMAAddress, currentSectorSize);
 			// drives[currentDrive].write(writeBuffer);
@@ -247,13 +247,20 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 	}// diskErrorReport
 
 	private void debugShowControlTable() {
-		System.out.printf("currentCommand: %02X%n", currentCommand);
-		System.out.printf("currentUnit: %02X%n", currentUnit);
-		System.out.printf("currentHead: %02X%n", currentHead);
-		System.out.printf("currentTrack: %02X%n", currentTrack);
-		System.out.printf("currentSector: %02X%n", currentSector);
-		System.out.printf("currentByteCount: %04X%n", currentByteCount);
-		System.out.printf("currentDMAAddress: %04X%n", currentDMAAddress);
+//		System.out.printf("currentCommand: %02X%n", currentCommand);
+//		System.out.printf("currentUnit: %02X%n", currentUnit);
+//		System.out.printf("currentHead: %02X%n", currentHead);
+//		System.out.printf("currentTrack: %02X%n", currentTrack);
+//		System.out.printf("currentSector: %02X%n", currentSector);
+//		System.out.printf("currentByteCount: %04X%n", currentByteCount);
+//		System.out.printf("currentDMAAddress: %04X%n", currentDMAAddress);
+		
+		System.out.printf("[DCU] Location: %04X, Value: %02X%n", currentDiskControlByte,
+				ioBuss.read(currentDiskControlByte));
+		String command = currentCommand == COMMAND_READ?"Read":"Write";
+		System.out.printf("\t%s - Unit %02X, Head %02X, Trk %02X, Sec %04X, Bytes %04X, DMA %04X%n",
+				command,currentUnit,currentHead,currentTrack,currentSector,currentByteCount,currentDMAAddress);
+
 
 	}// debugShowControlTable
 

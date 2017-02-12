@@ -103,7 +103,7 @@ public class CPMFile extends CPMFileHeader {
 			diskDrive.write(sectorData);
 			directory.incrementRc(directoryIndex, logicalRecordCount);
 			
-			System.out.printf("[] xxx %s%n", new String(sectorData));
+		//	System.out.printf("[] xxx %s%n", new String(sectorData));
 		}//while
 		
 		overwriteDirectory();

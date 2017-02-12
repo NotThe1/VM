@@ -457,9 +457,10 @@ public class DiskUtility extends JDialog {
 		});
 		displayDirectoryView(); // Directory View
 		// need the two display... methods run on different threads
-
+		dirtyFile = true;
+		
 		System.out.printf("[DiskUtility.fileInport] CPM file: %s, nativeFile: %s%n\tdeleteFile: %s, writeNewFile: %s%n",
-				fileName, nativeFile, deleteFile, result);
+				fileName, nativeFile.getAbsolutePath(), deleteFile, result);
 
 	}// fileInport
 		// ...............................................................

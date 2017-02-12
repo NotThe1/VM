@@ -260,7 +260,7 @@ public class Machine8080 implements Observer {
 	@Override
 	public void update(Observable cpuBuss, Object mte) {
 		if (((MemoryTrapEvent) mte).getTrap().equals(Trap.DEBUG)) {
-			System.out.printf("[update - DEBUG]  %s%n", mte.toString());
+			System.out.printf("[update - DEBUG]  Location %04X%n", ((MemoryTrapEvent) mte).getLocation());
 			stateDisplay.setDisplayComponentsEnabled(true);
 			btnRun1.setSelected(false);
 			cpu.setError(ErrorType.STOP);
