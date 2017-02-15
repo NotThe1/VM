@@ -66,28 +66,39 @@ public class TestFilePicker implements ActionListener, MouseListener {
 	}//doButtonOne
 	
 	private void doDiskMetrics(){
-		String diskType = "f3hd";
-		txtLog.setText("");
-		DiskMetrics dm = DiskMetrics.getDiskMetric("f3hd");
-		txtLog.append(String.format("SPT: %1$04X (%1$d)%n", dm.getSPT()));
-		txtLog.append(String.format("BSH: %1$04X (%1$d)%n", dm.getBSH()));
-		txtLog.append(String.format("BLM: %1$04X (%1$d)%n", dm.getBLM()));
-		txtLog.append(String.format("EXM: %1$04X (%1$d)%n", dm.getEXM()));
-		txtLog.append(String.format("DSM: %1$04X (%1$d)%n", dm.getDSM()));
-		txtLog.append(String.format("DRM: %1$04X (%1$d)%n", dm.getDRM()));
-		txtLog.append(String.format("AL01: %1$04X (%1$d)%n", dm.getAL01()));
-		txtLog.append(String.format("CKS: %1$04X (%1$d)%n", dm.getCKS()));
-		txtLog.append(String.format("OFF*: %1$04X (%1$d)%n%n", dm.getDirectoryStartSector()));
+		String diskType = "f5dd";
+		txtLog.setText(String.format("    Disk Type: %s %n%n",  diskType ));
+		DiskMetrics dm = DiskMetrics.getDiskMetric(diskType);
 		
-		txtLog.append(String.format("getTotalSectorsPerHead: %1$04X (%1$d)%n", dm.getTotalSectorsPerHead()));
+		txtLog.append(String.format("Heads: \t\t%1$02X\t(%1$d)%n", dm.heads));
+		txtLog.append(String.format("Tracks\\Head: \t\t%1$04X\t(%1$d)%n", dm.tracksPerHead));
+		txtLog.append(String.format("Sectors\\Track: \t\t%1$04X\t(%1$d)%n", dm.sectorsPerTrack));
+		txtLog.append(String.format("Bytes\\Sector: \t\t%1$04X\t(%1$d)%n", dm.bytesPerSector));
+		txtLog.append(String.format("Sectors\\Block: \t\t%1$04X\t(%1$d)%n", dm.sectorsPerBlock));
+		txtLog.append(String.format("Directory Block Count: \t%1$04X\t(%1$d)%n%n", dm.directoryBlockCount));
+		
+		
+		
+		txtLog.append(String.format("SPT: \t%1$04X\t(%1$d)\t\t# of cmpRecords / logical Track%n", dm.getSPT()));
+		txtLog.append(String.format("BSH: \t%1$04X\t(%1$d)\t\t Block Shift%n", dm.getBSH()));
+		txtLog.append(String.format("BLM: \t%1$04X\t(%1$d)\t\t Block Mask%n", dm.getBLM()));
+		txtLog.append(String.format("EXM: \t%1$04X\t(%1$d)\t\t Extent Mask%n", dm.getEXM()));
+		txtLog.append(String.format("DSM: \t%1$04X\t(%1$d)\t\t Highest Block Number%n", dm.getDSM()));
+		txtLog.append(String.format("DRM: \t%1$04X\t(%1$d)\t\t Highest Directory Entry Number%n", dm.getDRM()));
+		txtLog.append(String.format("AL01: \t%1$04X\t(%1$d)\t\t Allocation pattern%n", dm.getAL01()));
+		txtLog.append(String.format("CKS: \t%1$04X\t(%1$d)\t\t Checksum Vector size%n", dm.getCKS()));
+		txtLog.append(String.format("OFF*: \t%1$04X\t(%1$d)\t\t Number of reserved sectors%n%n", dm.getDirectoryStartSector()));
+		
+		txtLog.append(String.format("TotalSectorsPerHead: \t%1$04X\t(%1$d)%n%n", dm.getTotalSectorsPerHead()));
+		txtLog.append(String.format("TotalSectorsOnDisk: \t%1$04X\t(%1$d)%n%n", dm.getTotalSectorsOnDisk()));
 
-		txtLog.append(String.format("getBytesPerBlock: %1$04X (%1$d)%n", dm.getBytesPerBlock()));
-		txtLog.append(String.format("getDirectoryBlockCount: %1$04X (%1$d)%n", dm.getDirectoryBlockCount()));
-		txtLog.append(String.format("getDirectorysLastSector: %1$04X (%1$d)%n", dm.getDirectorysLastSector()));
-		txtLog.append(String.format("getDirectoryStartSector: %1$04X (%1$d)%n", dm.getDirectoryStartSector()));
-		txtLog.append(String.format("getMaxDirectoryEntries: %1$04X (%1$d)%n", dm.getMaxDirectoryEntries()));
-		txtLog.append(String.format("getSectorsPerBlock: %1$04X (%1$d)%n", dm.getSectorsPerBlock()));
-		txtLog.append(String.format("getTotalSectorsOnDisk: %1$04X (%1$d)%n", dm.getTotalSectorsOnDisk()));
+		txtLog.append(String.format("BytesPerBlock: \t\t%1$04X\t(%1$d)%n%n", dm.getBytesPerBlock()));
+		txtLog.append(String.format("SectorsPerBlock: \t%1$04X\t(%1$d)%n%n", dm.getSectorsPerBlock()));
+		
+		txtLog.append(String.format("DirectoryBlockCount: \t%1$04X\t(%1$d)%n%n", dm.getDirectoryBlockCount()));
+		txtLog.append(String.format("DirectoryStartSector: \t%1$04X\t(%1$d)%n%n", dm.getDirectoryStartSector()));
+		txtLog.append(String.format("DirectorysLastSector: \t%1$04X\t(%1$d)%n%n", dm.getDirectorysLastSector()));
+		txtLog.append(String.format("MaxDirectoryEntries: \t%1$04X\t(%1$d)%n%n", dm.getMaxDirectoryEntries()));
 
 		
 		

@@ -193,8 +193,9 @@ public class DiskUtility extends JDialog {
 	}// diskNew
 
 	public void diskLoad() {
-		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
-				"F8SS", "F8DS");
+//		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
+//		"F8SS", "F8DS");
+		JFileChooser fc = FilePicker.getDiskPicker();
 		if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
@@ -258,7 +259,7 @@ public class DiskUtility extends JDialog {
 
 	private void diskSaveAs() {
 		String diskType = diskDrive.getDiskType();
-		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", diskType);
+		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", diskType.toUpperCase());
 		if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return;
@@ -852,6 +853,7 @@ public class DiskUtility extends JDialog {
 		// -------
 
 	private void appClose() {
+		System.out.printf("[DiskUtility.appClose()]  %s%n", "closing");
 		diskClose();
 		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
 		Dimension dim = this.getSize();

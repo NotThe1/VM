@@ -71,6 +71,7 @@ public class DiskDrive {
 		}
 
 		if (disk != null) {
+			disk.force();
 			disk = null;
 		} // if
 		if (fileChannel != null) {

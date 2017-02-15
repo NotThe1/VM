@@ -132,7 +132,8 @@ public class FilePicker {
 	
 	public static JFileChooser getDiskPicker(){
 		setTargetPaths(DISK_NAME);
-		return customizeChooser(diskPath,"Disketts & Floppies","F3ED", "F5DD", "F3DD", "F3HD", "F5HD","F8SS", "F8DS");
+//		return customizeChooser(diskPath,"Disketts & Floppies","F3ED", "F5DD", "F3DD", "F3HD", "F5HD","F8SS", "F8DS");
+		return customizeChooser(diskPath,"Disketts", "F3HD");
 	}//getDiskPicker default
 	
 	//"Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD","F8SS", "F8DS"

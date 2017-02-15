@@ -19,29 +19,39 @@ import utilities.FilePicker;
 public class MakeNewDisk {
 
 	public static File makeNewDisk() {
-		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
-				"F8SS", "F8DS");
+		
+		String fileExtension = "F3HD";
+//		JFileChooser fc = FilePicker.getDiskPicker("Disketts & Floppies", "F3ED", "F5DD", "F3DD", "F3HD", "F5HD",
+//				"F8SS", "F8DS");
+		JFileChooser fc = FilePicker.getDiskPicker();
 		if (fc.showOpenDialog(null) == JFileChooser.CANCEL_OPTION) {
 			System.out.println("Bailed out of the open");
 			return null;
 		} // if
 		
-		File selectedFile = fc.getSelectedFile();
-		String fileName = selectedFile.getName();
-		String fileExtension = "";
-		String[] fileNameComponents = fileName.split("\\.");
-		try {
-			fileExtension = fileNameComponents[1].toUpperCase();
-		} catch (Exception e) {
-			return null;
-		} // try
-
+		File pickedFile = fc.getSelectedFile();
+		
+//		String fileName = selectedFile.getName();
+//		String fileExtension = "";
+//		String[] fileNameComponents = fileName.split("\\.");
+//		try {
+//			fileExtension = fileNameComponents[1].toUpperCase();
+//		} catch (Exception e) {
+//			return null;
+//		} // try
+		
+		
 		DiskMetrics diskMetric = DiskMetrics.getDiskMetric(fileExtension);
 		if (diskMetric == null) {
 			return null;
 		} // if diskMetric
 
-		String targetAbsoluteFileName = selectedFile.getAbsolutePath();
+		String targetRawAbsoluteFileName = pickedFile.getAbsolutePath();
+		String[] fileNameComponents = targetRawAbsoluteFileName.split("\\.");
+		String targetAbsoluteFileName =  fileNameComponents[0] + "." + fileExtension;
+		
+		
+		File selectedFile = new File(targetAbsoluteFileName);
 		if (selectedFile.exists()) {
 			if (JOptionPane.showConfirmDialog(null, "File already exists do you want to overwrite it?",
 					"YES - Continue, NO - Cancel", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
@@ -84,7 +94,7 @@ public class MakeNewDisk {
 //			disk.position(0);
 			disk.put(dataBDOS);
 			/* BIOS */
-			 rom = thisClass.getResource("/disks/resources/BIOS3HD.mem");
+			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
 //			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
 			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0A00);
 //			disk.position(0);
@@ -96,6 +106,7 @@ public class MakeNewDisk {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}//try
+		
 
 		return selectedFile;
 	}// makeNewDisk

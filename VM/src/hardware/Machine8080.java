@@ -741,6 +741,7 @@ public class Machine8080 implements Observer {
 				break;
 			case Machine8080.MNU_TOOLS_SHOW_LISTING:
 				showCode = ShowCode.getInstance();
+				showCode.setVisible(true);
 				break;
 			case Machine8080.MNU_TOOLS_DISK_UTILITY:
 				DiskUtility diskUtility = DiskUtility.getInstance();
