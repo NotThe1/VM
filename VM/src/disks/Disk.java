@@ -18,11 +18,13 @@ public class Disk {
 	public static final String TYPE_8DS = "F8DS";
 
 	public static final int LOGICAL_SECTOR_SIZE = 128;
+	public static final int RECORD_SIZE = 128;
 	public static final int SYSTEM_SIZE = 0X2000;
 	public static final int SYSTEM_LOGICAL_BLOCKS = SYSTEM_SIZE / LOGICAL_SECTOR_SIZE;
 	public static final int SYSTEM_RECORDS = SYSTEM_LOGICAL_BLOCKS;
 	public static final int DIRECTORY_ENTRY_SIZE = 32;
 	public static final int DIRECTORY_ENTRYS_PER_LOGICAL_SECTOR = LOGICAL_SECTOR_SIZE / DIRECTORY_ENTRY_SIZE;
+	public static final int DIRECTORY_ENTRYS_PER_RECORD = LOGICAL_SECTOR_SIZE / DIRECTORY_ENTRY_SIZE;
 	public static final int DIRECTORY_ALLOC_SIZE_SMALL = 16;
 	public static final int DIRECTORY_ALLOC_SIZE_BIG = DIRECTORY_ALLOC_SIZE_SMALL / 2;
 	public static final int DIRECTORY_ENTRY_RECORD_LIMIT = 0X80;		// 128

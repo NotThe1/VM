@@ -33,7 +33,6 @@ import javax.swing.border.BevelBorder;
 
 public class ExploreDiskMetrics {
 	private String currentDiskType = "F3HD";
-	private static final int RECORD_SIZE = 128;
 
 	/**
 	 * Launch the application.
@@ -100,128 +99,157 @@ public class ExploreDiskMetrics {
 
 		String displayLine;
 		txtLog1.setText("");
+		// CP/M Constants  .................................................
 		displayLine = String.format("\t\t\tCP//M Constants%n", "");
 		txtLog1.append(displayLine);
 		txtLog1.append(System.lineSeparator());
 
-		txtLog1.append(String.format("RECORD_SIZE:\t\t%1$04X\t(%1$d)%n", RECORD_SIZE));
-		txtLog1.append(
-				String.format("DIRECTORY_ENTRY_SIZE:\t\t%1$04X\t(%1$d)%n", Disk.DIRECTORY_ENTRY_SIZE));
+		txtLog1.append(String.format("RECORD_SIZE:\t\t%1$04X\t(%1$d)%n", Disk.RECORD_SIZE));
+		txtLog1.append(String.format("DIRECTORY_ENTRY_SIZE:\t\t%1$04X\t(%1$d)%n", Disk.DIRECTORY_ENTRY_SIZE));
 		txtLog1.append(String.format("SYSTEM_RECORDS:\t\t%1$04X\t(%1$d)%n", Disk.SYSTEM_RECORDS));
+		txtLog1.append(String.format("DIRECTORY_ENTRYS_PER_RECORD:\t%1$04X\t(%1$d)%n", Disk.DIRECTORY_ENTRYS_PER_RECORD));
 		txtLog1.append(System.lineSeparator());
-		
+
+		// Disk Metrics values - Preset  -  dm.xxxxx  ........................
 		displayLine = String.format("\t\t\tDisk Metrics values - Preset  -  dm.xxxxx%n", "");
 		txtLog1.append(displayLine);
 		txtLog1.append(System.lineSeparator());
 
 		txtLog1.append(String.format("Heads:\t\t\t%1$04X\t(%1$d)%n", dm.heads));
 		txtLog1.append(String.format("Tracks Per Head:\t\t%1$04X\t(%1$d)%n", dm.tracksPerHead));
-		txtLog1.append(
-				String.format("Sectors Per Track:\t\t%1$04X\t(%1$d)\t 1 head only%n", dm.sectorsPerTrack));
+		txtLog1.append(String.format("Sectors Per Track:\t\t%1$04X\t(%1$d)\t 1 head only%n", dm.sectorsPerTrack));
 		txtLog1.append(String.format("Bytes per Sector:\t\t%1$04X\t(%1$d)%n", dm.bytesPerSector));
 		txtLog1.append(String.format("Sectors per Block:\t\t%1$04X\t(%1$d)%n", dm.sectorsPerBlock));
 		txtLog1.append(String.format("Directory Block Count:\t\t%1$04X\t(%1$d)%n", dm.directoryBlockCount));
 		txtLog1.append(System.lineSeparator());
 
+		// Calculated values  .................................................
 		displayLine = String.format("\t\t\tCalculated values%n", "");
+		txtLog1.append(displayLine);
+		txtLog1.append(System.lineSeparator());
+		
+		/* AL0 */ /* allocate the directory blocks */
+		int ALO = 0B00000000;
+		int allocated = 0B1000000000000000;
+
+		for (int i = 0; i < dm.directoryBlockCount; i++) {
+			ALO = ALO >> 1;
+			ALO = ALO | allocated;
+		} // for
+		ALO = ALO & 0XFFFF;
+		displayLine = String.format("ALO Allocation Vector:\t\t%1$04X\t(%1$d)\t%2$s%n", ALO,
+				"set Bits for Directory using dm.directoryBlockCount");
 		txtLog1.append(displayLine);
 		txtLog1.append(System.lineSeparator());
 
 		/* recordsPerSector */
-		int recordsPerSector = dm.bytesPerSector / RECORD_SIZE;
+		int recordsPerSector = dm.bytesPerSector / Disk.RECORD_SIZE;
 		displayLine = String.format("recordsPerSector:\t\t%1$04X\t(%1$d)\t%2$s%n", recordsPerSector,
 				"dm.bytesPerSector / RECORD_SIZE");
 		txtLog1.append(displayLine);
 
-		/* SPT */  /* number of records per Cylinder */
+		/* SPT */ /* number of records per Cylinder */
 		int SPT = recordsPerSector * dm.sectorsPerTrack * dm.heads;
 		displayLine = String.format("SPT - records Per Logical Track Sector:\t%1$04X\t(%1$d)\t%2$s%n", SPT,
 				"recordsPerSector * dm.sectorsPerTrack  * dm.heads");
 		txtLog1.append(displayLine);
-		txtLog1.append(System.lineSeparator());
+//		txtLog1.append(System.lineSeparator());
 
-		/*  OFS  */ /* location of start of Block 0 */
-		boolean bootDisk = true;		// assume all these disks are system disks
-							// If not system disk OFS = 0;
-							// else first clean Cylinder after end of system records
+		/* OFS */ /* location of start of Block 0 */
+		boolean bootDisk = true; // assume all these disks are system disks
+		// If not system disk OFS = 0;
+		// else first clean Cylinder after end of system records
 		int OFS = 0;
 		if (bootDisk) {
 			float floatSize = (Disk.SYSTEM_LOGICAL_BLOCKS + 1) / (float) SPT;
 			OFS = (int) Math.ceil(floatSize) * dm.sectorsPerTrack * dm.heads;
-		}//if
+		} // if
 		displayLine = String.format("OFS - Directory Block 0:\t\t%1$04X\t(%1$d)\t%2$s%n", OFS,
-				"0 if not system disk, else first clean track(clynder) after system records");
+				"First clean track(clynder) after system records (SPT)");
 		txtLog1.append(displayLine);
-		
+
 		/* Directory Start Sector */
 		int directoryStartSector = OFS;
-		displayLine = String.format("directoryStartSector - Directory Block 0:\t%1$04X\t(%1$d)\t%2$s%n", directoryStartSector,
-				"At OFS");
+		displayLine = String.format("directoryStartSector - Directory Block 0:\t%1$04X\t(%1$d)\t%2$s%n",
+				directoryStartSector, "At OFS");
 		txtLog1.append(displayLine);
-	
-		/* Directory EndSector  */
-		int directoryEndSector = (directoryStartSector + (dm.directoryBlockCount * dm.sectorsPerBlock))-1;
+
+		/* Directory EndSector */
+		int directoryEndSector = (directoryStartSector + (dm.directoryBlockCount * dm.sectorsPerBlock)) - 1;
 		displayLine = String.format("directoryEndSector:\t\t%1$04X\t(%1$d)\t%2$s%n", directoryEndSector,
 				"directoryStartSector + (dm.directoryBlockCount * dm.sectorsPerBlock))-1");
 		txtLog1.append(displayLine);
 		txtLog1.append(System.lineSeparator());
-
 
 		/* bytesPerBlock */
 		int bytesPerBlock = dm.bytesPerSector * dm.sectorsPerBlock;
 		displayLine = String.format("bytesPerBlock:\t\t\t%1$04X\t(%1$d)\t%2$s%n", bytesPerBlock,
 				"dm.bytesPerSector * dm.sectorsPerBlock");
 		txtLog1.append(displayLine);
+		
+		/* BSH */ /* Block Shift - Block Size = 128 * (2 ** BSH) */
+		int numberBase = 2;
+		int workingNumber = bytesPerBlock / Disk.RECORD_SIZE;
+		int BSH = 1;
+		while (workingNumber != numberBase){
+			BSH++;
+			workingNumber /= numberBase;
+		}//while
+		displayLine = String.format("BSH - Block Shift  :\t\t%1$04X\t(%1$d)\t%2$s%n", BSH,
+				"bytesPerBlock = 128 * (2 ** BSH)");
+		txtLog1.append(displayLine);
+		
+		/* BLM */ /* Block Mask - Block Size = 128 * (BLM +1) */
+		int BLM = (bytesPerBlock / Disk.RECORD_SIZE)-1;
+		displayLine = String.format("BLM - Block Mask  :\t\t%1$04X\t(%1$d)\t%2$s%n", BLM,
+				"Block Size = 128 * (BLM +1) |  (bytesPerBlock / Disk.RECORD_SIZE)-1");
+		txtLog1.append(displayLine);
 
-		/* DRM */  /* Max Directory Entry Number */
+		
+		
+		
+		/* DRM */ /* Max Directory Entry Number */
 		int DRM = ((bytesPerBlock * dm.directoryBlockCount) / Disk.DIRECTORY_ENTRY_SIZE) - 1;
 		displayLine = String.format("DRM - Max Directory Entry:\t\t%1$04X\t(%1$d)\t%2$s%n", DRM,
 				"((bytesPerBlock * dm.directoryBlockCount)/Disk.DIRECTORY_ENTRY_SIZE)-1");
 		txtLog1.append(displayLine);
 		
+		
+		/* CKS */ /* Disk Work Area size - stores checksums */
+		int CKS = (DRM +1) /Disk.DIRECTORY_ENTRYS_PER_RECORD;
+		displayLine = String.format("CKS - Disk Work Area size:\t\t%1$04X\t(%1$d)\t%2$s%n", CKS,
+				"(DRM +1) /Disk.DIRECTORY_ENTRYS_PER_RECORD");
+		txtLog1.append(displayLine);
+		
+
 
 		txtLog1.append(System.lineSeparator());
 
-		
-
 		/* totalSectorsOnDisk */
-		int  totalSectorsOnDisk = dm.heads * dm.tracksPerHead * dm.sectorsPerTrack;
+		int totalSectorsOnDisk = dm.heads * dm.tracksPerHead * dm.sectorsPerTrack;
 		displayLine = String.format("totalSectorsOnDisk:\t\t%1$04X\t(%1$d)\t%2$s%n", totalSectorsOnDisk,
 				"dm.heads * dm.tracksPerHead * dm.sectorsPerTrack");
 		txtLog1.append(displayLine);
 
+		/* DSM */ /* Max Block Number */
+
+		int DSM = ((totalSectorsOnDisk - OFS) / dm.sectorsPerBlock) - 1;
+		displayLine = String.format("DSM - Highest Block Number:\t\t%1$04X\t(%1$d)\t%2$s%n", DSM,
+				"((totalSectorsOnDisk - OFS)/dm.sectorsPerBlock)-1");
+		txtLog1.append(displayLine);
 		
-		/* DSM */ /*   Max Block Number*/
+		/* EXM */ /* Extent Mask */
+//		bytesPerBlock = 8192;DSM = 5;
+		int divisor = DSM<256?1024:2048; // depends if allocation is an 8 or 16 bit value
+		int EXM = (bytesPerBlock/divisor)-1;
 
-		 int DSM =((totalSectorsOnDisk - OFS)/dm.sectorsPerBlock)-1;
-		// // int drm = (this.blockSizeInBytes * this.getDirectoryBlockCount()) / Disk.DIRECTORY_ENTRY_SIZE;
-		//
-		 displayLine = String.format("DSM:\t\t\t%1$04X\t(%1$d)\t%2$s%n",
-				 DSM,"((totalSectorsOnDisk - OFS)/dm.sectorsPerBlock)-1");
-		 txtLog1.append(displayLine);
-		 
-//			int totalPhysicalSectorsOnDisk = this.getTotalSectorsOnDisk();
-//			int totalPhysicalSectorsOnOFS = getOFS() * this.heads * this.sectorsPerTrack;
-//			return ((totalPhysicalSectorsOnDisk - totalPhysicalSectorsOnOFS) / sectorsPerBlock) - 1;
+		EXM = EXM <=0 ? 0:EXM;	// clean up case where bytesPerBlock = 1024 and DSM > 256
+		displayLine = String.format("EXM - Extent Mask:\t\t%1$04X\t(%1$d)\t%2$s%n", EXM,
+				"(bytesPerBlock/divisor) - 1  | divisor = DSM<256?1024:2048;");
+		txtLog1.append(displayLine);
 
 
-		//
-		//
-		// int totalSectorsPerHead = dm.tracksPerHead * dm.sectorsPerTrack;
-		// displayLine = String.format("totalSectorsPerHead => \t%1$04X\t(%1$d)\t\t%2$s%n",
-		// totalSectorsPerHead,"dm.tracksPerHead * dm.sectorsPerTrack");
-		// txtLog1.append(displayLine);
-		//
-		// int totalSectorsOnDisk = totalSectorsPerHead * dm.heads;
-		// displayLine = String.format("totalSectorsOnDisk => \t%1$04X\t(%1$d)\t\t%2$s%n",
-		// totalSectorsOnDisk,"totalSectorsPerHead * dm.heads");
-		// txtLog1.append(displayLine);
-		// txtLog1.append(System.lineSeparator());
-		//
-		// int directoryStartSector = totalSectorsPerHead * dm.heads;
-		// displayLine = String.format("totalSectorsOnDisk => \t%1$04X\t(%1$d)\t\t%2$s%n",
-		// totalSectorsOnDisk,"totalSectorsPerHead * dm.heads");
-		// txtLog1.append(displayLine);
+		
 
 	}// doBtnTwo
 
