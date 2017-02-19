@@ -71,13 +71,6 @@ public class DiskMetrics {
 		default:
 			return null;
 		}// switch
-//		int in0 = (int) setupValues[0];
-//		int in1 = (int) setupValues[1];
-//		int in2 = (int) setupValues[2];
-//		int in3 = (int) setupValues[3];
-//		int in4 = (int) setupValues[4];
-//		int in5 = (int) setupValues[5];
-
 		return new DiskMetrics((int) setupValues[0], (int) setupValues[1], (int) setupValues[2], (int) setupValues[3],
 				(int) setupValues[4], (int) setupValues[5], (boolean) setupValues[6],
 				(String) setupValues[7], (String) setupValues[8]);
@@ -164,7 +157,7 @@ public class DiskMetrics {
 
 	// SPT- Number of Logical(128-byte) Sectors per Logical Track
 	public int getSPT() {
-		return (this.sectorsPerTrack * this.heads) * getLSperPS();
+		return this.sectorsPerTrack  * getLSperPS();
 	}//getSPT
 
 	// BSH - Block Shift - block size is given by disk.LOGICAL_SECTOR_SIZE * (2**BSH)

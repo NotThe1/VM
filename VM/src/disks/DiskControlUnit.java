@@ -255,8 +255,8 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 //		System.out.printf("currentByteCount: %04X%n", currentByteCount);
 //		System.out.printf("currentDMAAddress: %04X%n", currentDMAAddress);
 		
-		System.out.printf("[DCU] Location: %04X, Value: %02X%n", currentDiskControlByte,
-				ioBuss.read(currentDiskControlByte));
+//		System.out.printf("[DCU] Location: %04X, Value: %02X%n", currentDiskControlByte,
+//				ioBuss.read(currentDiskControlByte));
 		String command = currentCommand == COMMAND_READ?"Read":"Write";
 		System.out.printf("\t%s - Unit %02X, Head %02X, Trk %02X, Sec %04X, Bytes %04X, DMA %04X%n",
 				command,currentUnit,currentHead,currentTrack,currentSector,currentByteCount,currentDMAAddress);

@@ -348,7 +348,7 @@ public class DiskUtility extends JDialog {
 		totalSectors = state ? diskMetrics.getTotalSectorsOnDisk() : 0;
 
 		tracksBeforeDirectory = state ? diskMetrics.getOFS() : 0;
-		blockSizeInSectors = state ? diskMetrics.directoryBlockCount : 0;
+		blockSizeInSectors = state ? diskMetrics.sectorsPerBlock : 0;
 		maxDirectoryEntry = state ? diskMetrics.getDRM() : 0;
 		maxBlockNumber = state ? diskMetrics.getDSM() : 0;
 
@@ -1812,15 +1812,15 @@ public class DiskUtility extends JDialog {
 		gbc_lblLogicalBlockSizeInSectors.gridy = 1;
 		panelFileSystemParameters.add(lblLogicalBlockSizeInSectors, gbc_lblLogicalBlockSizeInSectors);
 
-		JLabel label_5 = new JLabel("Logical Block Size in Sectors");
-		label_5.setHorizontalAlignment(SwingConstants.LEFT);
-		label_5.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		GridBagConstraints gbc_label_5 = new GridBagConstraints();
-		gbc_label_5.anchor = GridBagConstraints.WEST;
-		gbc_label_5.insets = new Insets(0, 0, 5, 0);
-		gbc_label_5.gridx = 3;
-		gbc_label_5.gridy = 1;
-		panelFileSystemParameters.add(label_5, gbc_label_5);
+		JLabel lblSectorsPerBlock = new JLabel("Sectors Per Block");
+		lblSectorsPerBlock.setHorizontalAlignment(SwingConstants.LEFT);
+		lblSectorsPerBlock.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		GridBagConstraints gbc_lblSectorsPerBlock = new GridBagConstraints();
+		gbc_lblSectorsPerBlock.anchor = GridBagConstraints.WEST;
+		gbc_lblSectorsPerBlock.insets = new Insets(0, 0, 5, 0);
+		gbc_lblSectorsPerBlock.gridx = 3;
+		gbc_lblSectorsPerBlock.gridy = 1;
+		panelFileSystemParameters.add(lblSectorsPerBlock, gbc_lblSectorsPerBlock);
 
 		lblMaxDirectoryEntry = new JLabel("0");
 		lblMaxDirectoryEntry.setHorizontalAlignment(SwingConstants.RIGHT);

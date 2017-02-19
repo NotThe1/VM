@@ -28,7 +28,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 
-import disks.DiskMetrics;
 import hardware.RoundIcon1;
 import utilities.FilePicker;
 
@@ -94,7 +93,6 @@ public class GUItest1 extends Observable{
 		Set<String> insKeys = baseInstructions.keySet();
 		baseInstructionModel = new DefaultComboBoxModel<>(insKeys.toArray((new String[insKeys.size()])));
 		cbIns.setModel(baseInstructionModel);
-		DiskMetrics test = DiskMetrics.getDiskMetric("F5DD");
 		int a = 0;
 //		watchButtons = new WatchButtons();
 		

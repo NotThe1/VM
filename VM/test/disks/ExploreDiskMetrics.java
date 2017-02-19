@@ -121,6 +121,7 @@ public class ExploreDiskMetrics {
 		txtLog1.append(String.format("Bytes per Sector:\t\t%1$04X\t(%1$d)%n", dm.bytesPerSector));
 		txtLog1.append(String.format("Sectors per Block:\t\t%1$04X\t(%1$d)%n", dm.sectorsPerBlock));
 		txtLog1.append(String.format("Directory Block Count:\t\t%1$04X\t(%1$d)%n", dm.directoryBlockCount));
+		txtLog1.append(String.format("SPT: %1$04X\t(%1$d)%n", dm.getSPT()));
 		txtLog1.append(System.lineSeparator());
 
 		// Calculated values  .................................................
@@ -148,11 +149,13 @@ public class ExploreDiskMetrics {
 				"dm.bytesPerSector / RECORD_SIZE");
 		txtLog1.append(displayLine);
 
-		/* SPT */ /* number of records per Cylinder */
-		int SPT = recordsPerSector * dm.sectorsPerTrack * dm.heads;
-		displayLine = String.format("SPT - records Per Logical Track Sector:\t%1$04X\t(%1$d)\t%2$s%n", SPT,
-				"recordsPerSector * dm.sectorsPerTrack  * dm.heads");
+		/* SPT */ /* number of records per head per track */
+		int SPT = recordsPerSector * dm.sectorsPerTrack;
+		displayLine = String.format("SPT - number of records per head per track:\t%1$04X\t(%1$d)\t%2$s%n", SPT,
+				"recordsPerSector * dm.sectorsPerTrack");
 		txtLog1.append(displayLine);
+		txtLog1.append(String.format("SPT: %1$04X\t(%1$d)%n", dm.getSPT()));
+
 //		txtLog1.append(System.lineSeparator());
 
 		/* OFS */ /* location of start of Block 0 */
@@ -162,11 +165,13 @@ public class ExploreDiskMetrics {
 		int OFS = 0;
 		if (bootDisk) {
 			float floatSize = (Disk.SYSTEM_LOGICAL_BLOCKS + 1) / (float) SPT;
-			OFS = (int) Math.ceil(floatSize) * dm.sectorsPerTrack * dm.heads;
+			OFS = (int) Math.ceil(floatSize);
 		} // if
 		displayLine = String.format("OFS - Directory Block 0:\t\t%1$04X\t(%1$d)\t%2$s%n", OFS,
 				"First clean track(clynder) after system records (SPT)");
 		txtLog1.append(displayLine);
+		txtLog1.append(String.format("OFS: %1$04X\t(%1$d)%n", dm.getOFS()));
+
 
 		/* Directory Start Sector */
 		int directoryStartSector = OFS;
@@ -198,28 +203,30 @@ public class ExploreDiskMetrics {
 		displayLine = String.format("BSH - Block Shift  :\t\t%1$04X\t(%1$d)\t%2$s%n", BSH,
 				"bytesPerBlock = 128 * (2 ** BSH)");
 		txtLog1.append(displayLine);
+		txtLog1.append(String.format("BSH: %1$04X\t(%1$d)%n", dm.getBSH()));
+
 		
 		/* BLM */ /* Block Mask - Block Size = 128 * (BLM +1) */
 		int BLM = (bytesPerBlock / Disk.RECORD_SIZE)-1;
 		displayLine = String.format("BLM - Block Mask  :\t\t%1$04X\t(%1$d)\t%2$s%n", BLM,
 				"Block Size = 128 * (BLM +1) |  (bytesPerBlock / Disk.RECORD_SIZE)-1");
 		txtLog1.append(displayLine);
+		txtLog1.append(String.format("BLM: %1$04X\t(%1$d)%n", dm.getBLM()));
 
-		
-		
-		
+			
 		/* DRM */ /* Max Directory Entry Number */
 		int DRM = ((bytesPerBlock * dm.directoryBlockCount) / Disk.DIRECTORY_ENTRY_SIZE) - 1;
 		displayLine = String.format("DRM - Max Directory Entry:\t\t%1$04X\t(%1$d)\t%2$s%n", DRM,
 				"((bytesPerBlock * dm.directoryBlockCount)/Disk.DIRECTORY_ENTRY_SIZE)-1");
 		txtLog1.append(displayLine);
-		
+		txtLog1.append(String.format("DRM: %1$04X\t(%1$d)%n", dm.getDRM()));
 		
 		/* CKS */ /* Disk Work Area size - stores checksums */
 		int CKS = (DRM +1) /Disk.DIRECTORY_ENTRYS_PER_RECORD;
 		displayLine = String.format("CKS - Disk Work Area size:\t\t%1$04X\t(%1$d)\t%2$s%n", CKS,
 				"(DRM +1) /Disk.DIRECTORY_ENTRYS_PER_RECORD");
 		txtLog1.append(displayLine);
+		txtLog1.append(String.format("CKS: %1$04X\t(%1$d)%n", dm.getCKS()));
 		
 
 
@@ -237,6 +244,7 @@ public class ExploreDiskMetrics {
 		displayLine = String.format("DSM - Highest Block Number:\t\t%1$04X\t(%1$d)\t%2$s%n", DSM,
 				"((totalSectorsOnDisk - OFS)/dm.sectorsPerBlock)-1");
 		txtLog1.append(displayLine);
+		txtLog1.append(String.format("DSM: %1$04X\t(%1$d)%n", dm.getDSM()));
 		
 		/* EXM */ /* Extent Mask */
 //		bytesPerBlock = 8192;DSM = 5;
@@ -247,6 +255,7 @@ public class ExploreDiskMetrics {
 		displayLine = String.format("EXM - Extent Mask:\t\t%1$04X\t(%1$d)\t%2$s%n", EXM,
 				"(bytesPerBlock/divisor) - 1  | divisor = DSM<256?1024:2048;");
 		txtLog1.append(displayLine);
+		txtLog1.append(String.format("EXM: %1$04X\t(%1$d)%n", dm.getEXM()));
 
 
 		

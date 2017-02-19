@@ -358,7 +358,7 @@ public class Machine8080 implements Observer {
 		JMenu mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
 
-		mnuFileNew = new JMenuItem("New");
+		mnuFileNew = new JMenuItem("Boot");
 		mnuFileNew.setToolTipText("Reload Rom");
 		mnuFileNew.setName(MNU_FILE_NEW);
 		mnuFileNew.addActionListener(menuAdapter);
@@ -428,6 +428,12 @@ public class Machine8080 implements Observer {
 		JMenuItem mnuToolsTrapManager = new JMenuItem("Trap Manager");
 		mnuToolsTrapManager.setName(MNU_TOOLS_TRAP_MANAGER);
 		mnuToolsTrapManager.addActionListener(menuAdapter);
+		
+		JMenuItem mnuToolsDebug = new JMenuItem("Debug");
+		mnuToolsDebug.setName(MNU_TOOLS_DEBUG);
+		mnuToolsDebug.addActionListener(menuAdapter);
+		mnuToolsDebug.setToolTipText("Load Both Trap Manager and Show Listing");
+		mnuTools.add(mnuToolsDebug);
 		mnuTools.add(mnuToolsTrapManager);
 
 		JMenuItem mntmNewMenuItem = new JMenuItem("Show Listing");
@@ -711,6 +717,13 @@ public class Machine8080 implements Observer {
 			} // if JMenuItem
 
 			switch (sourceName) {
+			//MNU_FILE_NEW
+			case Machine8080.MNU_FILE_NEW:
+				loadROM();
+				MenuUtility.clearList(mnuMemory);
+				break;
+				
+				
 			case Machine8080.MNU_MEMORY_LOAD_FROM_FILE:
 				doMemoryLoadFromFile(actionEvent);
 				EventQueue.invokeLater(hexEditPanelConcurrent);
@@ -735,8 +748,15 @@ public class Machine8080 implements Observer {
 				MakeNewDisk.makeNewDisk();
 				break;
 
-			case Machine8080.MNU_TOOLS_TRAP_MANAGER:// MNU_TOOLS_SHOW_LISTING
+			case Machine8080.MNU_TOOLS_DEBUG:// MNU_TOOLS_DEBUG
 				TrapManager trapManager = TrapManager.getInstance();
+				trapManager.setVisible(true);
+				showCode = ShowCode.getInstance();
+				showCode.setVisible(true);
+				break;
+				
+			case Machine8080.MNU_TOOLS_TRAP_MANAGER:// 
+				 trapManager = TrapManager.getInstance();
 				trapManager.setVisible(true);
 				break;
 			case Machine8080.MNU_TOOLS_SHOW_LISTING:
@@ -919,6 +939,7 @@ public class Machine8080 implements Observer {
 
 	public static final String MNU_DISKS_MAKE_NEW_DISK = "mnuMakeNewDisk";
 
+	public static final String MNU_TOOLS_DEBUG = "mnuToolsDebug";
 	public static final String MNU_TOOLS_TRAP_MANAGER = "mnuToolsTrapManager";
 	public static final String MNU_TOOLS_SHOW_LISTING = "mnuToolsShowListing";
 	public static final String MNU_TOOLS_DISK_UTILITY = "mnuToolsDiskUtility";
