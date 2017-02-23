@@ -14,4 +14,21 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/disks/resources/BDOS.mem</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/assembler8080/assembler8080/Code/currentOS/BDOS.mem</locationURI>
+		</link>
+		<link>
+			<name>src/disks/resources/BIOS.mem</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/assembler8080/assembler8080/Code/currentOS/BIOS.mem</locationURI>
+		</link>
+		<link>
+			<name>src/disks/resources/CCP.mem</name>
+			<type>1</type>
+			<locationURI>PARENT-1-WORKSPACE_LOC/git/assembler8080/assembler8080/Code/currentOS/CCP.mem</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

@@ -932,8 +932,8 @@ public class DiskUtility extends JDialog {
 		hdNumberBoxs.add(hdSeekPanel);
 
 		cleanUpOldFiles();
-		byte[] FRED = "<No Active File>".getBytes();
-		byte[] BOB = NO_ACTIVE_FILE.getBytes();
+//		byte[] FRED = "<No Active File>".getBytes();
+//		byte[] BOB = NO_ACTIVE_FILE.getBytes();
 
 		// setDisplayRadix();
 		haveDisk(false);
