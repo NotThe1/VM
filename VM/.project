@@ -30,5 +30,10 @@
 			<type>1</type>
 			<locationURI>PARENT-1-WORKSPACE_LOC/git/assembler8080/assembler8080/Code/currentOS/CCP.mem</locationURI>
 		</link>
+		<link>
+			<name>src/hardware/resources/ROM.mem</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/assembler8080/assembler8080/Code/currentOS/ROM.mem</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>
