@@ -19,6 +19,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -69,6 +74,8 @@ import disks.CPMFile;
 import disks.Disk;
 import disks.DiskMetrics;
 import disks.RawDiskDrive;
+import hardware.Machine8080;
+import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 import utilities.hdNumberBox.HDNumberBox;
 import utilities.hdNumberBox.HDNumberValueChangeEvent;
@@ -77,6 +84,8 @@ import utilities.hdNumberBox.HDSeekPanel;
 import utilities.hexEdit.HexEditPanelSimple;
 
 public class DiskUtility extends JDialog {
+	
+	private static final String FILE_EXTENSION = "F3HD";	// default disk type
 
 	private static DiskUtility instance = new DiskUtility();
 
@@ -181,15 +190,108 @@ public class DiskUtility extends JDialog {
 		return workDisk;
 	}// useBackup
 		// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	private static ByteBuffer setUpBuffer(ByteBuffer sector, int value) {
+		sector.clear();
+		// set value to be put into sector
+		Byte byteValue = (byte) 0x00; // default to null
+		Byte MTfileVlaue = (byte) 0xE5; // deleted file value
+		Byte workingValue;
+		while (sector.hasRemaining()) {
+			workingValue = ((sector.position() % 0x20) == 0) ? MTfileVlaue : byteValue;
+			sector.put(workingValue);
+		} // while
+		sector.flip();
+		return sector;
+	}//setUpBuffer
+	
+	private void makeNewDisk(){
+		JFileChooser fc = FilePicker.getDiskPicker();
+		if (fc.showOpenDialog(this) == JFileChooser.CANCEL_OPTION) {
+			System.out.println("Bailed out of the open");
+			return ;
+		} // if
+		File pickedFile = fc.getSelectedFile();
+		
+		DiskMetrics diskMetric = DiskMetrics.getDiskMetric(FILE_EXTENSION);
+		if (diskMetric == null) {
+			return ;
+		} // if diskMetric
+		
+		String targetRawAbsoluteFileName = pickedFile.getAbsolutePath();
+		String[] fileNameComponents = targetRawAbsoluteFileName.split("\\.");
+		String targetAbsoluteFileName =  fileNameComponents[0] + "." + FILE_EXTENSION;
+		
+		File selectedFile = new File(targetAbsoluteFileName);
+		if (selectedFile.exists()) {
+			if (JOptionPane.showConfirmDialog(null, "File already exists do you want to overwrite it?",
+					"YES - Continue, NO - Cancel", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+				return ;
+			} else {
+				selectedFile.delete();
+				selectedFile = null;
+				selectedFile = new File(targetAbsoluteFileName);
+			} // inner if
+		} // if - file exists
+
+		try {
+			@SuppressWarnings("resource")
+			FileChannel fileChannel = new RandomAccessFile(selectedFile, "rw").getChannel();
+			MappedByteBuffer disk = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, diskMetric.getTotalBytes());
+			ByteBuffer sector = ByteBuffer.allocate(diskMetric.bytesPerSector);
+			int sectorCount = 0;
+			while (disk.hasRemaining()) {
+				sector = setUpBuffer(sector, sectorCount++);
+				disk.put(sector);
+			}//while
+			
+			
+			/** set up as system disk **/
+			
+			Class<Machine8080> thisClass = Machine8080.class;
+			/* Boot Sector */
+			URL rom = thisClass.getResource("/disks/resources/BootSector.mem");
+			byte[] dataBoot = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0200);
+			disk.position(0);
+			disk.put(dataBoot);
+			/* CCP */
+			 rom = thisClass.getResource("/disks/resources/CCP.mem");
+			byte[] dataCCP = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0800);
+//			disk.position(0);
+			disk.put(dataCCP);
+			/* BDOS */
+			 rom = thisClass.getResource("/disks/resources/BDOS.mem");
+			byte[] dataBDOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0E00);
+//			disk.position(0);
+			disk.put(dataBDOS);
+			/* BIOS */
+			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
+//			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
+			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0A00);
+//			disk.position(0);
+			disk.put(dataBIOS);
+			
+
+			fileChannel.force(true);
+			fileChannel.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}//try
+
+		diskSetup(selectedFile);
+		manageFileMenus(MNU_DISK_NEW_DISK);
+		
+		
+	}//makeNewDisk
 
 	private void diskNew() {
-		File newFile = MakeNewDisk.makeNewDisk();
-		if (newFile == null) {
-			System.out.printf("[DiskUtility.actionPerformed] No new file %s%n", "");
-			return;
-		} // if
-		diskSetup(newFile);
-		manageFileMenus(MNU_DISK_NEW_DISK);
+		makeNewDisk();
+//		File newFile = MakeNewDisk.makeNewDisk();
+//		if (newFile == null) {
+//			System.out.printf("[DiskUtility.actionPerformed] No new file %s%n", "");
+//			return;
+//		} // if
+//		diskSetup(newFile);
+//		manageFileMenus(MNU_DISK_NEW_DISK);
 	}// diskNew
 
 	public void diskLoad() {
@@ -287,7 +389,7 @@ public class DiskUtility extends JDialog {
 		try {
 			Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
-			//
+			System.out.printf("[DiskUtility.updateDisk] Not Available for copy %s%n", e);
 			e.printStackTrace();
 		} // try
 	}// updateDisk
