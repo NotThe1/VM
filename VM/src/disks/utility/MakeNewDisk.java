@@ -30,16 +30,7 @@ public class MakeNewDisk {
 		} // if
 		
 		File pickedFile = fc.getSelectedFile();
-		
-//		String fileName = selectedFile.getName();
-//		String fileExtension = "";
-//		String[] fileNameComponents = fileName.split("\\.");
-//		try {
-//			fileExtension = fileNameComponents[1].toUpperCase();
-//		} catch (Exception e) {
-//			return null;
-//		} // try
-		
+			
 		
 		DiskMetrics diskMetric = DiskMetrics.getDiskMetric(fileExtension);
 		if (diskMetric == null) {
@@ -63,9 +54,7 @@ public class MakeNewDisk {
 			} // inner if
 		} // if - file exists
 
-		try {
-			@SuppressWarnings("resource")
-			FileChannel fileChannel = new RandomAccessFile(selectedFile, "rw").getChannel();
+		try (FileChannel fileChannel = new RandomAccessFile(selectedFile, "rw").getChannel();){
 			MappedByteBuffer disk = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, diskMetric.getTotalBytes());
 			ByteBuffer sector = ByteBuffer.allocate(diskMetric.bytesPerSector);
 			int sectorCount = 0;
@@ -86,23 +75,19 @@ public class MakeNewDisk {
 			/* CCP */
 			 rom = thisClass.getResource("/disks/resources/CCP.mem");
 			byte[] dataCCP = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0800);
-//			disk.position(0);
 			disk.put(dataCCP);
 			/* BDOS */
 			 rom = thisClass.getResource("/disks/resources/BDOS.mem");
 			byte[] dataBDOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0E00);
-//			disk.position(0);
 			disk.put(dataBDOS);
 			/* BIOS */
 			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
-//			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
 			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0A00);
-//			disk.position(0);
 			disk.put(dataBIOS);
 			
-
 			fileChannel.force(true);
 			fileChannel.close();
+			disk = null;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}//try

@@ -75,11 +75,11 @@ import utilities.hdNumberBox.HDNumberValueChangeListener;
 import utilities.hdNumberBox.HDSeekPanel;
 import utilities.hexEdit.HexEditPanelSimple;
 
-public class DiskUtility extends JDialog {
+public class DiskUtility2 extends JDialog {
 
-	private static DiskUtility instance = new DiskUtility();
+	private static DiskUtility2 instance = new DiskUtility2();
 
-	public static DiskUtility getInstance() {
+	public static DiskUtility2 getInstance() {
 		return instance;
 	}// getInstance
 
@@ -748,7 +748,7 @@ public class DiskUtility extends JDialog {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					DiskUtility window = new DiskUtility();
+					DiskUtility2 window = new DiskUtility2();
 					window.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -761,7 +761,7 @@ public class DiskUtility extends JDialog {
 	private void appClose() {
 		System.out.printf("[DiskUtility.appClose()]  %s%n", "closing");
 		diskClose();
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility2.class);
 		Dimension dim = this.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -811,7 +811,7 @@ public class DiskUtility extends JDialog {
 	/**
 	 * Create the application.
 	 */
-	private DiskUtility() {
+	private DiskUtility2() {
 		// appInit0();
 		initialize();
 		appInit();
@@ -829,7 +829,7 @@ public class DiskUtility extends JDialog {
 			}//
 		});
 
-		setTitle("Disk Utility");
+		setTitle("Disk Utility - 2");
 		setBounds(100, 100, 450, 300);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
