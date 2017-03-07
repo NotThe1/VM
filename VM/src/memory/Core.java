@@ -55,6 +55,14 @@ public class Core extends Observable implements ICore {
 //		System.out.println("In core constructor");
 	}// Constructor
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+	/**
+	 * clears all memory locations to zeros
+	 */
+	public void initialize(){
+		for ( int i = 0; i < maxAddress +1; i++){
+			storage[i] = (byte)00;
+		}//for
+	}//initialize
 	
 	public  byte[] getStorage(){
 		return this.storage;

@@ -39,6 +39,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
@@ -358,12 +359,12 @@ public class Machine8080 implements Observer {
 		JMenu mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
 
-		mnuFileNew = new JMenuItem("Boot");
-		mnuFileNew.setToolTipText("Reload Rom");
-		mnuFileNew.setName(MNU_FILE_NEW);
-		mnuFileNew.addActionListener(menuAdapter);
+		mnuFileBoot = new JMenuItem("Boot");
+		mnuFileBoot.setToolTipText("Reload Rom");
+		mnuFileBoot.setName(MNU_FILE_BOOT);
+		mnuFileBoot.addActionListener(menuAdapter);
 
-		mnuFile.add(mnuFileNew);
+		mnuFile.add(mnuFileBoot);
 
 		mnuMemory = new JMenu("Memory");
 		menuBar.add(mnuMemory);
@@ -428,7 +429,7 @@ public class Machine8080 implements Observer {
 		JMenuItem mnuToolsTrapManager = new JMenuItem("Trap Manager");
 		mnuToolsTrapManager.setName(MNU_TOOLS_TRAP_MANAGER);
 		mnuToolsTrapManager.addActionListener(menuAdapter);
-		
+
 		JMenuItem mnuToolsDebug = new JMenuItem("Debug");
 		mnuToolsDebug.setName(MNU_TOOLS_DEBUG);
 		mnuToolsDebug.addActionListener(menuAdapter);
@@ -699,11 +700,6 @@ public class Machine8080 implements Observer {
 
 	/* ............................. */
 	protected class Machine8080MenuAdapter implements ActionListener {
-		// private HexEditPanelConcurrent hexEditPanelConcurrent;
-		//
-		// public void setHexPanel(HexEditPanelConcurrent hexEditPanelConcurrent) {
-		// this.hexEditPanelConcurrent = hexEditPanelConcurrent;
-		// }//
 
 		@Override
 		public void actionPerformed(ActionEvent actionEvent) {
@@ -717,13 +713,23 @@ public class Machine8080 implements Observer {
 			} // if JMenuItem
 
 			switch (sourceName) {
-			//MNU_FILE_NEW
-			case Machine8080.MNU_FILE_NEW:
+			// MNU_FILE_NEW
+			case Machine8080.MNU_FILE_BOOT:
+				Core.getInstance().initialize();
 				loadROM();
 				MenuUtility.clearList(mnuMemory);
+				WorkingRegisterSet.getInstance().setProgramCounter(0);
+				if (DiskControlUnit.getgetInstance().isBootDiskLoaded()) {
+					btnRun1.setSelected(true);
+					doRun();
+				} else {
+					JOptionPane.showMessageDialog(frmMachine, "There is no disk in drive A", "Boot attempt",
+							JOptionPane.WARNING_MESSAGE);
+					updateView();
+				} // if boot disk
+
 				break;
-				
-				
+
 			case Machine8080.MNU_MEMORY_LOAD_FROM_FILE:
 				doMemoryLoadFromFile(actionEvent);
 				EventQueue.invokeLater(hexEditPanelConcurrent);
@@ -754,9 +760,9 @@ public class Machine8080 implements Observer {
 				showCode = ShowCode.getInstance();
 				showCode.setVisible(true);
 				break;
-				
-			case Machine8080.MNU_TOOLS_TRAP_MANAGER:// 
-				 trapManager = TrapManager.getInstance();
+
+			case Machine8080.MNU_TOOLS_TRAP_MANAGER://
+				trapManager = TrapManager.getInstance();
 				trapManager.setVisible(true);
 				break;
 			case Machine8080.MNU_TOOLS_SHOW_LISTING:
@@ -929,7 +935,7 @@ public class Machine8080 implements Observer {
 
 	public static final String NO_CONNECTION = "<<No Connection>>";
 
-	public static final String MNU_FILE_NEW = "mnuFileNew";
+	public static final String MNU_FILE_BOOT = "mnuFileBoot";
 
 	public static final String MNU_MEMORY_LOAD_FROM_FILE = "mnuMemoryLoadFromFile";
 	public static final String MNU_MEMORY_LOAD_FROM_LIST = "mnuMemoryLoadFromList";
@@ -960,7 +966,7 @@ public class Machine8080 implements Observer {
 	private JTabbedPane tabbedPane;
 	private JPanel tabMemory;
 
-	private JMenuItem mnuFileNew;
+	private JMenuItem mnuFileBoot;
 	private JPanel tabDisassembler;
 	// private InLineDisassembler disassembler;
 	private JPanel panelBottomLeft;

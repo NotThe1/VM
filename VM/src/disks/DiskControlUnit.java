@@ -63,6 +63,10 @@ public class DiskControlUnit implements Observer, VDiskErrorListener {
 			} // if
 		} // for
 	}// close
+	
+	public boolean isBootDiskLoaded(){
+		return drives[0]!= null?true:false;
+	}//isBootDiskLoaded
 
 	public boolean addDiskDrive(int index, String fileName) {
 
