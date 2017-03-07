@@ -791,7 +791,7 @@ public class DiskUtility extends JDialog {
 		// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	private void appInit() {
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility2.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
 		this.setSize(895, 895);
 		this.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		tabbedPane.setSelectedIndex(myPrefs.getInt("Tab", 0));
