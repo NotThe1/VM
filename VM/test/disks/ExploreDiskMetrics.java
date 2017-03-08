@@ -31,6 +31,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 
+import disks.utility.UpdateSystemDisk;
+
 public class ExploreDiskMetrics {
 	private String currentDiskType = "F3HD";
 
@@ -263,7 +265,7 @@ public class ExploreDiskMetrics {
 	}// doBtnTwo
 
 	private void doBtnThree() {
-
+UpdateSystemDisk.updateDisks();
 	}// doBtnThree
 
 	private void doBtnFour() {
@@ -393,7 +395,8 @@ public class ExploreDiskMetrics {
 		btnTwo.setMaximumSize(new Dimension(100, 20));
 		toolBar.add(btnTwo);
 
-		btnThree = new JButton("3");
+		btnThree = new JButton("UpdateSystemDisk");
+		btnThree.setToolTipText("UpdateSystemDisk");
 		btnThree.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doBtnThree();

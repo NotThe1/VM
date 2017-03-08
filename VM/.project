@@ -26,6 +26,11 @@
 			<locationURI>PARENT-1-WORKSPACE_LOC/git/assembler8080/assembler8080/Code/currentOS/BIOS.mem</locationURI>
 		</link>
 		<link>
+			<name>src/disks/resources/BootSector.mem</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/assembler8080/assembler8080/Code/currentOS/BootSector.mem</locationURI>
+		</link>
+		<link>
 			<name>src/disks/resources/CCP.mem</name>
 			<type>1</type>
 			<locationURI>PARENT-1-WORKSPACE_LOC/git/assembler8080/assembler8080/Code/currentOS/CCP.mem</locationURI>

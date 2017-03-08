@@ -3,7 +3,6 @@ package disks.utility;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -12,8 +11,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import disks.DiskMetrics;
-import hardware.Machine8080;
-import memory.MemoryLoaderFromFile;
 import utilities.FilePicker;
 
 public class MakeNewDisk {
@@ -64,30 +61,31 @@ public class MakeNewDisk {
 			}//while
 			
 			
-			/** set up as system disk **/
-			
-			Class<Machine8080> thisClass = Machine8080.class;
-			/* Boot Sector */
-			URL rom = thisClass.getResource("/disks/resources/BootSector.mem");
-			byte[] dataBoot = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0200);
-			disk.position(0);
-			disk.put(dataBoot);
-			/* CCP */
-			 rom = thisClass.getResource("/disks/resources/CCP.mem");
-			byte[] dataCCP = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0800);
-			disk.put(dataCCP);
-			/* BDOS */
-			 rom = thisClass.getResource("/disks/resources/BDOS.mem");
-			byte[] dataBDOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0E00);
-			disk.put(dataBDOS);
-			/* BIOS */
-			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
-			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0A00);
-			disk.put(dataBIOS);
+//			/** set up as system disk **/
+//			
+//			Class<Machine8080> thisClass = Machine8080.class;
+//			/* Boot Sector */
+//			URL rom = thisClass.getResource("/disks/resources/BootSector.mem");
+//			byte[] dataBoot = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0200);
+//			disk.position(0);
+//			disk.put(dataBoot);
+//			/* CCP */
+//			 rom = thisClass.getResource("/disks/resources/CCP.mem");
+//			byte[] dataCCP = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0800);
+//			disk.put(dataCCP);
+//			/* BDOS */
+//			 rom = thisClass.getResource("/disks/resources/BDOS.mem");
+//			byte[] dataBDOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0E00);
+//			disk.put(dataBDOS);
+//			/* BIOS */
+//			 rom = thisClass.getResource("/disks/resources/BIOS.mem");
+//			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()),0x0A00);
+//			disk.put(dataBIOS);
 			
 			fileChannel.force(true);
 			fileChannel.close();
 			disk = null;
+			UpdateSystemDisk.updateDisk(selectedFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}//try
@@ -100,10 +98,10 @@ public class MakeNewDisk {
 		sector.clear();
 		// set value to be put into sector
 		Byte byteValue = (byte) 0x00; // default to null
-		Byte MTfileVlaue = (byte) 0xE5; // deleted file value
+		Byte MTfileValue = (byte) 0xE5; // deleted file value
 		Byte workingValue;
 		while (sector.hasRemaining()) {
-			workingValue = ((sector.position() % 0x20) == 0) ? MTfileVlaue : byteValue;
+			workingValue = ((sector.position() % 0x20) == 0) ? MTfileValue : byteValue;
 			sector.put(workingValue);
 		} // while
 		sector.flip();

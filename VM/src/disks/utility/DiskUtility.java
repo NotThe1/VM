@@ -157,7 +157,7 @@ public class DiskUtility extends JDialog {
 			return;
 		} // if
 		diskSetup(newFile.getAbsolutePath());
-		manageFileMenus(MNU_DISK_NEW_DISK);
+		manageFileMenus(MNU_TOOLS_NEW_DISK);
 	}// diskNew
 
 	public void diskLoad() {
@@ -717,9 +717,9 @@ public class DiskUtility extends JDialog {
 
 	private void manageFileMenus(String source) {
 		switch (source) {
-		case MNU_DISK_NEW_DISK:
+		case MNU_TOOLS_NEW_DISK:
 		case MNU_DISK_LOAD_DISK:
-			mnuDiskNew.setEnabled(false);
+			mnuToolsNewDisk.setEnabled(false);
 			mnuDiskLoad.setEnabled(false);
 			mnuDiskClose.setEnabled(true);
 			mnuDiskSave.setEnabled(true);
@@ -727,7 +727,7 @@ public class DiskUtility extends JDialog {
 			mnuDiskExit.setEnabled(true);
 			break;
 		case MNU_DISK_CLOSE:
-			mnuDiskNew.setEnabled(true);
+			mnuToolsNewDisk.setEnabled(true);
 			mnuDiskLoad.setEnabled(true);
 			mnuDiskClose.setEnabled(false);
 			mnuDiskSave.setEnabled(false);
@@ -1817,11 +1817,6 @@ public class DiskUtility extends JDialog {
 		JMenu mnuDisk = new JMenu("Disk");
 		menuBar.add(mnuDisk);
 
-		mnuDiskNew = new JMenuItem("New Disk");
-		mnuDiskNew.setName(MNU_DISK_NEW_DISK);
-		mnuDiskNew.addActionListener(diskUtilityAdapter);
-		mnuDisk.add(mnuDiskNew);
-
 		mnuDiskLoad = new JMenuItem("Load Disk ...");
 		mnuDiskLoad.setName(MNU_DISK_LOAD_DISK);
 		mnuDiskLoad.addActionListener(diskUtilityAdapter);
@@ -1855,6 +1850,19 @@ public class DiskUtility extends JDialog {
 		mnuDiskExit.setName(MNU_DISK_EXIT);
 		mnuDiskExit.addActionListener(diskUtilityAdapter);
 		mnuDisk.add(mnuDiskExit);
+
+		mnuTools = new JMenu("Tools");
+		menuBar.add(mnuTools);
+
+		mnuToolsNewDisk = new JMenuItem("New Disk");
+		mnuTools.add(mnuToolsNewDisk);
+		mnuToolsNewDisk.setName(MNU_TOOLS_NEW_DISK);
+		
+		mnuToolsUpdateSystem = new JMenuItem("Update System on Disks...");
+		mnuToolsUpdateSystem.setName(MNU_TOOLS_UPDATE_SYSTEM);
+		mnuToolsUpdateSystem.addActionListener(diskUtilityAdapter);
+		mnuTools.add(mnuToolsUpdateSystem);
+		mnuToolsNewDisk.addActionListener(diskUtilityAdapter);
 	}// initialize
 
 	// ----------------------------------------------------------------------------------------------------------
@@ -1915,9 +1923,6 @@ public class DiskUtility extends JDialog {
 
 			switch (name) {
 			// Menus
-			case MNU_DISK_NEW_DISK:
-				diskNew();
-				break;
 			case MNU_DISK_LOAD_DISK:
 				diskLoad();
 				break;
@@ -1934,6 +1939,13 @@ public class DiskUtility extends JDialog {
 				appClose();
 				break;
 
+			case MNU_TOOLS_NEW_DISK:
+				diskNew();
+				break;
+			case MNU_TOOLS_UPDATE_SYSTEM:
+				UpdateSystemDisk.updateDisks();
+				break;
+				
 			// Buttons
 			case BTN_IMPORT:
 				fileInport();
@@ -2027,7 +2039,7 @@ public class DiskUtility extends JDialog {
 
 	public static final String DISPLAY_HEX = "Display Hex";
 	public static final String DISPLAY_DECIMAL = "Display Dicimal";
-//	private final static int CHARACTERS_PER_LINE = 16;
+	// private final static int CHARACTERS_PER_LINE = 16;
 
 	public static final String USER_HOME = "user.home";
 	public static final String THIS_DIR = ".";
@@ -2045,16 +2057,17 @@ public class DiskUtility extends JDialog {
 	public static final String TB_DECIMAL_DISPLAY = "tbDecimalDisplay";
 	public static final String TB_BOOTABLE = "tbBootable";
 
-	public static final String MNU_DISK_NEW_DISK = "mnuDiskNew";
 	public static final String MNU_DISK_LOAD_DISK = "mnuDiskLoad";
 	public static final String MNU_DISK_CLOSE = "mnuDiskClose";
 	public static final String MNU_DISK_SAVE = "mnuDiskSave";
 	public static final String MNU_DISK_SAVE_AS = "mnuDiskSaveAs";
 	public static final String MNU_DISK_EXIT = "mnuDiskExit";
+	public static final String MNU_TOOLS_NEW_DISK = "mnuToolsNewDisk";
+	public static final String MNU_TOOLS_UPDATE_SYSTEM = "mnuUpdateSystem";
 
 	private JPanel panelDirectory;
 	private JPanel panelPhysical0;
-	private JMenuItem mnuDiskNew;
+	private JMenuItem mnuToolsNewDisk;
 	private JMenuItem mnuDiskLoad;
 	private JMenuItem mnuDiskClose;
 	private JMenuItem mnuDiskSave;
@@ -2128,6 +2141,8 @@ public class DiskUtility extends JDialog {
 	private JButton btnNativeFile;
 	private JLabel lblNewLabel_3;
 	private JLabel lblCpmFile;
+	private JMenu mnuTools;
+	private JMenuItem mnuToolsUpdateSystem;
 
 	// ----------------------------------------------------------------------
 
