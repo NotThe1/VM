@@ -31,7 +31,9 @@ public class CPMDirectoryEntry {
 	
 
 	public void markAsDeleted() {
-		this.setUserNumber(Disk.EMPTY_ENTRY);
+		rawDirectory = Disk.EMPTY_DIRECTORY_ENTRY.clone();
+		
+//		this.setUserNumber(Disk.EMPTY_ENTRY);
 	}//markAsDeleted
 
 	public CPMDirectoryEntry() {

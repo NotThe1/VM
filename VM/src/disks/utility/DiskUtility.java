@@ -108,6 +108,7 @@ public class DiskUtility extends JDialog {
 	boolean changeSectorInProgress = false;
 
 	private FileCpmModel fileCpmModel;
+	private String nativeDirectory; 
 
 	private CPMDirectory directory;
 	private CPMFile cpmFile;
@@ -672,9 +673,9 @@ public class DiskUtility extends JDialog {
 
 	// ---Utilities View-------------------------
 	private File getNativeFile() {
-		String startingDir = System.getProperty(USER_HOME, THIS_DIR);
+//		String nativeDirectory = System.getProperty(USER_HOME, THIS_DIR);
 
-		JFileChooser nativeChooser = new JFileChooser(startingDir);
+		JFileChooser nativeChooser = new JFileChooser(nativeDirectory);
 		nativeChooser.setMultiSelectionEnabled(false);
 		if (nativeChooser.showDialog(this, "Select the file") != JFileChooser.APPROVE_OPTION) {
 			btnImport.setEnabled(false);
@@ -683,6 +684,7 @@ public class DiskUtility extends JDialog {
 			txtNativeFileInOut.setToolTipText("");
 			return null;
 		} // if
+		nativeDirectory = nativeChooser.getCurrentDirectory().getAbsolutePath();
 		btnImport.setEnabled(true);
 		btnExport.setEnabled(true);
 
@@ -769,6 +771,7 @@ public class DiskUtility extends JDialog {
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
 		myPrefs.putInt("Tab", tabbedPane.getSelectedIndex());
+		myPrefs.put("nativeDirectory", nativeDirectory);
 		myPrefs = null;
 		dispose();
 	}// appClose
@@ -795,6 +798,7 @@ public class DiskUtility extends JDialog {
 		this.setSize(895, 895);
 		this.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		tabbedPane.setSelectedIndex(myPrefs.getInt("Tab", 0));
+		nativeDirectory =myPrefs.get("nativeDirectory",  System.getProperty(USER_HOME, THIS_DIR));
 		myPrefs = null;
 		hdNumberBoxs = new ArrayList<HDNumberBox>();
 		hdNumberBoxs.add(hdnHead);

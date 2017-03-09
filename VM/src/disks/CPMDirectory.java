@@ -330,7 +330,8 @@ public class CPMDirectory {
 		HashMap<Integer, Integer> targetEntries = new HashMap<Integer, Integer>();
 
 		for (int i = 0; i < maxEntries; i++) {
-			if (dirEntries.get(i).getNameAndType11().equals(fullName)) {
+//			if (!(dirEntries.get(i).isEmpty() && dirEntries.get(i).getNameAndType11().equals(fullName) )) {
+				if ( dirEntries.get(i).getNameAndType11().equals(fullName) ) {
 
 				targetEntries.put(dirEntries.get(i).getActualExtentNumber(), i);
 			}// if
@@ -393,8 +394,8 @@ public class CPMDirectory {
 		return name + type;
 	}// makeFileName11
 
-	public void markAsDeleted(int directoryEntryNumber) {
-		dirEntries.get(directoryEntryNumber).markAsDeleted();
-	}// markAsDeleted
+//	public void markAsDeleted(int directoryEntryNumber) {
+//		dirEntries.get(directoryEntryNumber).markAsDeleted();
+//	}// markAsDeleted
 
 }
