@@ -871,7 +871,7 @@ public class ExploreDiskMetrics {
 			return validSearchFileName;
 		}// verify
 
-	}// class MemoryLimitVerifier
+	}// class FileNameVerifier
 
 	private JFrame frmExploreDiskMetrics;
 	private JButton btnOne;
