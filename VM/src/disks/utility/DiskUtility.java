@@ -1466,14 +1466,14 @@ public class DiskUtility extends JDialog {
 		gbl_seekPanel.rowWeights = new double[] { Double.MIN_VALUE };
 		hdSeekPanel.setLayout(gbl_seekPanel);
 
-		tabUtilities = new JPanel();
-		tabbedPane.addTab("Utilities", null, tabUtilities, null);
-		GridBagLayout gbl_tabUtilities = new GridBagLayout();
-		gbl_tabUtilities.columnWidths = new int[] { 0, 0 };
-		gbl_tabUtilities.rowHeights = new int[] { 0, 0, 0 };
-		gbl_tabUtilities.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gbl_tabUtilities.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
-		tabUtilities.setLayout(gbl_tabUtilities);
+		tabImportExport = new JPanel();
+		tabbedPane.addTab("Import/Export", null, tabImportExport, null);
+		GridBagLayout gbl_tabImportExport = new GridBagLayout();
+		gbl_tabImportExport.columnWidths = new int[] { 0, 0 };
+		gbl_tabImportExport.rowHeights = new int[] { 0, 0, 0 };
+		gbl_tabImportExport.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_tabImportExport.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		tabImportExport.setLayout(gbl_tabImportExport);
 
 		panelMetrics0 = new JPanel();
 		panelMetrics0.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
@@ -1482,7 +1482,7 @@ public class DiskUtility extends JDialog {
 		gbc_panelMetrics0.fill = GridBagConstraints.BOTH;
 		gbc_panelMetrics0.gridx = 0;
 		gbc_panelMetrics0.gridy = 0;
-		tabUtilities.add(panelMetrics0, gbc_panelMetrics0);
+		tabImportExport.add(panelMetrics0, gbc_panelMetrics0);
 		GridBagLayout gbl_panelMetrics0 = new GridBagLayout();
 		gbl_panelMetrics0.columnWidths = new int[] { 0, 0 };
 		gbl_panelMetrics0.rowHeights = new int[] { 0, 0 };
@@ -1717,7 +1717,7 @@ public class DiskUtility extends JDialog {
 		gbc_panelCopy0.fill = GridBagConstraints.BOTH;
 		gbc_panelCopy0.gridx = 0;
 		gbc_panelCopy0.gridy = 1;
-		tabUtilities.add(panelCopy0, gbc_panelCopy0);
+		tabImportExport.add(panelCopy0, gbc_panelCopy0);
 		GridBagLayout gbl_panelCopy0 = new GridBagLayout();
 		gbl_panelCopy0.columnWidths = new int[] { 0, 0, 0 };
 		gbl_panelCopy0.rowHeights = new int[] { 0, 0, 0 };
@@ -2117,7 +2117,7 @@ public class DiskUtility extends JDialog {
 	// private HexEditPanelSimple panelFileHex;
 	private Component horizontalStrut_7;
 	private JPanel panelFile0;
-	private JPanel tabUtilities;
+	private JPanel tabImportExport;
 	private JPanel panelMetrics;
 	private JPanel panelDiskGeometry;
 	private JLabel lblHeads;

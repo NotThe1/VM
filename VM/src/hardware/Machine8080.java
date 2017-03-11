@@ -145,16 +145,20 @@ public class Machine8080 implements Observer {
 		} // if
 	}// doRun
 
-	private void doReset() {
-		byte[] storage = Core.getInstance().getStorage();
-		/** avoid IO trap locations **/
-		for (int i = 0X0080; i < storage.length; i++) {
-			storage[i] = 0;
-		} // for
+	private void doBoot() {
+		Core.getInstance().initialize();
 		loadROM();
-		removeAllDisks();
 		MenuUtility.clearList(mnuMemory);
-	}// doReset
+		WorkingRegisterSet.getInstance().setProgramCounter(0);
+		if (DiskControlUnit.getgetInstance().isBootDiskLoaded()) {
+			btnRun1.setSelected(true);
+			doRun();
+		} else {
+			JOptionPane.showMessageDialog(frmMachine, "There is no disk in drive A", "Boot attempt",
+					JOptionPane.WARNING_MESSAGE);
+			updateView();
+		}//if
+	}// doBoot
 
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
@@ -417,14 +421,18 @@ public class Machine8080 implements Observer {
 		JMenuItem mnuMakeNewDisk = new JMenuItem("Make New Disk ...");
 		mnuMakeNewDisk.setName(MNU_DISKS_MAKE_NEW_DISK);
 		mnuMakeNewDisk.addActionListener(menuAdapter);
+		
+				JMenuItem mnuDisksDiskUtility = new JMenuItem("Disk Utility");
+				mnuDisks.add(mnuDisksDiskUtility);
+				mnuDisksDiskUtility.setName(MNU_DISKS_DISK_UTILITY);
+				mnuDisksDiskUtility.addActionListener(menuAdapter);
+		
+				JSeparator separator_2 = new JSeparator();
+				mnuDisks.add(separator_2);
 		mnuDisks.add(mnuMakeNewDisk);
 
 		JMenu mnuTools = new JMenu("Tools");
 		menuBar.add(mnuTools);
-
-		JMenuItem mnuToolsDiskUtility = new JMenuItem("Disk Utility");
-		mnuToolsDiskUtility.setName(MNU_TOOLS_DISK_UTILITY);
-		mnuToolsDiskUtility.addActionListener(menuAdapter);
 
 		JMenuItem mnuToolsTrapManager = new JMenuItem("Trap Manager");
 		mnuToolsTrapManager.setName(MNU_TOOLS_TRAP_MANAGER);
@@ -441,10 +449,6 @@ public class Machine8080 implements Observer {
 		mntmNewMenuItem.setName(MNU_TOOLS_SHOW_LISTING);
 		mntmNewMenuItem.addActionListener(menuAdapter);
 		mnuTools.add(mntmNewMenuItem);
-
-		JSeparator separator_2 = new JSeparator();
-		mnuTools.add(separator_2);
-		mnuTools.add(mnuToolsDiskUtility);
 
 		JSeparator separator_1 = new JSeparator();
 		mnuTools.add(separator_1);
@@ -714,20 +718,8 @@ public class Machine8080 implements Observer {
 
 			switch (sourceName) {
 			// MNU_FILE_NEW
-			case Machine8080.MNU_FILE_BOOT:
-				Core.getInstance().initialize();
-				loadROM();
-				MenuUtility.clearList(mnuMemory);
-				WorkingRegisterSet.getInstance().setProgramCounter(0);
-				if (DiskControlUnit.getgetInstance().isBootDiskLoaded()) {
-					btnRun1.setSelected(true);
-					doRun();
-				} else {
-					JOptionPane.showMessageDialog(frmMachine, "There is no disk in drive A", "Boot attempt",
-							JOptionPane.WARNING_MESSAGE);
-					updateView();
-				} // if boot disk
-
+			case Machine8080.MNU_FILE_BOOT:	
+				doBoot();
 				break;
 
 			case Machine8080.MNU_MEMORY_LOAD_FROM_FILE:
@@ -753,6 +745,10 @@ public class Machine8080 implements Observer {
 			case Machine8080.MNU_DISKS_MAKE_NEW_DISK:
 				MakeNewDisk.makeNewDisk();
 				break;
+			case Machine8080.MNU_DISKS_DISK_UTILITY:
+				DiskUtility diskUtility = DiskUtility.getInstance();
+				diskUtility.setVisible(true);
+				break;
 
 			case Machine8080.MNU_TOOLS_DEBUG:// MNU_TOOLS_DEBUG
 				TrapManager trapManager = TrapManager.getInstance();
@@ -769,12 +765,8 @@ public class Machine8080 implements Observer {
 				showCode = ShowCode.getInstance();
 				showCode.setVisible(true);
 				break;
-			case Machine8080.MNU_TOOLS_DISK_UTILITY:
-				DiskUtility diskUtility = DiskUtility.getInstance();
-				diskUtility.setVisible(true);
-				break;
 			case Machine8080.MNU_TOOLS_RESET:
-				doReset();
+				doBoot();
 				break;
 			default:
 				assert false : sourceName + " is not a valid menu item\n";
@@ -944,11 +936,11 @@ public class Machine8080 implements Observer {
 	public static final String MNU_MEMORY_CLEAR_SELECTED_FILES = "mnuClearSelectedFiles";
 
 	public static final String MNU_DISKS_MAKE_NEW_DISK = "mnuMakeNewDisk";
+	public static final String MNU_DISKS_DISK_UTILITY = "mnuDisksDiskUtility";
 
 	public static final String MNU_TOOLS_DEBUG = "mnuToolsDebug";
 	public static final String MNU_TOOLS_TRAP_MANAGER = "mnuToolsTrapManager";
 	public static final String MNU_TOOLS_SHOW_LISTING = "mnuToolsShowListing";
-	public static final String MNU_TOOLS_DISK_UTILITY = "mnuToolsDiskUtility";
 	public static final String MNU_TOOLS_RESET = "mnuToolsReset";
 
 	private JFrame frmMachine;

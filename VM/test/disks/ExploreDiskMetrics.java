@@ -10,11 +10,21 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.swing.InputVerifier;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -22,14 +32,17 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
+import javax.swing.text.JTextComponent;
 
 import disks.utility.UpdateSystemDisk;
 
@@ -314,6 +327,129 @@ public class ExploreDiskMetrics {
 
 	}// doEditPaste
 
+	private void doFindFiles() {
+		Pattern p = makePattern();
+		File startDir = new File(lblDirectory.getText());
+		findFiles(startDir,p);
+	}// doFindFiles
+
+	private Pattern makePattern() {
+		String pattern = new String();
+		String name, ext;
+		String sourceFileName = txtFindFileName.getText().trim();
+		if (sourceFileName.contains(".")) {
+			String[] targetSet = txtFindFileName.getText().split("\\.");
+			name = targetSet[0].trim();
+			ext = targetSet[1].trim();
+		} else {
+			name = sourceFileName;
+			ext = "   ";
+		} // if period or not
+
+		pattern = getPattern(name,8);
+		pattern += getPattern(ext,3);
+		
+
+		return Pattern.compile(pattern);
+	}// makePattern
+	
+	private String getPattern(String s,int size){
+		StringBuilder sb = new StringBuilder();
+		boolean foundStar = false;
+		String subjectString = "";
+		int i = 0;
+		for (; i < s.length(); i++) {
+			subjectString = s.substring(i, i + 1);
+			if (subjectString.equals("*")) {
+				foundStar = true;
+				break;
+			} // if *
+			if (subjectString.equals("?")) {
+				sb.append(".");
+			} else
+				sb.append(subjectString);
+		} // for
+		String padString = foundStar?".":" ";	// either a period or space
+		for (; i < size;i++){
+			sb.append(padString);
+		}// fill out
+		return sb.toString();
+	}//getPattern
+
+	private void findFiles(File enterFile,Pattern p) {
+
+		File[] files = enterFile.listFiles();
+		for (File file : files) {
+			if (rbRecurse.isSelected() && file.isDirectory()) {
+				findFiles(file,p);
+			} // if for recursion
+
+			processTheFile(file,p);
+
+		} // for each file
+	}// findFiles
+
+	private void processTheFile(File file,Pattern p) {
+		String fileName = file.getName().toUpperCase();
+		if (!fileName.endsWith("." + lblDiskType.getText())) {
+			txtLog1.append(String.format("\t\tskipped File  %s%n", fileName));
+			return; // only want right type of disk
+		} // if right disk type
+		txtLog1.append(String.format("Disk name is %s%n", fileName));
+		RawDiskDrive diskDrive = new RawDiskDrive(file.getAbsolutePath());
+		DiskMetrics diskMetrics = DiskMetrics.getDiskMetric(lblDiskType.getText());
+
+		byte[] diskSector;
+
+//		CPMDirectory directory = new CPMDirectory(diskDrive.getDiskType(), true);
+		int firstDirectorySector = diskMetrics.getDirectoryStartSector();
+		int lastDirectorySector = diskMetrics.getDirectorysLastSector();
+		// int entriesPerSector = bytesPerSector / Disk.DIRECTORY_ENTRY_SIZE;
+		int entriesPerSector = 512 / Disk.DIRECTORY_ENTRY_SIZE;
+
+		//
+//		int directoryIndex = 0;
+		for (int s = firstDirectorySector; s < lastDirectorySector + 1; s++) {
+			diskDrive.setCurrentAbsoluteSector(s);
+			diskSector = diskDrive.read();
+			for (int i = 0; i < entriesPerSector; i++) {
+				String cpmFileName = extractName(diskSector, i);
+				if (cpmFileName == null) {
+					continue;
+				}//if null
+				Matcher m = p.matcher(cpmFileName);
+				
+				if (m.matches()){
+									txtLog1.append(String.format("\t%s is a match%n", cpmFileName));
+				}else{
+//					txtLog1.append(String.format("\t\t%s NOT A MATCH%n", cpmFileName));
+					
+				}//if match
+				
+
+			} // for - i
+		} // for -s
+			// }// makeDirectory
+
+	}// processTheFile
+
+	private String extractName(byte[] sector, int index) {
+		int startIndex = index * Disk.DIRECTORY_ENTRY_SIZE;
+		if (sector[startIndex] == Disk.EMPTY_ENTRY) {
+			return null;
+		} // if empty
+		if (sector[startIndex + 12] != 0) {
+			return null;
+		} // not the first entry - only want it once
+		byte[] nameArray = new byte[11];
+		for (int i = 1; i < 12; i++) {
+			nameArray[i - 1] = sector[startIndex + i];
+		} // for
+
+		return new String(nameArray);
+	}//
+
+
 	private void appClose() {
 		Preferences myPrefs = Preferences.userNodeForPackage(ExploreDiskMetrics.class);
 		Dimension dim = frmExploreDiskMetrics.getSize();
@@ -324,6 +460,8 @@ public class ExploreDiskMetrics {
 		myPrefs.putInt("LocY", point.y);
 		myPrefs.putInt("Divider", splitPane1.getDividerLocation());
 		myPrefs.put("currentDiskType", currentDiskType);
+		myPrefs.put("DiskDirectory", lblDirectory.getText());
+		myPrefs.put("DiskType", lblDiskType.getText());
 		;
 		myPrefs = null;
 		System.exit(0);
@@ -331,12 +469,14 @@ public class ExploreDiskMetrics {
 
 	private void appInit() {
 		Preferences myPrefs = Preferences.userNodeForPackage(ExploreDiskMetrics.class);
-		frmExploreDiskMetrics.setSize(myPrefs.getInt("Width", 500), myPrefs.getInt("Height", 500));
+		frmExploreDiskMetrics.setSize(965, 797);
 		frmExploreDiskMetrics.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
+		lblDirectory.setText(myPrefs.get("DiskDirectory", "."));
+		lblDiskType.setText(myPrefs.get("DiskType", "F3HD"));
 		currentDiskType = myPrefs.get("currentDiskType", "F3HD");
-		lblCurrentDiskType.setText(currentDiskType);
 		myPrefs = null;
+		lblCurrentDiskType.setText(currentDiskType);
 	}// appInit
 
 	public ExploreDiskMetrics() {
@@ -427,11 +567,125 @@ public class ExploreDiskMetrics {
 		JPanel panelLeft = new JPanel();
 		splitPane1.setLeftComponent(panelLeft);
 		GridBagLayout gbl_panelLeft = new GridBagLayout();
-		gbl_panelLeft.columnWidths = new int[] { 0 };
-		gbl_panelLeft.rowHeights = new int[] { 0 };
-		gbl_panelLeft.columnWeights = new double[] { Double.MIN_VALUE };
-		gbl_panelLeft.rowWeights = new double[] { Double.MIN_VALUE };
+		gbl_panelLeft.columnWidths = new int[] { 0, 0 };
+		gbl_panelLeft.rowHeights = new int[] { 0, 0, 0, 0, 0 };
+		gbl_panelLeft.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_panelLeft.rowWeights = new double[] { 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE };
 		panelLeft.setLayout(gbl_panelLeft);
+
+		JPanel panelDirectory = new JPanel();
+		GridBagConstraints gbc_panelDirectory = new GridBagConstraints();
+		gbc_panelDirectory.insets = new Insets(0, 0, 5, 0);
+		gbc_panelDirectory.fill = GridBagConstraints.BOTH;
+		gbc_panelDirectory.gridx = 0;
+		gbc_panelDirectory.gridy = 0;
+		panelLeft.add(panelDirectory, gbc_panelDirectory);
+		GridBagLayout gbl_panelDirectory = new GridBagLayout();
+		gbl_panelDirectory.columnWidths = new int[] { 0, 0 };
+		gbl_panelDirectory.rowHeights = new int[] { 0, 0, 0, 0 };
+		gbl_panelDirectory.columnWeights = new double[] { 0.0, 1.0 };
+		gbl_panelDirectory.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		panelDirectory.setLayout(gbl_panelDirectory);
+
+		JButton btnDiskDirectory = new JButton("Change Disk Directory");
+		btnDiskDirectory.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JFileChooser fc = new JFileChooser(lblDirectory.getText());
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				if (fc.showOpenDialog(frmExploreDiskMetrics) == JFileChooser.APPROVE_OPTION) {
+					lblDirectory.setText(fc.getSelectedFile().getAbsolutePath());
+				} // if
+			}
+		});
+		GridBagConstraints gbc_btnDiskDirectory = new GridBagConstraints();
+		gbc_btnDiskDirectory.insets = new Insets(0, 0, 5, 5);
+		gbc_btnDiskDirectory.gridx = 0;
+		gbc_btnDiskDirectory.gridy = 0;
+		panelDirectory.add(btnDiskDirectory, gbc_btnDiskDirectory);
+
+		lblDiskType = new JLabel("F3HD");
+		GridBagConstraints gbc_lblDiskType = new GridBagConstraints();
+		gbc_lblDiskType.insets = new Insets(0, 0, 5, 0);
+		gbc_lblDiskType.gridx = 1;
+		gbc_lblDiskType.gridy = 0;
+		panelDirectory.add(lblDiskType, gbc_lblDiskType);
+
+		rbRecurse = new JRadioButton("Recurse");
+		GridBagConstraints gbc_rbRecurse = new GridBagConstraints();
+		gbc_rbRecurse.insets = new Insets(0, 0, 5, 5);
+		gbc_rbRecurse.gridx = 0;
+		gbc_rbRecurse.gridy = 1;
+		panelDirectory.add(rbRecurse, gbc_rbRecurse);
+
+		lblDirectory = new JLabel("New label");
+		GridBagConstraints gbc_lblDirectory = new GridBagConstraints();
+		gbc_lblDirectory.gridwidth = 2;
+		gbc_lblDirectory.gridx = 0;
+		gbc_lblDirectory.gridy = 2;
+		panelDirectory.add(lblDirectory, gbc_lblDirectory);
+
+		JPanel panelFind = new JPanel();
+		GridBagConstraints gbc_panelFind = new GridBagConstraints();
+		gbc_panelFind.insets = new Insets(0, 0, 5, 0);
+		gbc_panelFind.fill = GridBagConstraints.BOTH;
+		gbc_panelFind.gridx = 0;
+		gbc_panelFind.gridy = 1;
+		panelLeft.add(panelFind, gbc_panelFind);
+		GridBagLayout gbl_panelFind = new GridBagLayout();
+		gbl_panelFind.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelFind.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelFind.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelFind.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelFind.setLayout(gbl_panelFind);
+
+		btnFindFiles = new JButton("Find File(s)");
+		btnFindFiles.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				doFindFiles();
+			}
+		});
+		btnFindFiles.setEnabled(false);
+		GridBagConstraints gbc_btnFindFiles = new GridBagConstraints();
+		gbc_btnFindFiles.insets = new Insets(0, 0, 0, 5);
+		gbc_btnFindFiles.gridx = 0;
+		gbc_btnFindFiles.gridy = 1;
+		panelFind.add(btnFindFiles, gbc_btnFindFiles);
+
+		txtFindFileName = new JTextField();
+		txtFindFileName.setInputVerifier(new FileNameVerifier());
+		txtFindFileName.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				txtLog1.append("new value = " + txtFindFileName.getText() + System.lineSeparator());
+			}
+		});
+
+		GridBagConstraints gbc_txtFindFileName = new GridBagConstraints();
+		gbc_txtFindFileName.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtFindFileName.gridx = 1;
+		gbc_txtFindFileName.gridy = 1;
+		panelFind.add(txtFindFileName, gbc_txtFindFileName);
+		txtFindFileName.setColumns(10);
+
+		JPanel panel = new JPanel();
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.insets = new Insets(0, 0, 5, 0);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 2;
+		panelLeft.add(panel, gbc_panel);
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[] { 0, 0 };
+		gbl_panel.rowHeights = new int[] { 0, 0 };
+		gbl_panel.columnWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_panel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panel.setLayout(gbl_panel);
+
+		JButton btnListFiles = new JButton("List Files");
+		GridBagConstraints gbc_btnListFiles = new GridBagConstraints();
+		gbc_btnListFiles.gridx = 0;
+		gbc_btnListFiles.gridy = 0;
+		panel.add(btnListFiles, gbc_btnListFiles);
 
 		JPanel panelRight = new JPanel();
 		splitPane1.setRightComponent(panelRight);
@@ -465,6 +719,15 @@ public class ExploreDiskMetrics {
 		tabbedPane.addTab("Log1", null, scrollPane_1, null);
 
 		txtLog1 = new JTextArea();
+		txtLog1.setFont(new Font("Courier New", Font.PLAIN, 14));
+		txtLog1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+				if (arg0.getClickCount() > 1) {
+					txtLog1.setText("");
+				}
+			}
+		});
 		scrollPane_1.setViewportView(txtLog1);
 
 		lblLog1Header = new JLabel("New label");
@@ -472,7 +735,7 @@ public class ExploreDiskMetrics {
 		lblLog1Header.setForeground(Color.BLUE);
 		lblLog1Header.setFont(new Font("Courier New", Font.BOLD | Font.ITALIC, 18));
 		scrollPane_1.setColumnHeaderView(lblLog1Header);
-		splitPane1.setDividerLocation(250);
+		splitPane1.setDividerLocation(200);
 
 		JPanel panelStatus = new JPanel();
 		panelStatus.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -577,6 +840,39 @@ public class ExploreDiskMetrics {
 
 	}// initialize
 
+	public class FileNameVerifier extends InputVerifier {
+
+		String fileNameRegex = "[\\w|\\?]{0,7}[\\w|\\?|*]{1}\\.?[\\w|\\?]{0,2}[\\w|\\?|*]?";
+		Pattern p = Pattern.compile(fileNameRegex);
+
+		private final Color INVALID_COLOR = Color.RED;
+		private final Color VALID_COLOR = Color.BLACK;
+
+		public FileNameVerifier() {
+
+		}// Constructor - MemoryLimitVerifier(memorySize)
+
+		@Override
+		public boolean verify(JComponent jc) {
+			JTextComponent textComponent = (JTextComponent) jc;
+			String text = textComponent.getText();
+			Matcher m = p.matcher(text);
+			if (m.matches()) {
+				textComponent.setForeground(VALID_COLOR);
+				textComponent.setSelectedTextColor(VALID_COLOR);
+				validSearchFileName = true;
+				textComponent.setText(text.toUpperCase());
+			} else {
+				textComponent.setForeground(INVALID_COLOR);
+				textComponent.setSelectedTextColor(INVALID_COLOR);
+				validSearchFileName = false;
+			} // if
+			btnFindFiles.setEnabled(validSearchFileName);
+			return validSearchFileName;
+		}// verify
+
+	}// class MemoryLimitVerifier
+
 	private JFrame frmExploreDiskMetrics;
 	private JButton btnOne;
 	private JButton btnTwo;
@@ -592,5 +888,12 @@ public class ExploreDiskMetrics {
 
 	private static final int TAB_DISK_METRICS = 0;
 	private static final int TAB_LOG1 = 1;
+	private JTextField txtFindFileName;
+	private JLabel lblDirectory;
+	private JLabel lblDiskType;
+
+	private boolean validSearchFileName;
+	private JButton btnFindFiles;
+	private JRadioButton rbRecurse;
 
 }// class GUItemplate
