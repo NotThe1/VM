@@ -774,8 +774,31 @@ public class DiskUtility extends JDialog {
 	}// clearCatalog
 
 	private void doPrintResult() {
-		printListing(txtCatalog, lblCatalogHeader.getText());
+		if (scrollPane.getViewport().getView() instanceof JTable) {
+			printCatalog(catTable);
+		} else if (scrollPane.getViewport().getView() instanceof JTextPane) {
+			printListing(txtCatalog, lblCatalogHeader.getText());
+		} // if
+
 	}// doPrintResult
+
+	private void printCatalog(JTable table) {
+		Font originalFont = table.getFont();
+		String fontName = originalFont.getName();
+
+		try {
+//			table.setFont(new Font(fontName, Font.PLAIN, 12));
+			MessageFormat header = new MessageFormat("Disk Catalog");
+			MessageFormat footer = new MessageFormat(new Date().toString() + "           Page - {0}");
+
+			table.print(JTable.PrintMode.FIT_WIDTH,header, footer);
+			
+			table.setFont(originalFont);
+		} catch (PrinterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	private void printListing(JTextPane textPane, String name) {
 		Font originalFont = textPane.getFont();
@@ -962,9 +985,9 @@ public class DiskUtility extends JDialog {
 		catTable.setRowSorter(sorter);
 
 		scrollPane.setViewportView(catTable);
-//		catFillCatalogTable(catTable);
+		// catFillCatalogTable(catTable);
 		catGetEntries(new File(lblDirectory.getText()), modelCat);
-
+		btnPrintResult.setVisible(catalogRow ==0?false:true);
 	}// makeCatalogTable
 
 	private void catAdjustTableLook(JTable table) {
@@ -974,7 +997,7 @@ public class DiskUtility extends JDialog {
 		TableColumnModel tableColumn = table.getColumnModel();
 		tableColumn.getColumn(0).setPreferredWidth(charWidth * 13); // cpmFile
 		tableColumn.getColumn(1).setPreferredWidth(charWidth * 25); // Disk
-		tableColumn.getColumn(2).setPreferredWidth(charWidth * 60); // Path
+		tableColumn.getColumn(2).setPreferredWidth(charWidth * 40); // Path
 
 		DefaultTableCellRenderer leftAlign = new DefaultTableCellRenderer();
 		leftAlign.setHorizontalAlignment(JLabel.LEFT);
@@ -983,7 +1006,6 @@ public class DiskUtility extends JDialog {
 		tableColumn.getColumn(2).setCellRenderer(leftAlign);
 
 	}// adjustTableLook
-
 
 	private void catGetEntries(File enterFile, DefaultTableModel model) {
 
@@ -1005,8 +1027,7 @@ public class DiskUtility extends JDialog {
 		} // if right disk type
 		String disk = file.getName();
 		String path = file.getAbsolutePath();
-		String location = path.substring(0,(path.length()-disk.length()-1));
-		
+		String location = path.substring(0, (path.length() - disk.length() - 1));
 
 		RawDiskDrive diskDrive = new RawDiskDrive(file.getAbsolutePath());
 		DiskMetrics diskMetrics = DiskMetrics.getDiskMetric(lblDiskType.getText());
