@@ -111,7 +111,7 @@ public class Console extends Device8080 {
 
 	// -----------------------------------------------------------------
 	private void restoreSerialPortSettings() {
-		Preferences myPrefs = Preferences.userNodeForPackage(Console.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(Console.class).node(this.getClass().getSimpleName());
 		serialPortSettings.setPortName(myPrefs.get("PortName", SerialPortSettings.DEFAULT_PORT_NAME));
 		serialPortSettings.setBaudRate(myPrefs.getInt("BaudRate", SerialPortSettings.DEFAULT_BAUD_RATE));
 		serialPortSettings.setDataBits(myPrefs.getInt("DataBits", SerialPortSettings.DEFAULT_DATA_BITS));
@@ -140,7 +140,7 @@ public class Console extends Device8080 {
 	}// closeConnection
 
 	private void saveSerialPortSettings() {
-		Preferences myPrefs = Preferences.userNodeForPackage(Console.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(Console.class).node(this.getClass().getSimpleName());
 		myPrefs.put("PortName", serialPortSettings.getPortName());
 		myPrefs.putInt("BaudRate", serialPortSettings.getBaudRate());
 		myPrefs.putInt("DataBits", serialPortSettings.getDataBits());

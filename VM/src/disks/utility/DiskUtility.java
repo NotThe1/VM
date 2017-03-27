@@ -1100,7 +1100,7 @@ public class DiskUtility extends JDialog {
 	private void appClose() {
 		System.out.printf("[DiskUtility.appClose()]  %s%n", "closing");
 		diskClose();
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class).node(this.getClass().getSimpleName());
 		Dimension dim = this.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -1137,7 +1137,7 @@ public class DiskUtility extends JDialog {
 		// :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	private void appInit() {
-		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(DiskUtility.class).node(this.getClass().getSimpleName());
 		this.setSize(895, 895);
 		this.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		tabbedPane.setSelectedIndex(myPrefs.getInt("Tab", 0));

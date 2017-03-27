@@ -83,7 +83,7 @@ public class TrapManager extends JDialog {
 	}// close
 
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(TrapManager.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(TrapManager.class).node(this.getClass().getSimpleName());
 		Dimension dim = getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -96,7 +96,7 @@ public class TrapManager extends JDialog {
 	}// appClose
 
 	private void appInit() {
-		Preferences myPrefs = Preferences.userNodeForPackage(TrapManager.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(TrapManager.class).node(this.getClass().getSimpleName());
 		setSize(myPrefs.getInt("Width", 150), myPrefs.getInt("Height", 520));
 		setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;

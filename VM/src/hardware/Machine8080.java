@@ -276,7 +276,7 @@ public class Machine8080 implements Observer {
 
 	// -------------------------------------------------------------------
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class).node(this.getClass().getSimpleName());
 		Dimension dim = frmMachine.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -308,7 +308,7 @@ public class Machine8080 implements Observer {
 
 	private void appInit() {
 		// manage preferences
-		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class).node(this.getClass().getSimpleName());
 		frmMachine.setSize(myPrefs.getInt("Width", 1352), myPrefs.getInt("Height", 730));
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;

@@ -347,7 +347,7 @@ public class ShowCode extends JDialog implements Runnable {
 	}// close
 
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(ShowCode.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(ShowCode.class).node(this.getClass().getSimpleName());
 		Dimension dim = getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -359,7 +359,7 @@ public class ShowCode extends JDialog implements Runnable {
 	}// appClose
 
 	private void appInit() {
-		Preferences myPrefs = Preferences.userNodeForPackage(ShowCode.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(ShowCode.class).node(this.getClass().getSimpleName());
 		setSize(myPrefs.getInt("Height", 570), myPrefs.getInt("Width", 400));
 		setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;

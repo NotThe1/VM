@@ -302,7 +302,7 @@ public class TableMaker {
 		// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 
 	private void appClose() {
-		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class).node(this.getClass().getSimpleName());
 		Dimension dim = frmOpcodeTableMaker.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -316,7 +316,7 @@ public class TableMaker {
 
 	private void appInit() {
 		// manage preferences
-		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class);
+		Preferences myPrefs = Preferences.userNodeForPackage(TableMaker.class).node(this.getClass().getSimpleName());
 
 		frmOpcodeTableMaker.setSize(myPrefs.getInt("Width", 650), myPrefs.getInt("Height", 722));
 		frmOpcodeTableMaker.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
