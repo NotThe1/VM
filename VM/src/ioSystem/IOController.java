@@ -2,7 +2,10 @@ package ioSystem;
 
 import java.util.HashMap;
 
+import javax.swing.text.Document;
+
 import ioSysem.console.Console;
+import ioSystem.listDevice.ListDevice;
 
 public class IOController {
 	private static IOController instance = new IOController();
@@ -10,8 +13,9 @@ public class IOController {
 	private HashMap<Byte,Device8080> devicesInput = new HashMap<Byte,Device8080>();
 	private HashMap<Byte,Device8080> devicesOutput = new HashMap<Byte,Device8080>();
 	private HashMap<Byte,Device8080> devicesStatus = new HashMap<Byte,Device8080>();
-	private Console console;
 	private Device8080 device;
+	private Console console;
+	private ListDevice listDevice;
 	
 	private String errMessage;
 	
@@ -23,6 +27,12 @@ public class IOController {
 	public static IOController getInstance(){
 		return instance;
 	}//getInstance
+	
+	public void addListDevice(Document docList){
+		listDevice = new ListDevice(docList);
+		devicesOutput.put(listDevice.getAddressOut(), listDevice);
+		devicesStatus.put(listDevice.getAddressStatus(),listDevice);
+	}
 	
 	private void addConsole(){
 		console = new Console();	// default addresses 01,01,02
@@ -48,8 +58,8 @@ public class IOController {
 	}//closeConnection
 	
 	public void byteToDevice(Byte address,Byte value){
-		if(devicesInput.containsKey(address)){
-			device = devicesInput.get(address);
+		if(devicesOutput.containsKey(address)){
+			device = devicesOutput.get(address);
 			device.byteFromCPU(address, value);
 		}else{
 			System.err.printf("Bad address %02X for bytsToDevice operation.%n", address);

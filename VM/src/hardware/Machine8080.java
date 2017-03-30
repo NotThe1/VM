@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -41,14 +42,18 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 import codeSupport.debug.ShowCode;
 import codeSupport.debug.TrapManager;
@@ -309,7 +314,7 @@ public class Machine8080 implements Observer {
 	private void appInit() {
 		// manage preferences
 		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class).node(this.getClass().getSimpleName());
-		frmMachine.setSize(myPrefs.getInt("Width", 1352), myPrefs.getInt("Height", 730));
+		frmMachine.setSize(1086, 875);
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 
@@ -329,6 +334,8 @@ public class Machine8080 implements Observer {
 		loadROM();
 		lblSerialConnection.setText(NO_CONNECTION);
 		lblSerialConnection.setText(ioController.getConnectionString());
+		
+		IOController.getInstance().addListDevice(txtList.getDocument());
 
 		cpuBuss.addObserver(this);
 	}// appInit
@@ -461,6 +468,11 @@ public class Machine8080 implements Observer {
 
 		JMenu mnuWindows = new JMenu("Windows");
 		menuBar.add(mnuWindows);
+		
+		mnuWindowsTBP = new JMenuItem("Toggle Bottom Panel");
+		mnuWindowsTBP.setName(MNU_WINDOWS_TBP);
+		mnuWindowsTBP.addActionListener(menuAdapter);
+		mnuWindows.add(mnuWindowsTBP);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
 		gridBagLayout.rowHeights = new int[] { 310, 0, 20, 0 };
@@ -500,7 +512,7 @@ public class Machine8080 implements Observer {
 
 		diskPanel = new DiskPanel(diskPanelAdapter);
 		diskPanel.setPreferredSize(new Dimension(275, 300));
-		diskPanel.setBounds(5, 5, 275, 300);
+		diskPanel.setBounds(5, 5, 275, 290);
 		panelDisks.add(diskPanel);
 		diskPanel.setLayout(null);
 
@@ -528,9 +540,42 @@ public class Machine8080 implements Observer {
 		stateDisplay = new StateDisplay();
 		stateDisplay.setPreferredSize(new Dimension(600, 300));
 		stateDisplay.setMinimumSize(new Dimension(600, 300));
-		stateDisplay.setBounds(5, 5, 600, 300);
+		stateDisplay.setBounds(5, 5, 600, 290);
 		panelStateDisplay.add(stateDisplay);
 		stateDisplay.setLayout(null);
+		
+				panel = new JPanel();
+				panel.setBounds(931, 5, 120, 290);
+				panelTop.add(panel);
+				panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+				panel.setLayout(null);
+				
+						spinnerStepCount = new JSpinner();
+						spinnerStepCount.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+						spinnerStepCount.setBounds(37, 243, 45, 20);
+						panel.add(spinnerStepCount);
+						
+								btnStep = new JButton();
+								// btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
+								btnStep.setBorder(null);
+								btnStep.setContentAreaFilled(false);
+								btnStep.setOpaque(true);
+								btnStep.setName(BTN_STEP);
+								btnStep.addActionListener(actionAdapter);
+								btnStep.setBounds(24, 169, 71, 63);
+								panel.add(btnStep);
+								
+										btnRun1 = new JToggleButton();
+										btnRun1.setName(BTN_RUN);
+										btnRun1.addActionListener(actionAdapter);
+										btnRun1.setContentAreaFilled(false);
+										btnRun1.setBorder(null);
+										// btnRun1.setIcon(new
+										// ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
+										// btnRun1.setSelectedIcon(
+										// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
+										btnRun1.setBounds(24, 54, 71, 71);
+										panel.add(btnRun1);
 
 		panelBottom = new JPanel();
 		panelBottom.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
@@ -541,15 +586,14 @@ public class Machine8080 implements Observer {
 		gbc_panelBottom.gridy = 1;
 		frmMachine.getContentPane().add(panelBottom, gbc_panelBottom);
 		GridBagLayout gbl_panelBottom = new GridBagLayout();
-		gbl_panelBottom.columnWidths = new int[] { 700, 0, 0 };
+		gbl_panelBottom.columnWidths = new int[] { 700, 0 };
 		gbl_panelBottom.rowHeights = new int[] { 5, 0 };
-		gbl_panelBottom.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		gbl_panelBottom.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
 		gbl_panelBottom.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		panelBottom.setLayout(gbl_panelBottom);
 
 		panelBottomLeft = new JPanel();
 		GridBagConstraints gbc_panelBottomLeft = new GridBagConstraints();
-		gbc_panelBottomLeft.insets = new Insets(0, 0, 0, 5);
 		gbc_panelBottomLeft.fill = GridBagConstraints.BOTH;
 		gbc_panelBottomLeft.gridx = 0;
 		gbc_panelBottomLeft.gridy = 0;
@@ -600,63 +644,41 @@ public class Machine8080 implements Observer {
 		// gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
 		// tabMemory.setLayout(gbl_tabMemory);
 		tabMemory.add(hexEditPanelConcurrent, gbc_hexPanel);
-
-		panelRun = new JPanel();
-		GridBagConstraints gbc_panelRun = new GridBagConstraints();
-		gbc_panelRun.fill = GridBagConstraints.BOTH;
-		gbc_panelRun.gridx = 1;
-		gbc_panelRun.gridy = 0;
-		panelBottom.add(panelRun, gbc_panelRun);
-		panelRun.setLayout(null);
-
-		panel = new JPanel();
-		panel.setBounds(10, 10, 160, 300);
-		panelRun.add(panel);
-		panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		panel.setLayout(null);
-
-		spinnerStepCount = new JSpinner();
-		spinnerStepCount.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
-		spinnerStepCount.setBounds(57, 29, 45, 20);
-		panel.add(spinnerStepCount);
-
-		btnStep = new JButton();
-		// btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
-		btnStep.setBorder(null);
-		btnStep.setContentAreaFilled(false);
-		btnStep.setOpaque(true);
-		btnStep.setName(BTN_STEP);
-		btnStep.addActionListener(actionAdapter);
-		btnStep.setBounds(44, 60, 71, 63);
-		panel.add(btnStep);
-
-		btnRun1 = new JToggleButton();
-		btnRun1.setName(BTN_RUN);
-		btnRun1.addActionListener(actionAdapter);
-		btnRun1.setContentAreaFilled(false);
-		btnRun1.setBorder(null);
-		// btnRun1.setIcon(new
-		// ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
-		// btnRun1.setSelectedIcon(
-		// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
-		btnRun1.setBounds(44, 181, 71, 71);
-		panel.add(btnRun1);
-
-		JButton btnTest = new JButton("New button");
-		btnTest.setBounds(48, 343, 89, 23);
-		panelRun.add(btnTest);
-		btnTest.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				String msg;
-				if (showCode.isVisible()) {
-					msg = "Visible";
-				} else {
-					msg = "NOT Visible";
-				}
-				System.out.printf("[btnTest] showCode -  %s%n", msg);
-				doDiskEffects(0, 1);
-			}
-		});
+		
+		panelList = new JPanel();
+		tabbedPane.addTab("List Device", null, panelList, null);
+		GridBagLayout gbl_panelList = new GridBagLayout();
+		gbl_panelList.columnWidths = new int[]{675, 0, 0};
+		gbl_panelList.rowHeights = new int[]{0, 0};
+		gbl_panelList.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
+		gbl_panelList.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		panelList.setLayout(gbl_panelList);
+		
+		panelListControls = new JScrollPane();
+		GridBagConstraints gbc_panelListControls = new GridBagConstraints();
+		gbc_panelListControls.insets = new Insets(0, 0, 0, 5);
+		gbc_panelListControls.fill = GridBagConstraints.BOTH;
+		gbc_panelListControls.gridx = 0;
+		gbc_panelListControls.gridy = 0;
+		panelList.add(panelListControls, gbc_panelListControls);
+		
+		txtList = new JTextArea();
+		txtList.setText("         1         2         3         4         5         6         7         8\r\n12345678901234567890123456789012345678901234567890123456789012345678901234567890\r\n\r\n\r\n 5\r\n 6\r\n 7\r\n 8\r\n 9\r\n10\r\n11\r\n12\r\n13\r\n14\r\n15\r\n16\r\n17\r\n18\r\n19\r\n20\r\n21\r\n22\r\n23\r\n24");
+		txtList.setFont(new Font("Courier New", Font.PLAIN, 17));
+		panelListControls.setViewportView(txtList);
+		
+		panel_1 = new JPanel();
+		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
+		gbc_panel_1.fill = GridBagConstraints.BOTH;
+		gbc_panel_1.gridx = 1;
+		gbc_panel_1.gridy = 0;
+		panelList.add(panel_1, gbc_panel_1);
+		GridBagLayout gbl_panel_1 = new GridBagLayout();
+		gbl_panel_1.columnWidths = new int[]{0};
+		gbl_panel_1.rowHeights = new int[]{0};
+		gbl_panel_1.columnWeights = new double[]{Double.MIN_VALUE};
+		gbl_panel_1.rowWeights = new double[]{Double.MIN_VALUE};
+		panel_1.setLayout(gbl_panel_1);
 
 		panelStatus = new JPanel();
 		panelStatus.setPreferredSize(new Dimension(10, 25));
@@ -767,6 +789,24 @@ public class Machine8080 implements Observer {
 				break;
 			case Machine8080.MNU_TOOLS_RESET:
 				doBoot();
+				break;
+			case Machine8080.MNU_WINDOWS_TBP:
+//				Dimension dim = frmMachine.getSize();
+//				System.out.printf("Height = %d, Width = %d%n", (int)dim.getHeight(),(int)dim.getWidth());
+//				panelBottom.setVisible(!panelBottom.isVisible());
+				Document docList = txtList.getDocument();
+				try {
+					docList.remove(0, docList.getLength());
+					docList.insertString(docList.getLength(), "abcdef", null);
+					docList.insertString(docList.getLength(), System.lineSeparator(), null);
+					docList.insertString(docList.getLength(), "ABCDEF", null);
+					docList.insertString(docList.getLength(), System.lineSeparator(), null);
+					docList.insertString(docList.getLength(), "1234567890", null);
+
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				break;
 			default:
 				assert false : sourceName + " is not a valid menu item\n";
@@ -942,6 +982,8 @@ public class Machine8080 implements Observer {
 	public static final String MNU_TOOLS_TRAP_MANAGER = "mnuToolsTrapManager";
 	public static final String MNU_TOOLS_SHOW_LISTING = "mnuToolsShowListing";
 	public static final String MNU_TOOLS_RESET = "mnuToolsReset";
+	
+	public static final String MNU_WINDOWS_TBP = "mnuWindowsTBP";
 
 	private JFrame frmMachine;
 	private JPanel panelMiddle;
@@ -951,7 +993,6 @@ public class Machine8080 implements Observer {
 	private JPanel panelStateDisplay;
 	private JPanel panel;
 	private JButton btnStep;
-	private JPanel panelRun;
 	private JPanel panelTop;
 	private JPanel panelBottom;
 	private JPanel panelStatus;
@@ -968,4 +1009,9 @@ public class Machine8080 implements Observer {
 	private JSeparator mnuMemorySeparatorFileStart;
 	private JSeparator mnuMemorySeparatorFileEnd;
 	private JMenu mnuMemory;
+	private JMenuItem mnuWindowsTBP;
+	private JPanel panelList;
+	private JPanel panel_1;
+	private JScrollPane panelListControls;
+	private JTextArea txtList;
 }// class Machine8080
