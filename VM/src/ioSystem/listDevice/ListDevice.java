@@ -64,7 +64,7 @@ public class ListDevice extends Device8080 {
 	@Override
 	public byte byteToCPU(Byte address) {
 		// TODO Auto-generated method stub
-		return 0;
+		return (byte) 0XFF;
 	}// byteToCPU
 	
 	private void displayPrintable(String s){
