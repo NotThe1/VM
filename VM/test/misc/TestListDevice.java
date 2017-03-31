@@ -9,6 +9,8 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -22,6 +24,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
@@ -45,6 +48,7 @@ public class TestListDevice {
 	private ListDevice listDevice;
 	private byte listOut = (byte)0X10;
 	private byte listStatus = (byte)0X11;
+	private JScrollPane scrollPane;
 
 
 	/**
@@ -70,6 +74,7 @@ public class TestListDevice {
 	}//doBtnOne
 	
 	private void doBtnTwo(){
+		System.out.printf("4 mod 3 = %d%n", 4 % 3 );
 		listDevice.byteFromCPU(listOut, (byte)0x0D);	//CR
 	}//doBtnTwo
 	
@@ -84,6 +89,8 @@ public class TestListDevice {
 		for (int i = 0; i < y.length;i++){
 			listDevice.byteFromCPU(listOut, y[i]);
 		}//for
+		listDevice.byteFromCPU(listOut, (byte)0x0A);	//LF
+
 		
 	}//doBtnFour
 	
@@ -131,7 +138,17 @@ public class TestListDevice {
 		txtLog.append(String.format("myPrefs.absolutePath() - %s%n",myPrefs.absolutePath()));
 		myPrefs = null;
 		
-		listDevice = new ListDevice("LST:","Parallel",listOut,listStatus,txtLog.getDocument());
+		JScrollBar sb = scrollPane.getVerticalScrollBar();
+		sb.addAdjustmentListener(new AdjustmentListener(){
+
+			@Override
+			public void adjustmentValueChanged(AdjustmentEvent arg0) {
+				sb.setValue(9999);
+				
+			}}
+		);
+				
+		listDevice = new ListDevice("LST:","Parallel",listOut,listStatus,txtLog);
 
 	}// appInit
 
@@ -264,7 +281,7 @@ public class TestListDevice {
 		gbl_panelRight.rowWeights = new double[]{1.0, Double.MIN_VALUE};
 		panelRight.setLayout(gbl_panelRight);
 		
-		JScrollPane scrollPane = new JScrollPane();
+		scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 0;
@@ -272,6 +289,7 @@ public class TestListDevice {
 		panelRight.add(scrollPane, gbc_scrollPane);
 		
 		txtLog = new JTextArea();
+				
 		txtLog.setFont(new Font("Courier New", Font.PLAIN, 13));
 		txtLog.setText("sdfggd\r\nsdf\r\nsdfg\r\nsdfg\r\nsdf\r\ndsfg");
 		txtLog.addMouseListener(new MouseAdapter() {

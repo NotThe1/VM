@@ -16,6 +16,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -335,7 +337,7 @@ public class Machine8080 implements Observer {
 		lblSerialConnection.setText(NO_CONNECTION);
 		lblSerialConnection.setText(ioController.getConnectionString());
 		
-		IOController.getInstance().addListDevice(txtList.getDocument());
+		IOController.getInstance().addListDevice(txtList);
 
 		cpuBuss.addObserver(this);
 	}// appInit
@@ -656,13 +658,18 @@ public class Machine8080 implements Observer {
 		
 		panelListControls = new JScrollPane();
 		GridBagConstraints gbc_panelListControls = new GridBagConstraints();
-		gbc_panelListControls.insets = new Insets(0, 0, 0, 5);
+		gbc_panelListControls.insets = new Insets(0, 10, 0, 5);
 		gbc_panelListControls.fill = GridBagConstraints.BOTH;
 		gbc_panelListControls.gridx = 0;
 		gbc_panelListControls.gridy = 0;
 		panelList.add(panelListControls, gbc_panelListControls);
 		
 		txtList = new JTextArea();
+		txtList.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+				
+			}
+		});
 		txtList.setText("         1         2         3         4         5         6         7         8\r\n12345678901234567890123456789012345678901234567890123456789012345678901234567890\r\n\r\n\r\n 5\r\n 6\r\n 7\r\n 8\r\n 9\r\n10\r\n11\r\n12\r\n13\r\n14\r\n15\r\n16\r\n17\r\n18\r\n19\r\n20\r\n21\r\n22\r\n23\r\n24");
 		txtList.setFont(new Font("Courier New", Font.PLAIN, 17));
 		panelListControls.setViewportView(txtList);

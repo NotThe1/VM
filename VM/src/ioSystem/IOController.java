@@ -2,7 +2,7 @@ package ioSystem;
 
 import java.util.HashMap;
 
-import javax.swing.text.Document;
+import javax.swing.JTextArea;
 
 import ioSysem.console.Console;
 import ioSystem.listDevice.ListDevice;
@@ -28,8 +28,8 @@ public class IOController {
 		return instance;
 	}//getInstance
 	
-	public void addListDevice(Document docList){
-		listDevice = new ListDevice(docList);
+	public void addListDevice(JTextArea textArea){
+		listDevice = new ListDevice(textArea);
 		devicesOutput.put(listDevice.getAddressOut(), listDevice);
 		devicesStatus.put(listDevice.getAddressStatus(),listDevice);
 	}
