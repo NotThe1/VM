@@ -17,8 +17,8 @@ public class ListDevice extends Device8080 {
 	private int linesPerPage;
 	private int maxColumn;
 	private int tabSize;		// default for CP/M is 9
-	private int tabMin = 1;
-	private int tabMax = 40;		// arbitrary for sure
+//	 int tabMin = 1;
+//	 int tabMax = 40;		// arbitrary for sure
 	
 	public ListDevice(JTextArea textArea){
 		this("LST:","Parallel",LIST_OUT,LIST_STATUS,textArea);
@@ -46,21 +46,25 @@ public class ListDevice extends Device8080 {
 	}//appClose
 	
 	private void appInit(){
+		loadProperties();
+	}//appInit
+	
+	private void loadProperties(){
 		Preferences myPrefs = Preferences.userNodeForPackage(ListDevice.class).node(this.getClass().getSimpleName());
 		setWideCarriage(myPrefs.getBoolean("setWideCarriage", false));
 		tabSize = myPrefs.getInt("tabSize", 9);	// default for CP/M
 		linesPerPage = myPrefs.getInt("linesPerPage", 66);
 		
 		myPrefs = null;
-	}//appInit
+	}//loadProperties
 
 	private void setWideCarriage(boolean state) {
 		this.maxColumn = state ? COLUMN_120 : COLUMN_80;
 	}// setWideCarriage
 	
 	private void setTabSize(int size){
-		this.tabSize = Math.max(tabMin, size);
-		this.tabSize = Math.min(tabMax, size);	
+		this.tabSize = Math.max(TAB_MIN, size);
+		this.tabSize = Math.min(TAB_MAX, size);	
 	}//setTabWidth
 	
 //	public int getTabSize(){
@@ -88,8 +92,16 @@ public class ListDevice extends Device8080 {
 	}//clear
 	
 	public void setProperties(){
+		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog();
+		listDevicePropertyDialog.setVisible(true);
 		
+		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog==null));
+		listDevicePropertyDialog=null;
+		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog==null));
+
 	}//setProperties
+	
+	
 	
 	public void print(){
 		
@@ -198,6 +210,10 @@ public class ListDevice extends Device8080 {
 
 	private static final int COLUMN_80 = 81;
 	private static final int COLUMN_120 = 121;
+	
+	public static final int TAB_MIN = 1;
+	public static final int TAB_MAX = 40;	// arbitrary for sure
+
 	
 	private static final byte LIST_OUT = 0X10;
 	private static final byte LIST_STATUS = 0X11;

@@ -100,7 +100,12 @@ public class TestListDevice {
 		
 	}//doFileNew
 	private void doFileOpen(){
-		
+//		if (!(IOController.getInstance().getListDevice()==null)){
+//			IOController.getInstance().getListDevice().setProperties();
+//		}//if
+		if (!(listDevice==null)){
+			listDevice.setProperties();
+		}//if
 	}//doFileOpen
 	private void doFileSave(){
 		
@@ -332,7 +337,7 @@ public class TestListDevice {
 		});
 		mnuFile.add(mnuFileNew);
 		
-		JMenuItem mnuFileOpen = new JMenuItem("Open...");
+		JMenuItem mnuFileOpen = new JMenuItem("Open - Properties");
 		mnuFileOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileOpen();

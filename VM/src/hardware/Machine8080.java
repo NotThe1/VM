@@ -188,7 +188,9 @@ public class Machine8080 implements Observer {
 	}//doListPrint
 	
 	private void doListProperties(){
-		System.err.printf("%s Not Implemented%n", "doListProperties");
+		if (!(IOController.getInstance().getListDevice()==null)){
+			IOController.getInstance().getListDevice().setProperties();
+		}//if
 	}//doListProperties
 	
 	private void doListClear(){
