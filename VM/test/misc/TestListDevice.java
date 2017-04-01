@@ -75,7 +75,7 @@ public class TestListDevice {
 	
 	private void doBtnTwo(){
 		System.out.printf("4 mod 3 = %d%n", 4 % 3 );
-		listDevice.byteFromCPU(listOut, (byte)0x0D);	//CR
+		listDevice.byteFromCPU(listOut, (byte)0x09);	//CR
 	}//doBtnTwo
 	
 	private void doBtnThree(){
@@ -126,7 +126,9 @@ public class TestListDevice {
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
 		myPrefs.putInt("Divider", splitPane1.getDividerLocation());
+	
 		myPrefs = null;
+		listDevice.close();
 		
 	}//appClose
 
@@ -322,7 +324,7 @@ public class TestListDevice {
 		JMenu mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
 		
-		JMenuItem mnuFileNew = new JMenuItem("New");
+		JMenuItem mnuFileNew = new JMenuItem("New - properties");
 		mnuFileNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileNew();

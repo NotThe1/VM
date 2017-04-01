@@ -32,7 +32,11 @@ public class IOController {
 		listDevice = new ListDevice(textArea);
 		devicesOutput.put(listDevice.getAddressOut(), listDevice);
 		devicesStatus.put(listDevice.getAddressStatus(),listDevice);
-	}
+	}//addListDevice
+	
+	public ListDevice getListDevice(){
+		return listDevice==null?null:listDevice;
+	}//getListDevice
 	
 	private void addConsole(){
 		console = new Console();	// default addresses 01,01,02

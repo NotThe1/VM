@@ -164,8 +164,38 @@ public class Machine8080 implements Observer {
 			JOptionPane.showMessageDialog(frmMachine, "There is no disk in drive A", "Boot attempt",
 					JOptionPane.WARNING_MESSAGE);
 			updateView();
-		}//if
+		} // if
 	}// doBoot
+	
+	private void doListLineFeed(){
+		if (!(IOController.getInstance().getListDevice()==null)){
+			IOController.getInstance().getListDevice().lineFeed();
+		}//if
+	}//doListLineFeed
+	
+	private void doListFormFeed(){
+		if (!(IOController.getInstance().getListDevice()==null)){
+			IOController.getInstance().getListDevice().formFeed();
+		}//if
+	}//doListFrmFeed
+	
+	private void doListSaveToFile(){
+		System.err.printf("%s Not Implemented%n", "doListSaveToFile");	
+	}//doListSaveToFile
+	
+	private void doListPrint(){
+		System.err.printf("%s Not Implemented%n", "doListPrint");	
+	}//doListPrint
+	
+	private void doListProperties(){
+		System.err.printf("%s Not Implemented%n", "doListProperties");
+	}//doListProperties
+	
+	private void doListClear(){
+		if (!(IOController.getInstance().getListDevice()==null)){
+			IOController.getInstance().getListDevice().clear();
+		}//if
+	}//doListClear
 
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
@@ -290,6 +320,7 @@ public class Machine8080 implements Observer {
 		Point point = frmMachine.getLocation();
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
+		myPrefs.putInt("tabbedPaneIndex", tabbedPane.getSelectedIndex());
 		myPrefs = null;
 		cleanupObjects();
 	}// appClose
@@ -316,8 +347,9 @@ public class Machine8080 implements Observer {
 	private void appInit() {
 		// manage preferences
 		Preferences myPrefs = Preferences.userNodeForPackage(Machine8080.class).node(this.getClass().getSimpleName());
-		frmMachine.setSize(1086, 875);
+		frmMachine.setSize(myPrefs.getInt("Width", 1086), myPrefs.getInt("Height", 875));// (1086, 875);
 		frmMachine.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
+		tabbedPane.setSelectedIndex(myPrefs.getInt("tabbedPaneIndex", 0));
 		myPrefs = null;
 
 		mnuMemorySeparatorFileStart.setName(MenuUtility.RECENT_FILES_START);
@@ -336,7 +368,7 @@ public class Machine8080 implements Observer {
 		loadROM();
 		lblSerialConnection.setText(NO_CONNECTION);
 		lblSerialConnection.setText(ioController.getConnectionString());
-		
+
 		IOController.getInstance().addListDevice(txtList);
 
 		cpuBuss.addObserver(this);
@@ -430,14 +462,14 @@ public class Machine8080 implements Observer {
 		JMenuItem mnuMakeNewDisk = new JMenuItem("Make New Disk ...");
 		mnuMakeNewDisk.setName(MNU_DISKS_MAKE_NEW_DISK);
 		mnuMakeNewDisk.addActionListener(menuAdapter);
-		
-				JMenuItem mnuDisksDiskUtility = new JMenuItem("Disk Utility");
-				mnuDisks.add(mnuDisksDiskUtility);
-				mnuDisksDiskUtility.setName(MNU_DISKS_DISK_UTILITY);
-				mnuDisksDiskUtility.addActionListener(menuAdapter);
-		
-				JSeparator separator_2 = new JSeparator();
-				mnuDisks.add(separator_2);
+
+		JMenuItem mnuDisksDiskUtility = new JMenuItem("Disk Utility");
+		mnuDisks.add(mnuDisksDiskUtility);
+		mnuDisksDiskUtility.setName(MNU_DISKS_DISK_UTILITY);
+		mnuDisksDiskUtility.addActionListener(menuAdapter);
+
+		JSeparator separator_2 = new JSeparator();
+		mnuDisks.add(separator_2);
 		mnuDisks.add(mnuMakeNewDisk);
 
 		JMenu mnuTools = new JMenu("Tools");
@@ -470,7 +502,7 @@ public class Machine8080 implements Observer {
 
 		JMenu mnuWindows = new JMenu("Windows");
 		menuBar.add(mnuWindows);
-		
+
 		mnuWindowsTBP = new JMenuItem("Toggle Bottom Panel");
 		mnuWindowsTBP.setName(MNU_WINDOWS_TBP);
 		mnuWindowsTBP.addActionListener(menuAdapter);
@@ -545,39 +577,39 @@ public class Machine8080 implements Observer {
 		stateDisplay.setBounds(5, 5, 600, 290);
 		panelStateDisplay.add(stateDisplay);
 		stateDisplay.setLayout(null);
-		
-				panel = new JPanel();
-				panel.setBounds(931, 5, 120, 290);
-				panelTop.add(panel);
-				panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-				panel.setLayout(null);
-				
-						spinnerStepCount = new JSpinner();
-						spinnerStepCount.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
-						spinnerStepCount.setBounds(37, 243, 45, 20);
-						panel.add(spinnerStepCount);
-						
-								btnStep = new JButton();
-								// btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
-								btnStep.setBorder(null);
-								btnStep.setContentAreaFilled(false);
-								btnStep.setOpaque(true);
-								btnStep.setName(BTN_STEP);
-								btnStep.addActionListener(actionAdapter);
-								btnStep.setBounds(24, 169, 71, 63);
-								panel.add(btnStep);
-								
-										btnRun1 = new JToggleButton();
-										btnRun1.setName(BTN_RUN);
-										btnRun1.addActionListener(actionAdapter);
-										btnRun1.setContentAreaFilled(false);
-										btnRun1.setBorder(null);
-										// btnRun1.setIcon(new
-										// ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
-										// btnRun1.setSelectedIcon(
-										// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
-										btnRun1.setBounds(24, 54, 71, 71);
-										panel.add(btnRun1);
+
+		panel = new JPanel();
+		panel.setBounds(931, 5, 120, 290);
+		panelTop.add(panel);
+		panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		panel.setLayout(null);
+
+		spinnerStepCount = new JSpinner();
+		spinnerStepCount.setModel(new SpinnerNumberModel(new Integer(1), new Integer(1), null, new Integer(1)));
+		spinnerStepCount.setBounds(37, 243, 45, 20);
+		panel.add(spinnerStepCount);
+
+		btnStep = new JButton();
+		// btnStep.setIcon(new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Next-icon-48.png")));
+		btnStep.setBorder(null);
+		btnStep.setContentAreaFilled(false);
+		btnStep.setOpaque(true);
+		btnStep.setName(BTN_STEP);
+		btnStep.addActionListener(actionAdapter);
+		btnStep.setBounds(24, 169, 71, 63);
+		panel.add(btnStep);
+
+		btnRun1 = new JToggleButton();
+		btnRun1.setName(BTN_RUN);
+		btnRun1.addActionListener(actionAdapter);
+		btnRun1.setContentAreaFilled(false);
+		btnRun1.setBorder(null);
+		// btnRun1.setIcon(new
+		// ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
+		// btnRun1.setSelectedIcon(
+		// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
+		btnRun1.setBounds(24, 54, 71, 71);
+		panel.add(btnRun1);
 
 		panelBottom = new JPanel();
 		panelBottom.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
@@ -646,46 +678,106 @@ public class Machine8080 implements Observer {
 		// gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
 		// tabMemory.setLayout(gbl_tabMemory);
 		tabMemory.add(hexEditPanelConcurrent, gbc_hexPanel);
-		
+
 		panelList = new JPanel();
 		tabbedPane.addTab("List Device", null, panelList, null);
 		GridBagLayout gbl_panelList = new GridBagLayout();
-		gbl_panelList.columnWidths = new int[]{675, 0, 0};
-		gbl_panelList.rowHeights = new int[]{0, 0};
-		gbl_panelList.columnWeights = new double[]{1.0, 1.0, Double.MIN_VALUE};
-		gbl_panelList.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panelList.columnWidths = new int[] { 675, 0, 0 };
+		gbl_panelList.rowHeights = new int[] { 0, 0 };
+		gbl_panelList.columnWeights = new double[] { 1.0, 1.0, Double.MIN_VALUE };
+		gbl_panelList.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		panelList.setLayout(gbl_panelList);
-		
-		panelListControls = new JScrollPane();
-		GridBagConstraints gbc_panelListControls = new GridBagConstraints();
-		gbc_panelListControls.insets = new Insets(0, 10, 0, 5);
-		gbc_panelListControls.fill = GridBagConstraints.BOTH;
-		gbc_panelListControls.gridx = 0;
-		gbc_panelListControls.gridy = 0;
-		panelList.add(panelListControls, gbc_panelListControls);
-		
+
+		panelListDisplay = new JScrollPane();
+		GridBagConstraints gbc_panelListDisplay = new GridBagConstraints();
+		gbc_panelListDisplay.insets = new Insets(0, 10, 0, 5);
+		gbc_panelListDisplay.fill = GridBagConstraints.BOTH;
+		gbc_panelListDisplay.gridx = 0;
+		gbc_panelListDisplay.gridy = 0;
+		panelList.add(panelListDisplay, gbc_panelListDisplay);
+
 		txtList = new JTextArea();
 		txtList.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-				
+
 			}
 		});
-		txtList.setText("         1         2         3         4         5         6         7         8\r\n12345678901234567890123456789012345678901234567890123456789012345678901234567890\r\n\r\n\r\n 5\r\n 6\r\n 7\r\n 8\r\n 9\r\n10\r\n11\r\n12\r\n13\r\n14\r\n15\r\n16\r\n17\r\n18\r\n19\r\n20\r\n21\r\n22\r\n23\r\n24");
+		txtList.setText(
+				"         1         2         3         4         5         6         7         8\r\n12345678901234567890123456789012345678901234567890123456789012345678901234567890\r\n\r\n\r\n 5\r\n 6\r\n 7\r\n 8\r\n 9\r\n10\r\n11\r\n12\r\n13\r\n14\r\n15\r\n16\r\n17\r\n18\r\n19\r\n20\r\n21\r\n22\r\n23\r\n24");
 		txtList.setFont(new Font("Courier New", Font.PLAIN, 17));
-		panelListControls.setViewportView(txtList);
-		
-		panel_1 = new JPanel();
-		GridBagConstraints gbc_panel_1 = new GridBagConstraints();
-		gbc_panel_1.fill = GridBagConstraints.BOTH;
-		gbc_panel_1.gridx = 1;
-		gbc_panel_1.gridy = 0;
-		panelList.add(panel_1, gbc_panel_1);
-		GridBagLayout gbl_panel_1 = new GridBagLayout();
-		gbl_panel_1.columnWidths = new int[]{0};
-		gbl_panel_1.rowHeights = new int[]{0};
-		gbl_panel_1.columnWeights = new double[]{Double.MIN_VALUE};
-		gbl_panel_1.rowWeights = new double[]{Double.MIN_VALUE};
-		panel_1.setLayout(gbl_panel_1);
+		panelListDisplay.setViewportView(txtList);
+
+		panelListControls = new JPanel();
+		GridBagConstraints gbc_panelListControls = new GridBagConstraints();
+		gbc_panelListControls.fill = GridBagConstraints.BOTH;
+		gbc_panelListControls.gridx = 1;
+		gbc_panelListControls.gridy = 0;
+		panelList.add(panelListControls, gbc_panelListControls);
+		GridBagLayout gbl_panelListControls = new GridBagLayout();
+		gbl_panelListControls.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelListControls.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_panelListControls.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelListControls.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+				Double.MIN_VALUE };
+		panelListControls.setLayout(gbl_panelListControls);
+
+		btnListLineFeed = new JButton("Line Feed");
+		btnListLineFeed.setName(BTN_LIST_LINE_FEED);
+		btnListLineFeed.addActionListener(actionAdapter);
+		GridBagConstraints gbc_btnListLineFeed = new GridBagConstraints();
+		gbc_btnListLineFeed.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnListLineFeed.insets = new Insets(0, 0, 5, 0);
+		gbc_btnListLineFeed.gridx = 1;
+		gbc_btnListLineFeed.gridy = 1;
+		panelListControls.add(btnListLineFeed, gbc_btnListLineFeed);
+
+		btnListFormFeed = new JButton("Form Feed");
+		btnListFormFeed.setName(BTN_LIST_FORM_FEED);
+		btnListFormFeed.addActionListener(actionAdapter);
+		GridBagConstraints gbc_btnListFormFeed = new GridBagConstraints();
+		gbc_btnListFormFeed.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnListFormFeed.insets = new Insets(0, 0, 5, 0);
+		gbc_btnListFormFeed.gridx = 1;
+		gbc_btnListFormFeed.gridy = 3;
+		panelListControls.add(btnListFormFeed, gbc_btnListFormFeed);
+
+		btnListSaveToFile = new JButton("Save To FIle...");
+		btnListSaveToFile.setName(BTN_LIST_SAVE_TO_FILE);
+		btnListSaveToFile.addActionListener(actionAdapter);
+		GridBagConstraints gbc_btnListSaveToFile = new GridBagConstraints();
+		gbc_btnListSaveToFile.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnListSaveToFile.insets = new Insets(0, 0, 5, 0);
+		gbc_btnListSaveToFile.gridx = 1;
+		gbc_btnListSaveToFile.gridy = 5;
+		panelListControls.add(btnListSaveToFile, gbc_btnListSaveToFile);
+
+		btnListPrint = new JButton("Print...");
+		btnListPrint.setName(BTN_LIST_PRINT);
+		btnListPrint.addActionListener(actionAdapter);
+		GridBagConstraints gbc_btnListPrint = new GridBagConstraints();
+		gbc_btnListPrint.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnListPrint.insets = new Insets(0, 0, 5, 0);
+		gbc_btnListPrint.gridx = 1;
+		gbc_btnListPrint.gridy = 7;
+		panelListControls.add(btnListPrint, gbc_btnListPrint);
+
+		btnListProperties = new JButton("List Properties...");
+		btnListProperties.setName(BTN_LIST_PROPERTIES);
+		btnListProperties.addActionListener(actionAdapter);
+		GridBagConstraints gbc_btnListProperties = new GridBagConstraints();
+		gbc_btnListProperties.insets = new Insets(0, 0, 5, 0);
+		gbc_btnListProperties.gridx = 1;
+		gbc_btnListProperties.gridy = 9;
+		panelListControls.add(btnListProperties, gbc_btnListProperties);
+
+		btnListClear = new JButton("Clear");
+		btnListClear.setName(BTN_LIST_CLEAR);
+		btnListClear.addActionListener(actionAdapter);
+		GridBagConstraints gbc_btnListClear = new GridBagConstraints();
+		gbc_btnListClear.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnListClear.gridx = 1;
+		gbc_btnListClear.gridy = 11;
+		panelListControls.add(btnListClear, gbc_btnListClear);
 
 		panelStatus = new JPanel();
 		panelStatus.setPreferredSize(new Dimension(10, 25));
@@ -724,6 +816,26 @@ public class Machine8080 implements Observer {
 			case BTN_RUN:
 				doRun();
 				break;
+
+			case BTN_LIST_LINE_FEED:
+				doListLineFeed();
+				break;
+			case BTN_LIST_FORM_FEED:
+				doListFormFeed();
+				break;
+			case BTN_LIST_SAVE_TO_FILE:
+				doListSaveToFile();
+				break;
+			case BTN_LIST_PRINT:
+				doListPrint();
+				break;
+			case BTN_LIST_PROPERTIES:
+				doListProperties();
+				break;
+			case BTN_LIST_CLEAR:
+				doListClear();
+				break;
+
 			default:
 				assert false : name + " is not a valid button name";
 			}// switch name
@@ -747,7 +859,7 @@ public class Machine8080 implements Observer {
 
 			switch (sourceName) {
 			// MNU_FILE_NEW
-			case Machine8080.MNU_FILE_BOOT:	
+			case Machine8080.MNU_FILE_BOOT:
 				doBoot();
 				break;
 
@@ -798,9 +910,9 @@ public class Machine8080 implements Observer {
 				doBoot();
 				break;
 			case Machine8080.MNU_WINDOWS_TBP:
-//				Dimension dim = frmMachine.getSize();
-//				System.out.printf("Height = %d, Width = %d%n", (int)dim.getHeight(),(int)dim.getWidth());
-//				panelBottom.setVisible(!panelBottom.isVisible());
+				// Dimension dim = frmMachine.getSize();
+				// System.out.printf("Height = %d, Width = %d%n", (int)dim.getHeight(),(int)dim.getWidth());
+				// panelBottom.setVisible(!panelBottom.isVisible());
 				Document docList = txtList.getDocument();
 				try {
 					docList.remove(0, docList.getLength());
@@ -968,10 +1080,6 @@ public class Machine8080 implements Observer {
 	public static final String BTN_STEP = "btnStep";
 	public static final String BTN_RUN = "btnRun";
 
-	// public static final String BTN_RUN_TEXT = "Run";
-	// public static final String BTN_STOP = "btnStop";
-	// public static final String BTN_STOP_TEXT = "Stop";
-
 	public static final String NO_CONNECTION = "<<No Connection>>";
 
 	public static final String MNU_FILE_BOOT = "mnuFileBoot";
@@ -989,8 +1097,15 @@ public class Machine8080 implements Observer {
 	public static final String MNU_TOOLS_TRAP_MANAGER = "mnuToolsTrapManager";
 	public static final String MNU_TOOLS_SHOW_LISTING = "mnuToolsShowListing";
 	public static final String MNU_TOOLS_RESET = "mnuToolsReset";
-	
+
 	public static final String MNU_WINDOWS_TBP = "mnuWindowsTBP";
+
+	public static final String BTN_LIST_LINE_FEED = "btnListLineFeed";
+	public static final String BTN_LIST_FORM_FEED = "btnListFormFeed";
+	public static final String BTN_LIST_SAVE_TO_FILE = "btnListSaveToFile";
+	public static final String BTN_LIST_PRINT = "btnListPrint";
+	public static final String BTN_LIST_PROPERTIES = "btnListProperties";
+	public static final String BTN_LIST_CLEAR = "btnListCLEAR";
 
 	private JFrame frmMachine;
 	private JPanel panelMiddle;
@@ -1018,7 +1133,13 @@ public class Machine8080 implements Observer {
 	private JMenu mnuMemory;
 	private JMenuItem mnuWindowsTBP;
 	private JPanel panelList;
-	private JPanel panel_1;
-	private JScrollPane panelListControls;
+	private JPanel panelListControls;
+	private JScrollPane panelListDisplay;
 	private JTextArea txtList;
+	private JButton btnListLineFeed;
+	private JButton btnListFormFeed;
+	private JButton btnListSaveToFile;
+	private JButton btnListPrint;
+	private JButton btnListProperties;
+	private JButton btnListClear;
 }// class Machine8080
