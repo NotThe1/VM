@@ -102,6 +102,7 @@ public class ListDevicePropertyDialog extends JDialog {
 		initialize();
 		appInit();
 	}// Constructor
+	
 
 	private void initialize() {
 		

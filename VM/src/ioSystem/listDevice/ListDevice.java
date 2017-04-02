@@ -100,6 +100,8 @@ public class ListDevice extends Device8080 {
 	}// clear
 
 	public void setProperties() {
+		
+		SwingUtilities.getWindowAncestor(textArea);
 		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog();
 		listDevicePropertyDialog.setVisible(true);
 		loadProperties();
