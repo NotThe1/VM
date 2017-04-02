@@ -182,7 +182,7 @@ public class ShowCode extends JDialog implements Runnable {
 		} // if
 		String listFile = fc.getSelectedFile().getAbsolutePath();
 		String completeSuffix = DOT + FilePicker.LIST_ASM_SUFFIX;
-		listFile = listFile.replace("//" + completeSuffix + "$", EMPTY_STRING);
+		listFile = listFile.replaceFirst("//" + completeSuffix + "$", EMPTY_STRING);
 		try {
 			FileWriter fileWriter = new FileWriter(listFile + completeSuffix);
 			BufferedWriter writer = new BufferedWriter(fileWriter);

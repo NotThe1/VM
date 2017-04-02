@@ -180,11 +180,16 @@ public class Machine8080 implements Observer {
 	}//doListFrmFeed
 	
 	private void doListSaveToFile(){
-		System.err.printf("%s Not Implemented%n", "doListSaveToFile");	
+		if (!(IOController.getInstance().getListDevice()==null)){
+			IOController.getInstance().getListDevice().saveToFile();;
+		}//if
 	}//doListSaveToFile
 	
 	private void doListPrint(){
 		System.err.printf("%s Not Implemented%n", "doListPrint");	
+//		if (!(IOController.getInstance().getListDevice()==null)){
+//			IOController.getInstance().getListDevice().print();
+//		}//if
 	}//doListPrint
 	
 	private void doListProperties(){
@@ -673,18 +678,12 @@ public class Machine8080 implements Observer {
 		gbc_hexPanel.gridx = 0;
 		gbc_hexPanel.gridy = 0;
 		tabMemory.setLayout(new GridLayout(0, 1, 0, 0));
-		// GridBagLayout gbl_tabMemory = new GridBagLayout();
-		// gbl_tabMemory.columnWidths = new int[] { 0 };
-		// gbl_tabMemory.rowHeights = new int[] { 0 };
-		// gbl_tabMemory.columnWeights = new double[] { Double.MIN_VALUE };
-		// gbl_tabMemory.rowWeights = new double[] { Double.MIN_VALUE };
-		// tabMemory.setLayout(gbl_tabMemory);
 		tabMemory.add(hexEditPanelConcurrent, gbc_hexPanel);
 
 		panelList = new JPanel();
 		tabbedPane.addTab("List Device", null, panelList, null);
 		GridBagLayout gbl_panelList = new GridBagLayout();
-		gbl_panelList.columnWidths = new int[] { 675, 0, 0 };
+		gbl_panelList.columnWidths = new int[] { 917, 0, 0 };
 		gbl_panelList.rowHeights = new int[] { 0, 0 };
 		gbl_panelList.columnWeights = new double[] { 1.0, 1.0, Double.MIN_VALUE };
 		gbl_panelList.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
@@ -699,6 +698,7 @@ public class Machine8080 implements Observer {
 		panelList.add(panelListDisplay, gbc_panelListDisplay);
 
 		txtList = new JTextArea();
+		txtList.setEditable(false);
 		txtList.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
 
@@ -984,7 +984,7 @@ public class Machine8080 implements Observer {
 			} // if
 			String listFile = fc.getSelectedFile().getAbsolutePath();
 			String completeSuffix = DOT + FilePicker.LIST_MEM_SUFFIX;
-			listFile = listFile.replace("//" + completeSuffix + "$", EMPTY_STRING);
+			listFile = listFile.replaceFirst("//" + completeSuffix + "$", EMPTY_STRING);
 			try {
 				FileWriter fileWriter = new FileWriter(listFile + completeSuffix);
 				BufferedWriter writer = new BufferedWriter(fileWriter);

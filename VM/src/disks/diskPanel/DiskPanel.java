@@ -66,6 +66,8 @@ public class DiskPanel extends JPanel {
 		panelDisksAB.add(lblB);
 		
 		txtDiskA = new JTextField();
+		txtDiskA.setForeground(new Color(255, 127, 80));
+		txtDiskA.setBackground(new Color(250, 240, 230));
 		txtDiskA.setEditable(false);
 		txtDiskA.setName(TXT_DISK_A);
 		txtDiskA.addMouseListener(diskPanelAdapter);
@@ -77,6 +79,8 @@ public class DiskPanel extends JPanel {
 		txtDiskA.setColumns(10);
 		
 		txtDiskB = new JTextField();
+		txtDiskB.setForeground(new Color(255, 127, 80));
+		txtDiskB.setBackground(new Color(250, 240, 230));
 		txtDiskB.setEditable(false);
 		txtDiskB.setName(TXT_DISK_B);
 		txtDiskB.addMouseListener(diskPanelAdapter);
@@ -106,6 +110,8 @@ public class DiskPanel extends JPanel {
 		panelDisksCD.add(lblD);
 		
 		txtDiskC = new JTextField();
+		txtDiskC.setForeground(new Color(255, 127, 80));
+		txtDiskC.setBackground(new Color(250, 240, 230));
 		txtDiskC.setEditable(false);
 		txtDiskC.setName(TXT_DISK_C);
 		txtDiskC.addMouseListener(diskPanelAdapter);
@@ -117,6 +123,9 @@ public class DiskPanel extends JPanel {
 		panelDisksCD.add(txtDiskC);
 		
 		txtDiskD = new JTextField();
+		txtDiskD.setFont(new Font("Tahoma", Font.PLAIN, 11));
+		txtDiskD.setForeground(new Color(255, 127, 80));
+		txtDiskD.setBackground(new Color(250, 240, 230));
 		txtDiskD.setEditable(false);
 		txtDiskD.setName(TXT_DISK_D);
 		txtDiskD.addMouseListener(diskPanelAdapter);

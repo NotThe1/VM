@@ -29,6 +29,7 @@ public class FilePicker {
 	static Path memoryPath = null;
 	static Path asmPath = null;
 	static Path listPath = null;
+	static Path listingPath = null;
 
 	private FilePicker() {
 
@@ -82,6 +83,8 @@ public class FilePicker {
 			listPath = subjectPath;
 			// listAsmPath = Paths.get(userDirectory, DATA_NAME, subjectName);
 			break;
+		case CPM_LISTING:
+			listingPath = subjectPath;
 		}// switch
 
 		if (!Files.exists(subjectPath, LinkOption.NOFOLLOW_LINKS)) {
@@ -172,6 +175,20 @@ public class FilePicker {
 		asmPath = newMemoryPath;
 		return customizeChooser(asmPath, "Listing Files ", "list");
 	}// getDiskPicker customize
+
+	public static JFileChooser getListingPicker() {
+		setTargetPaths(CPM_LISTING);
+		return customizeChooser(listingPath, "CPM Listings", LISTING_SUFFIX);
+	}// getListingPicker customize
+	
+	public static JFileChooser getListingPicker(Path newListingPath) {
+		listingPath = newListingPath;
+		return customizeChooser(listingPath, "CPM Listings", LISTING_SUFFIX);
+	}// getListingPicker customize
+
+
+
+	
 	
 	/**
 	 * this is a utility function that does the common tasks for the methods: getDataPicker & getDiskPicker
@@ -197,10 +214,12 @@ public class FilePicker {
 	private static final String MEMORY_NAME = "Memory";
 	private static final String ASM_NAME = "Asm";
 	private static final String LISTS = "Lists";
+	private static final String CPM_LISTING = "cpmListings"; 
 //	private static final String LIST_MEM = "listMem";
 	private static final String CODE_PATH = "C:\\Users\\admin\\git\\assembler8080\\assembler8080\\Code";
 
 	public static final String LIST_ASM_SUFFIX = "ListAsm";
 	public static final String LIST_MEM_SUFFIX = "ListMem";
+	public static final String LISTING_SUFFIX = "txt";
 
 }// class FilePicker
