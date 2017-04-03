@@ -93,7 +93,7 @@ public class DiskPanel extends JPanel {
 		
 		panelDisksCD = new JPanel();
 		panelDisksCD.setLayout(null);
-		panelDisksCD.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "5.25 \" Disks", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, new Color(0, 0, 255)));
+		panelDisksCD.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "3.5 \" Disks", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, new Color(0, 0, 255)));
 		panelDisksCD.setBounds(10, 154, 255, 100);
 		add(panelDisksCD);
 		

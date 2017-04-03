@@ -46,10 +46,9 @@ public class TestListDevice {
 	private JTextArea txtLog;
 	private JLabel lblLog;
 	private ListDevice listDevice;
-	private byte listOut = (byte)0X10;
-	private byte listStatus = (byte)0X11;
+	private byte listOut = (byte) 0X10;
+	private byte listStatus = (byte) 0X11;
 	private JScrollPane scrollPane;
-
 
 	/**
 	 * Launch the application.
@@ -62,68 +61,78 @@ public class TestListDevice {
 					window.frmTemplate.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
-				}//try
-			}//run
+				} // try
+			}// run
 		});
 	}// main
 
 	/* Standard Stuff */
-	
-	private void doBtnOne(){
-		listDevice.byteFromCPU(listOut, (byte)0x45);
-	}//doBtnOne
-	
-	private void doBtnTwo(){
-		System.out.printf("4 mod 3 = %d%n", 4 % 3 );
-		listDevice.byteFromCPU(listOut, (byte)0x09);	//CR
-	}//doBtnTwo
-	
-	private void doBtnThree(){
-		listDevice.byteFromCPU(listOut, (byte)0x0A);	//LF
-	
-	}//doBtnThree
-	
-	private void doBtnFour(){
+
+	private void doBtnOne() {
+		listDevice.byteFromCPU(listOut, (byte) 0x45);
+	}// doBtnOne
+
+	private void doBtnTwo() {
+
 		String x = "1234567890";
 		byte[] y = x.getBytes();
-		for (int i = 0; i < y.length;i++){
+		for (int i = 0; i < y.length; i++) {
 			listDevice.byteFromCPU(listOut, y[i]);
-		}//for
-		listDevice.byteFromCPU(listOut, (byte)0x0A);	//LF
+		} // for
+		listDevice.byteFromCPU(listOut, (byte) 0x0A); // LF
 
-		
-	}//doBtnFour
-	
-	//---------------------------------------------------------
-	
-	private void doFileNew(){
-		
-	}//doFileNew
-	private void doFileOpen(){
-//		if (!(IOController.getInstance().getListDevice()==null)){
-//			IOController.getInstance().getListDevice().setProperties();
-//		}//if
-		if (!(listDevice==null)){
+	}// doBtnTwo
+
+	private void doBtnThree() {
+		listDevice.byteFromCPU(listOut, (byte) 0x0A); // LF
+
+	}// doBtnThree
+
+	private void doBtnFour() {
+		for (int i = 1; i < 15; i++) {
+			doBtnTwo();
+		} // for
+
+	}// doBtnFour
+
+	// ---------------------------------------------------------
+
+	private void doFileNew() {
+
+	}// doFileNew
+
+	private void doFileOpen() {
+		// if (!(IOController.getInstance().getListDevice()==null)){
+		// IOController.getInstance().getListDevice().setProperties();
+		// }//if
+		if (!(listDevice == null)) {
 			listDevice.setProperties();
-		}//if
-	}//doFileOpen
-	private void doFileSave(){
-		
-	}//doFileSave
-	private void doFileSaveAs(){
-		
-	}//doFileSaveAs
-	private void doFilePrint(){
-		
-	}//doFilePrint
-	private void doFileExit(){
+		} // if
+	}// doFileOpen
+
+	private void doFileSave() {
+
+	}// doFileSave
+
+	private void doFileSaveAs() {
+
+	}// doFileSaveAs
+
+	private void doFilePrint() {
+
+		if (!(listDevice == null)) {
+			listDevice.print();
+		} // if
+	}// doFilePrint
+
+	private void doFileExit() {
 		appClose();
 		System.exit(0);
-	}//doFileExit
-
+	}// doFileExit
 
 	private void appClose() {
-		Preferences myPrefs =  Preferences.userNodeForPackage(TestListDevice.class).node(this.getClass().getSimpleName());
+		Preferences myPrefs = Preferences.userNodeForPackage(TestListDevice.class)
+				.node(this.getClass().getSimpleName());
 		Dimension dim = frmTemplate.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
@@ -131,31 +140,33 @@ public class TestListDevice {
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
 		myPrefs.putInt("Divider", splitPane1.getDividerLocation());
-	
+
 		myPrefs = null;
 		listDevice.close();
-		
-	}//appClose
+
+	}// appClose
 
 	private void appInit() {
-		Preferences myPrefs =  Preferences.userNodeForPackage(TestListDevice.class).node(this.getClass().getSimpleName());
+		Preferences myPrefs = Preferences.userNodeForPackage(TestListDevice.class)
+				.node(this.getClass().getSimpleName());
 		frmTemplate.setSize(myPrefs.getInt("Width", 761), myPrefs.getInt("Height", 693));
 		frmTemplate.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		splitPane1.setDividerLocation(myPrefs.getInt("Divider", 250));
-		txtLog.append(String.format("myPrefs.absolutePath() - %s%n",myPrefs.absolutePath()));
+		//txtLog.append(String.format("myPrefs.absolutePath() - %s%n", myPrefs.absolutePath()));
 		myPrefs = null;
-		
+
 		JScrollBar sb = scrollPane.getVerticalScrollBar();
-		sb.addAdjustmentListener(new AdjustmentListener(){
+		sb.addAdjustmentListener(new AdjustmentListener() {
 
 			@Override
 			public void adjustmentValueChanged(AdjustmentEvent arg0) {
 				sb.setValue(9999);
-				
-			}}
-		);
-				
-		listDevice = new ListDevice("LST:","Parallel",listOut,listStatus,txtLog);
+
+			}
+		});
+
+		listDevice = new ListDevice("LST:", "Parallel", listOut, listStatus, txtLog);
+		txtLog.setText("         1         2         3         4         5         6         7         8         9         0         1         2         3\r\n123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012");
 
 	}// appInit
 
@@ -184,7 +195,7 @@ public class TestListDevice {
 		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 1.0, 0.0, Double.MIN_VALUE };
 		frmTemplate.getContentPane().setLayout(gridBagLayout);
-		
+
 		JPanel panel = new JPanel();
 		GridBagConstraints gbc_panel = new GridBagConstraints();
 		gbc_panel.insets = new Insets(0, 0, 5, 0);
@@ -193,12 +204,12 @@ public class TestListDevice {
 		gbc_panel.gridy = 0;
 		frmTemplate.getContentPane().add(panel, gbc_panel);
 		GridBagLayout gbl_panel = new GridBagLayout();
-		gbl_panel.columnWidths = new int[]{0, 0, 0, 0, 0};
-		gbl_panel.rowHeights = new int[]{0, 0};
-		gbl_panel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_panel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_panel.columnWidths = new int[] { 0, 0, 0, 0, 0 };
+		gbl_panel.rowHeights = new int[] { 0, 0 };
+		gbl_panel.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
 		panel.setLayout(gbl_panel);
-		
+
 		btnOne = new JButton("Button 1");
 		btnOne.setToolTipText("Send character");
 		btnOne.setMinimumSize(new Dimension(100, 20));
@@ -214,7 +225,7 @@ public class TestListDevice {
 		});
 		btnOne.setMaximumSize(new Dimension(0, 0));
 		btnOne.setPreferredSize(new Dimension(100, 20));
-		
+
 		btnTwo = new JButton("Button 2");
 		btnTwo.setToolTipText("Carriage Return");
 		btnTwo.setMinimumSize(new Dimension(100, 20));
@@ -230,7 +241,7 @@ public class TestListDevice {
 		});
 		btnTwo.setPreferredSize(new Dimension(100, 20));
 		btnTwo.setMaximumSize(new Dimension(0, 0));
-		
+
 		btnThree = new JButton("Button 3");
 		btnThree.setToolTipText("Line Feed");
 		btnThree.setMinimumSize(new Dimension(100, 20));
@@ -246,7 +257,7 @@ public class TestListDevice {
 		});
 		btnThree.setPreferredSize(new Dimension(100, 20));
 		btnThree.setMaximumSize(new Dimension(0, 0));
-		
+
 		btnFour = new JButton("Button 4");
 		btnFour.setMinimumSize(new Dimension(100, 20));
 		GridBagConstraints gbc_btnFour = new GridBagConstraints();
@@ -261,7 +272,7 @@ public class TestListDevice {
 		});
 		btnFour.setPreferredSize(new Dimension(100, 20));
 		btnFour.setMaximumSize(new Dimension(0, 0));
-		
+
 		splitPane1 = new JSplitPane();
 		GridBagConstraints gbc_splitPane1 = new GridBagConstraints();
 		gbc_splitPane1.insets = new Insets(0, 0, 5, 0);
@@ -269,52 +280,52 @@ public class TestListDevice {
 		gbc_splitPane1.gridx = 0;
 		gbc_splitPane1.gridy = 1;
 		frmTemplate.getContentPane().add(splitPane1, gbc_splitPane1);
-		
+
 		JPanel panelLeft = new JPanel();
 		splitPane1.setLeftComponent(panelLeft);
 		GridBagLayout gbl_panelLeft = new GridBagLayout();
-		gbl_panelLeft.columnWidths = new int[]{0};
-		gbl_panelLeft.rowHeights = new int[]{0};
-		gbl_panelLeft.columnWeights = new double[]{Double.MIN_VALUE};
-		gbl_panelLeft.rowWeights = new double[]{Double.MIN_VALUE};
+		gbl_panelLeft.columnWidths = new int[] { 0 };
+		gbl_panelLeft.rowHeights = new int[] { 0 };
+		gbl_panelLeft.columnWeights = new double[] { Double.MIN_VALUE };
+		gbl_panelLeft.rowWeights = new double[] { Double.MIN_VALUE };
 		panelLeft.setLayout(gbl_panelLeft);
-		
+
 		JPanel panelRight = new JPanel();
 		splitPane1.setRightComponent(panelRight);
 		GridBagLayout gbl_panelRight = new GridBagLayout();
-		gbl_panelRight.columnWidths = new int[]{0, 0};
-		gbl_panelRight.rowHeights = new int[]{0, 0};
-		gbl_panelRight.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gbl_panelRight.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_panelRight.columnWidths = new int[] { 0, 0 };
+		gbl_panelRight.rowHeights = new int[] { 0, 0 };
+		gbl_panelRight.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_panelRight.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		panelRight.setLayout(gbl_panelRight);
-		
+
 		scrollPane = new JScrollPane();
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.fill = GridBagConstraints.BOTH;
 		gbc_scrollPane.gridx = 0;
 		gbc_scrollPane.gridy = 0;
 		panelRight.add(scrollPane, gbc_scrollPane);
-		
+
 		txtLog = new JTextArea();
-				
+
 		txtLog.setFont(new Font("Courier New", Font.PLAIN, 13));
-		txtLog.setText("sdfggd\r\nsdf\r\nsdfg\r\nsdfg\r\nsdf\r\ndsfg");
+		txtLog.setText("         1         2         3         4         5         6         7         8         9         0         1         2         3\r\n123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012");
 		txtLog.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if (arg0.getClickCount()>1){
+				if (arg0.getClickCount() > 1) {
 					((JTextComponent) arg0.getComponent()).setText("");
 					txtLog.setText("");
-				}//if
-			}//mouseClicked
+				} // if
+			}// mouseClicked
 		});
 		scrollPane.setViewportView(txtLog);
-		
+
 		lblLog = new JLabel("New label");
 		lblLog.setHorizontalAlignment(SwingConstants.CENTER);
 		scrollPane.setColumnHeaderView(lblLog);
 		splitPane1.setDividerLocation(250);
-		
+
 		JPanel panelStatus = new JPanel();
 		panelStatus.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		GridBagConstraints gbc_panelStatus = new GridBagConstraints();
@@ -325,10 +336,10 @@ public class TestListDevice {
 
 		JMenuBar menuBar = new JMenuBar();
 		frmTemplate.setJMenuBar(menuBar);
-		
+
 		JMenu mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
-		
+
 		JMenuItem mnuFileNew = new JMenuItem("New - properties");
 		mnuFileNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -336,7 +347,7 @@ public class TestListDevice {
 			}
 		});
 		mnuFile.add(mnuFileNew);
-		
+
 		JMenuItem mnuFileOpen = new JMenuItem("Open - Properties");
 		mnuFileOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -344,10 +355,10 @@ public class TestListDevice {
 			}
 		});
 		mnuFile.add(mnuFileOpen);
-		
+
 		JSeparator separator = new JSeparator();
 		mnuFile.add(separator);
-		
+
 		JMenuItem mnuFileSave = new JMenuItem("Save...");
 		mnuFileSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -355,7 +366,7 @@ public class TestListDevice {
 			}
 		});
 		mnuFile.add(mnuFileSave);
-		
+
 		JMenuItem mnuFileSaveAs = new JMenuItem("Save As...");
 		mnuFileSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -363,10 +374,10 @@ public class TestListDevice {
 			}
 		});
 		mnuFile.add(mnuFileSaveAs);
-		
+
 		JSeparator separator_2 = new JSeparator();
 		mnuFile.add(separator_2);
-		
+
 		JMenuItem mnuFilePrint = new JMenuItem("Print...");
 		mnuFilePrint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -374,11 +385,10 @@ public class TestListDevice {
 			}
 		});
 		mnuFile.add(mnuFilePrint);
-		
-		
+
 		JSeparator separator_1 = new JSeparator();
 		mnuFile.add(separator_1);
-		
+
 		JMenuItem mnuFileExit = new JMenuItem("Exit");
 		mnuFileExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -386,8 +396,6 @@ public class TestListDevice {
 			}
 		});
 		mnuFile.add(mnuFileExit);
-
-		
 
 	}// initialize
 

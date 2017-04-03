@@ -40,6 +40,7 @@ public class TestConsole {
 	private JFormattedTextField ftfStatusReceived;
 	private JFormattedTextField ftfByteReceived;
 	private JFormattedTextField ftfAllBytesReceived;
+	private JButton btnFonts;
 
 	private void showConnectionString() {
 		lblCurrentSettings.setText(getConnectionString());
@@ -264,5 +265,10 @@ public class TestConsole {
 		lblCurrentSettings.setHorizontalAlignment(SwingConstants.CENTER);
 		lblCurrentSettings.setBounds(10, 287, 303, 23);
 		frmTestConsole.getContentPane().add(lblCurrentSettings);
+		
+		btnFonts = new JButton("Fonts");
+		
+		btnFonts.setBounds(10, 572, 89, 23);
+		frmTestConsole.getContentPane().add(btnFonts);
 	}// initialize
 }//

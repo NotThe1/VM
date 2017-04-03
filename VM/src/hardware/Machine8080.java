@@ -186,10 +186,9 @@ public class Machine8080 implements Observer {
 	}//doListSaveToFile
 	
 	private void doListPrint(){
-		System.err.printf("%s Not Implemented%n", "doListPrint");	
-//		if (!(IOController.getInstance().getListDevice()==null)){
-//			IOController.getInstance().getListDevice().print();
-//		}//if
+		if (!(IOController.getInstance().getListDevice()==null)){
+			IOController.getInstance().getListDevice().print();
+		}//if
 	}//doListPrint
 	
 	private void doListProperties(){
@@ -230,6 +229,8 @@ public class Machine8080 implements Observer {
 		if (diskControlUnit.addDiskDrive(diskNumber, fc.getSelectedFile().getAbsolutePath())) {
 			source.setText(fc.getSelectedFile().getName());
 			source.setToolTipText(fc.getSelectedFile().getAbsolutePath());
+//			source.setForeground(new Color(128,0,0));
+			source.setForeground(new Color(0,64,0));
 		} // if added
 	}// addDisk
 
@@ -284,6 +285,7 @@ public class Machine8080 implements Observer {
 
 	private void removeDisk(JTextField source, int diskNumber) {
 		diskControlUnit.removeDiskDrive(diskNumber);
+		source.setForeground(new Color(255,127,80));
 		source.setText(DiskPanel.NO_DISK);
 		source.setToolTipText(DiskPanel.NO_DISK_HELP);
 	}// remove disk
@@ -706,7 +708,7 @@ public class Machine8080 implements Observer {
 		});
 		txtList.setText(
 				"         1         2         3         4         5         6         7         8\r\n12345678901234567890123456789012345678901234567890123456789012345678901234567890\r\n\r\n\r\n 5\r\n 6\r\n 7\r\n 8\r\n 9\r\n10\r\n11\r\n12\r\n13\r\n14\r\n15\r\n16\r\n17\r\n18\r\n19\r\n20\r\n21\r\n22\r\n23\r\n24");
-		txtList.setFont(new Font("Courier New", Font.PLAIN, 17));
+		txtList.setFont(new Font("Courier New", Font.PLAIN, 13));
 		panelListDisplay.setViewportView(txtList);
 
 		panelListControls = new JPanel();

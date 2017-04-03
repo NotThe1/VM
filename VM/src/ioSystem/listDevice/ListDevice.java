@@ -1,9 +1,13 @@
 package ioSystem.listDevice;
 
+import java.awt.Font;
+import java.awt.print.PrinterException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
+import java.util.Date;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
@@ -113,7 +117,21 @@ public class ListDevice extends Device8080 {
 	}// setProperties
 
 	public void print() {
+		Font originalFont = textArea.getFont();
+		String fontName = originalFont.getName();
+		int originalSize = originalFont.getSize();
+//		originalFont.d
 
+		try {
+			textArea.setFont(new Font(fontName, Font.PLAIN, (int)(originalSize * 0.6)));
+			MessageFormat header = new MessageFormat("name");
+			MessageFormat footer = new MessageFormat(new Date().toString() + "           Page - {0}");
+//			textArea.print(header, footer);
+			textArea.print();
+			textArea.setFont(originalFont);
+		} catch (PrinterException e) {
+			e.printStackTrace();
+		} // try
 	}// print
 
 	public void saveToFile() {
