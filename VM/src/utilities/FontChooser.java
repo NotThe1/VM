@@ -2,18 +2,22 @@ package utilities;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.AbstractListModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -26,10 +30,10 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class FontChooser extends JDialog implements ListSelectionListener {
+public class FontChooser extends JDialog implements ListSelectionListener, ActionListener {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private final static Integer DEFAULT_SIZE = 13;
 	private final static String DEFAULT_STYLE = "Plain";
 	private final static String DEFAULT_FAMILY = "Tahoma";
@@ -39,50 +43,70 @@ public class FontChooser extends JDialog implements ListSelectionListener {
 	private final static String STYLE_ITALIC = "Italic";
 	private final static String STYLE_BOLD_ITALIC = "Bold Italic";
 
-	
-	
+	private String initFamily;
+	private String initStyle;
+	private Integer initSize;
+
 	private Font selectedFont;
 
-	
-	public static void main(String[] args) {
-		try {
-			FontChooser dialog = new FontChooser();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}//try
-	}//main
-	
-	private void doSelection(){
+	// public static void main(String[] args) {
+	// try {
+	// FontChooser dialog = new FontChooser();
+	// dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	// dialog.setVisible(true);
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// } // try
+	// }// main
+
+	public Font selectedFont() {
+		return selectedFont;
+	}// selectedFont
+
+	private void doBtnOK() {
+		// selectedFont = new Font(textFamily.getText(),2,Integer.valueOf(textSize.getText()));
+		dialogResultValue = JOptionPane.OK_OPTION;
+		dispose();
+	}// doBtnOK
+
+	private void doBtnCancel() {
+		dialogResultValue = JOptionPane.CANCEL_OPTION;
+		dispose();
+	}// doBtnCancel
+
+	private int getStyleFromTextDisplay() {
+		int styleFromTextDisplay = Font.PLAIN;
+		switch (textStyle.getText()) {
+		case STYLE_PLAIN:
+			styleFromTextDisplay = Font.PLAIN;
+			break;
+		case STYLE_BOLD:
+			styleFromTextDisplay = Font.BOLD;
+			break;
+		case STYLE_ITALIC:
+			styleFromTextDisplay = Font.ITALIC;
+			break;
+		case STYLE_BOLD_ITALIC:
+			styleFromTextDisplay = Font.BOLD | Font.ITALIC;
+			break;
+		}// switch
+		return styleFromTextDisplay;
+	}// getStyleFromTextDisplay
+
+	private void doSelection() {
 		textFamily.setText((String) listFamily.getSelectedValue());
 		textStyle.setText((String) listStyle.getSelectedValue());
-		textSize.setText( listSize.getSelectedValue().toString());
-		int style = style = Font.PLAIN;;
-		switch(textStyle.getText()){
-			case STYLE_PLAIN:
-				style = Font.PLAIN;
-				break;
-			case STYLE_BOLD:
-				style = Font.BOLD;
-				break;
-			case STYLE_ITALIC:
-				style = Font.ITALIC;
-				break;
-			case STYLE_BOLD_ITALIC:
-				style = Font.BOLD | Font.ITALIC;
-				break;
-		}//switch
-		
-		selectedFont = new Font(textFamily.getText(),style,Integer.valueOf(textSize.getText()));
+		textSize.setText(Integer.toString(listSize.getSelectedValue()));
+		int style = getStyleFromTextDisplay();
+
+		selectedFont = new Font(textFamily.getText(), style, Integer.valueOf(textSize.getText()));
 		lblSelectedFont.setFont(selectedFont);
-		
-		
-		String display = String.format("%s %s %s", textFamily.getText(),textStyle.getText(),textSize.getText());
+
+		String display = String.format("%s %s %s", textFamily.getText(), textStyle.getText(), textSize.getText());
 		lblSelectedFont.setText(display);
-		
-	}//doSelection
-	//---------------------------------------------------------------
+
+	}// doSelection
+		// ---------------------------------------------------------------
 
 	private void appInit() {
 		DefaultListModel<Integer> sizeModel = new DefaultListModel<Integer>();
@@ -90,7 +114,7 @@ public class FontChooser extends JDialog implements ListSelectionListener {
 			sizeModel.addElement(i);
 		} //
 		listSize.setModel(sizeModel);
-		listSize.setSelectedValue(DEFAULT_SIZE, true);
+		listSize.setSelectedValue(initSize, true);
 
 		String[] fontNames = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
 		DefaultListModel<String> familyModel = new DefaultListModel<String>();
@@ -98,20 +122,20 @@ public class FontChooser extends JDialog implements ListSelectionListener {
 			familyModel.addElement(f);
 		} // for
 		listFamily.setModel(familyModel);
-		listFamily.setSelectedValue(DEFAULT_FAMILY, true);
-		
+		listFamily.setSelectedValue(initFamily, true);
+
 		String[] styles = new String[] { STYLE_PLAIN, STYLE_BOLD, STYLE_ITALIC, "Bold Italic" };
 		DefaultListModel<String> styleModel = new DefaultListModel<String>();
 		for (String s : styles) {
 			styleModel.addElement(s);
 		} // for
 		listStyle.setModel(styleModel);
-		listStyle.setSelectedValue(DEFAULT_STYLE, true);
-		
+		listStyle.setSelectedValue(initStyle, true);
+
 		listSize.addListSelectionListener(this);
 		listFamily.addListSelectionListener(this);
 		listStyle.addListSelectionListener(this);
-		
+
 		doSelection();
 	}// appInit
 
@@ -123,15 +147,61 @@ public class FontChooser extends JDialog implements ListSelectionListener {
 
 	}// close
 
-	public FontChooser() {
+	public FontChooser(Font font) {
+		switch (font.getStyle()) {
+		case Font.PLAIN:
+			initStyle = "Plain";
+			break;
+		case Font.BOLD:
+			initStyle = "Bold";
+			break;
+		case Font.ITALIC:
+			initStyle = "Italic";
+			break;
+		case Font.BOLD | Font.ITALIC:
+			initStyle = "Bold Italic";
+			break;
+		default:
+			initStyle = DEFAULT_STYLE;
+		}// switch
+
+		initFamily = font.getFamily();
+		initSize = font.getSize();
 		initialize();
 		appInit();
-	}// initalize
+	}// Constructor
+
+	public FontChooser(String fontFamily, String fontStyle, Integer fontSize) {
+		initFamily = fontFamily;
+		initStyle = fontStyle;
+		initSize = fontSize;
+		initialize();
+		appInit();
+	}// Constructor
+
+	public FontChooser() {
+		this(DEFAULT_FAMILY, DEFAULT_STYLE, DEFAULT_SIZE);
+	}// Constructor
+
+	// -------------------------------------------------------------------------
+	private int dialogResultValue;
+//	public static final int DIALOG_ERROR = 0;
+//	public static final int DIALOG_OK = 1;
+//	public static final int DIALOG_CANCEL = 2;
+
+	public int showDialog() {
+		dialogResultValue = JOptionPane.NO_OPTION;
+		this.setVisible(true);
+		this.dispose();
+		return dialogResultValue;
+	}
+	// --------------------------------------------------------------------------
 
 	/**
 	 * Create the dialog.
 	 */
 	private void initialize() {
+		setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
 		setTitle("Font chooser");
 		setBounds(100, 100, 494, 500);
 		getContentPane().setLayout(null);
@@ -213,17 +283,6 @@ public class FontChooser extends JDialog implements ListSelectionListener {
 		panel.add(scrollPane_1);
 
 		listStyle = new JList();
-		listStyle.setModel(new AbstractListModel() {
-			String[] values = new String[] { "Plain", "Bold", "Italic", "Bold Italic" };
-
-			public int getSize() {
-				return values.length;
-			}
-
-			public Object getElementAt(int index) {
-				return values[index];
-			}
-		});
 		scrollPane_1.setViewportView(listStyle);
 		listStyle.setBorder(new LineBorder(new Color(0, 0, 0)));
 		listStyle.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -244,24 +303,29 @@ public class FontChooser extends JDialog implements ListSelectionListener {
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		getContentPane().add(buttonPane);
 
-		JButton okButton = new JButton("OK");
-		okButton.setPreferredSize(new Dimension(90, 26));
-		okButton.setMinimumSize(new Dimension(100, 23));
-		okButton.setMaximumSize(new Dimension(150, 23));
-		okButton.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		okButton.setActionCommand("OK");
-		buttonPane.add(okButton);
-		getRootPane().setDefaultButton(okButton);
+		JButton btnOk = new JButton("OK");
+		btnOk.setName(BTN_OK);
+		btnOk.addActionListener(this);
+		btnOk.setPreferredSize(new Dimension(90, 26));
+		btnOk.setMinimumSize(new Dimension(100, 23));
+		btnOk.setMaximumSize(new Dimension(150, 23));
+		btnOk.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		btnOk.setActionCommand("OK");
+		buttonPane.add(btnOk);
+		getRootPane().setDefaultButton(btnOk);
 
-		JButton cancelButton = new JButton("Cancel");
-		cancelButton.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		cancelButton.setMinimumSize(new Dimension(80, 23));
-		cancelButton.setMaximumSize(new Dimension(80, 23));
-		cancelButton.setPreferredSize(new Dimension(90, 26));
-		cancelButton.setActionCommand("Cancel");
-		buttonPane.add(cancelButton);
+		JButton btnCancel = new JButton("Cancel");
+		btnCancel.setName(BTN_CANCEL);
+		btnCancel.addActionListener(this);
+		btnCancel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		btnCancel.setMinimumSize(new Dimension(80, 23));
+		btnCancel.setMaximumSize(new Dimension(80, 23));
+		btnCancel.setPreferredSize(new Dimension(90, 26));
+		btnCancel.setActionCommand("Cancel");
+		buttonPane.add(btnCancel);
 
 	}// initialize
+
 	private final JPanel contentPanel = new JPanel();
 	private JLabel lblSelectedFont;
 	private JTextField textFamily;
@@ -271,9 +335,27 @@ public class FontChooser extends JDialog implements ListSelectionListener {
 	private JList<String> listStyle;
 	private JList<Integer> listSize;
 
-
 	@Override
 	public void valueChanged(ListSelectionEvent arg0) {
 		doSelection();
-	}//valueChanged
+	}// valueChanged
+
+	private static final String BTN_OK = "btnOk";
+	private static final String BTN_CANCEL = "btnCancel";
+
+	@Override
+	public void actionPerformed(ActionEvent actionEvent) {
+		switch (((Component) actionEvent.getSource()).getName()) {
+		case BTN_OK:
+			doBtnOK();
+			break;
+		case BTN_CANCEL:
+			doBtnCancel();
+			break;
+		default:
+			System.err.printf("[FontChooser] - actionPerformed %n Unknown Action %s%n%n",
+					((Component) actionEvent.getSource()).getName());
+		}// switch
+
+	}
 }// class FontChooser

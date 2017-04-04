@@ -106,7 +106,7 @@ public class ListDevice extends Device8080 {
 	public void setProperties() {
 		
 		SwingUtilities.getWindowAncestor(textArea);
-		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog();
+		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog(textArea);
 		listDevicePropertyDialog.setVisible(true);
 		loadProperties();
 
@@ -115,6 +115,18 @@ public class ListDevice extends Device8080 {
 		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog == null));
 
 	}// setProperties
+	
+	public void showProperties(){
+//		SwingUtilities.getWindowAncestor(textArea);
+		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog(textArea);
+		int ans = listDevicePropertyDialog.showDialog();
+		System.out.printf("[showProperties] ans = %d%n", ans);
+		
+		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog == null));
+		listDevicePropertyDialog = null;
+		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog == null));
+
+	}//showProperties
 
 	public void print() {
 		Font originalFont = textArea.getFont();

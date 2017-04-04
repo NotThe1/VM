@@ -34,6 +34,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.text.JTextComponent;
 
 import ioSystem.listDevice.ListDevice;
+import utilities.FontChooser;
 
 public class TestListDevice {
 
@@ -98,7 +99,9 @@ public class TestListDevice {
 	// ---------------------------------------------------------
 
 	private void doFileNew() {
-
+		if (!(listDevice == null)) {
+			listDevice.showProperties();
+		} // if
 	}// doFileNew
 
 	private void doFileOpen() {
@@ -109,8 +112,18 @@ public class TestListDevice {
 			listDevice.setProperties();
 		} // if
 	}// doFileOpen
-
+;
 	private void doFileSave() {
+//		SwingUtilities.getWindowAncestor(txtLog);
+		FontChooser fontChooser = new FontChooser(txtLog.getFont());
+		int ans = fontChooser.showDialog();
+		Font font = fontChooser.selectedFont();
+		System.out.printf("[fontChooser.showDialog()] ans = %d%n",ans);
+		
+		System.out.printf("[fontChooser.showDialog()]%n\t Family = %s, Style = %d, Size = %d%n%n",
+				font.getFamily(),font.getStyle(),font.getSize());
+		
+		fontChooser = null;
 
 	}// doFileSave
 
@@ -340,7 +353,7 @@ public class TestListDevice {
 		JMenu mnuFile = new JMenu("File");
 		menuBar.add(mnuFile);
 
-		JMenuItem mnuFileNew = new JMenuItem("New - properties");
+		JMenuItem mnuFileNew = new JMenuItem("New -Show  properties");
 		mnuFileNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileNew();
@@ -359,7 +372,7 @@ public class TestListDevice {
 		JSeparator separator = new JSeparator();
 		mnuFile.add(separator);
 
-		JMenuItem mnuFileSave = new JMenuItem("Save...");
+		JMenuItem mnuFileSave = new JMenuItem("Save...Font Chooser");
 		mnuFileSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileSave();
