@@ -193,7 +193,7 @@ public class Machine8080 implements Observer {
 	
 	private void doListProperties(){
 		if (!(IOController.getInstance().getListDevice()==null)){
-			IOController.getInstance().getListDevice().setProperties();
+			IOController.getInstance().getListDevice().showProperties();
 		}//if
 	}//doListProperties
 	

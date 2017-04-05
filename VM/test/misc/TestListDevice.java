@@ -23,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -105,12 +106,7 @@ public class TestListDevice {
 	}// doFileNew
 
 	private void doFileOpen() {
-		// if (!(IOController.getInstance().getListDevice()==null)){
-		// IOController.getInstance().getListDevice().setProperties();
-		// }//if
-		if (!(listDevice == null)) {
-			listDevice.setProperties();
-		} // if
+		
 	}// doFileOpen
 ;
 	private void doFileSave() {
@@ -128,14 +124,15 @@ public class TestListDevice {
 	}// doFileSave
 
 	private void doFileSaveAs() {
-
+		String inputValue = JOptionPane.showInputDialog("Input header (optional)\n Canel for no header");
+		int a = 0;
 	}// doFileSaveAs
 
 	private void doFilePrint() {
-
 		if (!(listDevice == null)) {
 			listDevice.print();
 		} // if
+		
 	}// doFilePrint
 
 	private void doFileExit() {
@@ -361,7 +358,7 @@ public class TestListDevice {
 		});
 		mnuFile.add(mnuFileNew);
 
-		JMenuItem mnuFileOpen = new JMenuItem("Open - Properties");
+		JMenuItem mnuFileOpen = new JMenuItem("Open ");
 		mnuFileOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileOpen();
@@ -380,7 +377,7 @@ public class TestListDevice {
 		});
 		mnuFile.add(mnuFileSave);
 
-		JMenuItem mnuFileSaveAs = new JMenuItem("Save As...");
+		JMenuItem mnuFileSaveAs = new JMenuItem("Save As...Input Dialog");
 		mnuFileSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				doFileSaveAs();

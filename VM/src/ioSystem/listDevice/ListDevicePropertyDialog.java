@@ -32,30 +32,24 @@ import utilities.FontChooser;
 
 public class ListDevicePropertyDialog extends JDialog implements ActionListener {
 
-	private final JPanel contentPanel = new JPanel();
+	private final JPanel panelColumns = new JPanel();
 	Component c;
-	// private boolean setWideCarriage;
-	// private int tabSize;
-	// private int linesPerPage;
 
 	private JRadioButton rbLimitColumns;
 	private JSpinner spinnerTab;
 	private JSpinner spinnerColumns;
 	private JLabel lblNewLabel;
 	private JLabel lblNewLabel_1;
-	private JLabel lblNewLabel_2;
+	private JLabel lblColumns;
 	private JPanel panelFont;
 	private JLabel lblFontFamily;
 	private JLabel lblFontStyle;
 	private JLabel lblFontSize;
 
 	private int dialogResultValue;
-	public static final int DIALOG_ERROR = 0;
-	public static final int DIALOG_OK = 1;
-	public static final int DIALOG_CANCEL = 2;
 
 	public int showDialog() {
-		dialogResultValue = DIALOG_ERROR;
+		dialogResultValue = JOptionPane.NO_OPTION;
 		this.setVisible(true);
 		this.dispose();
 		return dialogResultValue;
@@ -63,9 +57,15 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 
 	private void saveProperties() {
 		Preferences myPrefs = Preferences.userNodeForPackage(ListDevice.class).node("ListDevice");
-		myPrefs.putBoolean("setWideCarriage", rbLimitColumns.isSelected());
+
 		myPrefs.putInt("tabSize", (int) spinnerTab.getValue());
-		myPrefs.putInt("linesPerPage", (int) spinnerColumns.getValue());
+
+		myPrefs.putInt("maxColumns", (int) spinnerColumns.getValue());
+		myPrefs.putBoolean("limitColumns", rbLimitColumns.isSelected());
+
+		myPrefs.put("fontFamily", lblFontFamily.getText());
+		myPrefs.put("fontStyle", lblFontStyle.getText());
+		myPrefs.put("fontSize", lblFontSize.getText());
 
 		try {
 			myPrefs.flush();
@@ -78,119 +78,80 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 
 	private void readProperties() {
 		Preferences myPrefs = Preferences.userNodeForPackage(ListDevice.class).node("ListDevice");
-		rbLimitColumns.setSelected(myPrefs.getBoolean("setWideCarriage", false));
-		spinnerTab.setValue(myPrefs.getInt("tabSize", 1)); // default for CP/M
-		spinnerColumns.setValue(myPrefs.getInt("linesPerPage", 12));
 
-		 lblFontFamily.setText(myPrefs.get("fontFamily", "Courier New"));
-		 lblFontStyle.setText(myPrefs.get("fontStyle", "Plain"));
-		 lblFontSize.setText(myPrefs.get("fontSize", "13"));
+		spinnerTab.setValue(myPrefs.getInt("tabSize", 1)); // default for CP/M
+
+		spinnerColumns.setValue(myPrefs.getInt("maxColumns", 80));
+		rbLimitColumns.setSelected(myPrefs.getBoolean("limitColumns", false));
+		doRbLimitColumns();
+
+		lblFontFamily.setText(myPrefs.get("fontFamily", "Courier New"));
+		lblFontStyle.setText(myPrefs.get("fontStyle", "Plain"));
+		lblFontSize.setText(myPrefs.get("fontSize", "13"));
 
 		myPrefs = null;
-
-//		Font currentFont = c.getFont();
-//		String currentStyle = "Plain";
-//		;
-//		switch (currentFont.getStyle()) {
-//		case Font.PLAIN:
-//			currentStyle = "Plain";
-//			break;
-//		case Font.BOLD:
-//			currentStyle = "Bold";
-//			break;
-//		case Font.ITALIC:
-//			currentStyle = "Italic";
-//			break;
-//		case Font.BOLD | Font.ITALIC:
-//			currentStyle = "Bold Italic";
-//			break;
-//
-//		}// switch
-
-//		lblFontFamily.setText(currentFont.getFamily());
-//		lblFontStyle.setText(currentStyle);
-//		
-//		lblFontSize.setText(Integer.toString(currentFont.getSize()));
-
 	}// readProperties
 
 	private void doBtnOK() {
 		saveProperties();
-		dialogResultValue = DIALOG_OK;
+		dialogResultValue = JOptionPane.OK_OPTION;
 		dispose();
 	}// doBtnOK
 
 	private void doBtnCancel() {
-		dialogResultValue = DIALOG_CANCEL;
+		dialogResultValue = JOptionPane.CANCEL_OPTION;
 		dispose();
 	}// doBtnCancel
 
 	private void doBtnNewFont() {
-		
-		FontChooser fontChooser = new FontChooser(lblFontFamily.getText(),lblFontStyle.getText(),Integer.valueOf(lblFontSize.getText()));
-//		FontChooser fontChooser = new FontChooser();
-		
-		if (fontChooser.showDialog()== JOptionPane.OK_OPTION){
-					Font newFont = fontChooser.selectedFont();
-//---------------------------------
-					
-					
-					String currentStyle = "Plain";
-					;
-					switch (newFont.getStyle()) {
-					case Font.PLAIN:
-						currentStyle = "Plain";
-						break;
-					case Font.BOLD:
-						currentStyle = "Bold";
-						break;
-					case Font.ITALIC:
-						currentStyle = "Italic";
-						break;
-					case Font.BOLD | Font.ITALIC:
-						currentStyle = "Bold Italic";
-						break;
-			
-					}// switch
 
-					lblFontFamily.setText(newFont.getFamily());
-					lblFontStyle.setText(currentStyle);
-					
-					lblFontSize.setText(Integer.toString(newFont.getSize()));
-//---------------------------------
-					
-					
-					
-					
-					
-		}//if OK
-		
-		
+		FontChooser fontChooser = new FontChooser(lblFontFamily.getText(), lblFontStyle.getText(),
+				Integer.valueOf(lblFontSize.getText()));
 
-		//System.out.printf("[**fontChooser.showDialog()] ans = %d%n",ans);
-				
-//		System.out.printf("[**fontChooser.showDialog()]%n\t Family = %s, Style = %d, Size = %d%n%n",
-//				font.getFamily(),font.getStyle(),font.getSize());
-		
+		if (fontChooser.showDialog() == JOptionPane.OK_OPTION) {
+			Font newFont = fontChooser.selectedFont();
+
+			String currentStyle = "Plain";
+			switch (newFont.getStyle()) {
+			case Font.PLAIN:
+				currentStyle = "Plain";
+				break;
+			case Font.BOLD:
+				currentStyle = "Bold";
+				break;
+			case Font.ITALIC:
+				currentStyle = "Italic";
+				break;
+			case Font.BOLD | Font.ITALIC:
+				currentStyle = "Bold Italic";
+				break;
+
+			}// switch
+
+			lblFontFamily.setText(newFont.getFamily());
+			lblFontStyle.setText(currentStyle);
+
+			lblFontSize.setText(Integer.toString(newFont.getSize()));
+		} // if OK
 		fontChooser = null;
-		
-
 	}// doBtnNewFont
 
-	
+	private void doRbLimitColumns() {
+		spinnerColumns.setEnabled(rbLimitColumns.isSelected());
+		lblColumns.setEnabled(rbLimitColumns.isSelected());
+	}// doRbColumnLimits
 
 	private void appInit() {
 		readProperties();
-		// loadDisplay();
 	}// appInit
 
-	private void appClose() {
-
-	}// applClose
-
-	private void appCancel() {
-
-	}// appCancel
+	// private void appClose() {
+	//
+	// }// applClose
+	//
+	// private void appCancel() {
+	//
+	// }// appCancel
 
 	/**
 	 * Create the dialog.
@@ -198,14 +159,11 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 	public ListDevicePropertyDialog(Component c) {
 		super(SwingUtilities.getWindowAncestor(c), "List Device Propert Dialog", Dialog.DEFAULT_MODALITY_TYPE);
 		this.c = c;
-		// this.setLocationByPlatform(true);
-		// this.setLocationRelativeTo(SwingUtilities.getWindowAncestor(c));
 		initialize();
 		appInit();
 	}// Constructor
 
 	private void initialize() {
-
 		// setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
 		setBounds(100, 100, 420, 253);
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -259,28 +217,30 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 		gbc_btnNewFont.gridx = 0;
 		gbc_btnNewFont.gridy = 4;
 		panelFont.add(btnNewFont, gbc_btnNewFont);
-		contentPanel
+		panelColumns
 				.setBorder(new TitledBorder(null, "Column Limits", TitledBorder.CENTER, TitledBorder.TOP, null, null));
-		GridBagConstraints gbc_contentPanel = new GridBagConstraints();
-		gbc_contentPanel.insets = new Insets(0, 0, 5, 5);
-		gbc_contentPanel.gridx = 1;
-		gbc_contentPanel.gridy = 0;
-		getContentPane().add(contentPanel, gbc_contentPanel);
-		GridBagLayout gbl_contentPanel = new GridBagLayout();
-		gbl_contentPanel.columnWidths = new int[] { 0, 0, 0 };
-		gbl_contentPanel.rowHeights = new int[] { 0, 0, 0 };
-		gbl_contentPanel.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
-		gbl_contentPanel.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
-		contentPanel.setLayout(gbl_contentPanel);
+		GridBagConstraints gbc_panelColumns = new GridBagConstraints();
+		gbc_panelColumns.insets = new Insets(0, 0, 5, 5);
+		gbc_panelColumns.gridx = 1;
+		gbc_panelColumns.gridy = 0;
+		getContentPane().add(panelColumns, gbc_panelColumns);
+		GridBagLayout gbl_panelColumns = new GridBagLayout();
+		gbl_panelColumns.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelColumns.rowHeights = new int[] { 0, 0, 0 };
+		gbl_panelColumns.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelColumns.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		panelColumns.setLayout(gbl_panelColumns);
 
 		rbLimitColumns = new JRadioButton("");
+		rbLimitColumns.setName(RB_COLUMN_LIMITS);
+		rbLimitColumns.addActionListener(this);
 		rbLimitColumns.setToolTipText("Will truncate lines at max column");
 		GridBagConstraints gbc_rbLimitColumns = new GridBagConstraints();
 		gbc_rbLimitColumns.anchor = GridBagConstraints.EAST;
 		gbc_rbLimitColumns.insets = new Insets(0, 0, 5, 5);
 		gbc_rbLimitColumns.gridx = 0;
 		gbc_rbLimitColumns.gridy = 0;
-		contentPanel.add(rbLimitColumns, gbc_rbLimitColumns);
+		panelColumns.add(rbLimitColumns, gbc_rbLimitColumns);
 
 		lblNewLabel = new JLabel("Limit Width");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -289,7 +249,7 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 0);
 		gbc_lblNewLabel.gridx = 1;
 		gbc_lblNewLabel.gridy = 0;
-		contentPanel.add(lblNewLabel, gbc_lblNewLabel);
+		panelColumns.add(lblNewLabel, gbc_lblNewLabel);
 
 		spinnerColumns = new JSpinner();
 		spinnerColumns.setModel(new SpinnerNumberModel(new Integer(120), new Integer(10), null, new Integer(1)));
@@ -298,30 +258,30 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 		gbc_spinnerColumns.insets = new Insets(0, 0, 0, 5);
 		gbc_spinnerColumns.gridx = 0;
 		gbc_spinnerColumns.gridy = 1;
-		contentPanel.add(spinnerColumns, gbc_spinnerColumns);
+		panelColumns.add(spinnerColumns, gbc_spinnerColumns);
 
-		lblNewLabel_2 = new JLabel("Columns");
-		lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
-		GridBagConstraints gbc_lblNewLabel_2 = new GridBagConstraints();
-		gbc_lblNewLabel_2.anchor = GridBagConstraints.WEST;
-		gbc_lblNewLabel_2.gridx = 1;
-		gbc_lblNewLabel_2.gridy = 1;
-		contentPanel.add(lblNewLabel_2, gbc_lblNewLabel_2);
+		lblColumns = new JLabel("Columns");
+		lblColumns.setHorizontalAlignment(SwingConstants.LEFT);
+		GridBagConstraints gbc_lblColumns = new GridBagConstraints();
+		gbc_lblColumns.anchor = GridBagConstraints.WEST;
+		gbc_lblColumns.gridx = 1;
+		gbc_lblColumns.gridy = 1;
+		panelColumns.add(lblColumns, gbc_lblColumns);
 
-		panel = new JPanel();
-		panel.setBorder(new TitledBorder(null, "Tab Spacing", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.insets = new Insets(0, 0, 5, 0);
-		gbc_panel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_panel.gridx = 2;
-		gbc_panel.gridy = 0;
-		getContentPane().add(panel, gbc_panel);
-		GridBagLayout gbl_panel = new GridBagLayout();
-		gbl_panel.columnWidths = new int[] { 0, 0, 0 };
-		gbl_panel.rowHeights = new int[] { 0, 0 };
-		gbl_panel.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
-		gbl_panel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
-		panel.setLayout(gbl_panel);
+		JPanel panelTabs = new JPanel();
+		panelTabs.setBorder(new TitledBorder(null, "Tab Spacing", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		GridBagConstraints gbc_panelTabs = new GridBagConstraints();
+		gbc_panelTabs.insets = new Insets(0, 0, 5, 0);
+		gbc_panelTabs.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panelTabs.gridx = 2;
+		gbc_panelTabs.gridy = 0;
+		getContentPane().add(panelTabs, gbc_panelTabs);
+		GridBagLayout gbl_panelTabs = new GridBagLayout();
+		gbl_panelTabs.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelTabs.rowHeights = new int[] { 0, 0 };
+		gbl_panelTabs.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gbl_panelTabs.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panelTabs.setLayout(gbl_panelTabs);
 
 		spinnerTab = new JSpinner();
 		GridBagConstraints gbc_spinnerTab = new GridBagConstraints();
@@ -329,7 +289,7 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 		gbc_spinnerTab.insets = new Insets(0, 0, 0, 5);
 		gbc_spinnerTab.gridx = 0;
 		gbc_spinnerTab.gridy = 0;
-		panel.add(spinnerTab, gbc_spinnerTab);
+		panelTabs.add(spinnerTab, gbc_spinnerTab);
 		spinnerTab.setModel(new SpinnerNumberModel(1, 1, 40, 1));
 
 		lblNewLabel_1 = new JLabel("Tab Size");
@@ -337,37 +297,37 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 		gbc_lblNewLabel_1.fill = GridBagConstraints.VERTICAL;
 		gbc_lblNewLabel_1.gridx = 1;
 		gbc_lblNewLabel_1.gridy = 0;
-		panel.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		panelTabs.add(lblNewLabel_1, gbc_lblNewLabel_1);
 		lblNewLabel_1.setHorizontalAlignment(SwingConstants.LEFT);
 
-		JPanel buttonPane = new JPanel();
-		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
-		GridBagConstraints gbc_buttonPane = new GridBagConstraints();
-		gbc_buttonPane.anchor = GridBagConstraints.NORTH;
-		gbc_buttonPane.fill = GridBagConstraints.HORIZONTAL;
-		gbc_buttonPane.gridx = 2;
-		gbc_buttonPane.gridy = 3;
-		getContentPane().add(buttonPane, gbc_buttonPane);
+		JPanel panelButtons = new JPanel();
+		panelButtons.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		GridBagConstraints gbc_panelButtons = new GridBagConstraints();
+		gbc_panelButtons.anchor = GridBagConstraints.NORTH;
+		gbc_panelButtons.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panelButtons.gridx = 2;
+		gbc_panelButtons.gridy = 3;
+		getContentPane().add(panelButtons, gbc_panelButtons);
 
 		JButton btnOk = new JButton("OK");
 		btnOk.setName(BTN_OK);
 		btnOk.addActionListener(this);
 		btnOk.setActionCommand("OK");
-		buttonPane.add(btnOk);
+		panelButtons.add(btnOk);
 		getRootPane().setDefaultButton(btnOk);
 
 		JButton btnCancel = new JButton("Cancel");
 		btnCancel.setName(BTN_CANCEL);
 		btnCancel.addActionListener(this);
 		btnCancel.setActionCommand("Cancel");
-		buttonPane.add(btnCancel);
+		panelButtons.add(btnCancel);
 
 	}// initialize
 
 	private static final String BTN_OK = "btnOk";
 	private static final String BTN_CANCEL = "btnCancel";
 	private static final String BTN_NEW_FONT = "btnNewFont";
-	private JPanel panel;
+	private static final String RB_COLUMN_LIMITS = "rbColumnLimits";
 
 	@Override
 	public void actionPerformed(ActionEvent actionEvent) {
@@ -380,6 +340,9 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 			break;
 		case BTN_NEW_FONT:
 			doBtnNewFont();
+			break;
+		case RB_COLUMN_LIMITS:
+			doRbLimitColumns();
 			break;
 		default:
 			System.err.printf("[ListDevicePropertyDialog] - actionPerformed %n Unknown Action %s%n%n",

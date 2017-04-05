@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -21,13 +22,15 @@ import javax.swing.text.ElementIterator;
 import codeSupport.ASCII_CODES;
 import ioSystem.Device8080;
 import utilities.FilePicker;
+import utilities.FontChooser;
 
 public class ListDevice extends Device8080 {
 
 	private JTextArea textArea;
 	private Document doc;
-	private int linesPerPage;
+	private int linesPerPage = 66;
 	private int maxColumn;
+	private boolean limitColumns;
 	private int tabSize; // default for CP/M is 9
 
 	private Path newListingPath; // location to save listing to file
@@ -50,9 +53,33 @@ public class ListDevice extends Device8080 {
 
 	private void appClose() {
 		Preferences myPrefs = Preferences.userNodeForPackage(ListDevice.class).node(this.getClass().getSimpleName());
-		myPrefs.putBoolean("setWideCarriage", maxColumn == COLUMN_120 ? true : false);
+
 		myPrefs.putInt("tabSize", tabSize);
-		myPrefs.putInt("linesPerPage", linesPerPage);
+
+		myPrefs.putInt("maxColumns", maxColumn);
+		myPrefs.putBoolean("limitColumns", limitColumns);
+
+		Font currentFont = textArea.getFont();
+		String currentStyle = "Plain";
+		;
+		switch (currentFont.getStyle()) {
+		case Font.PLAIN:
+			currentStyle = "Plain";
+			break;
+		case Font.BOLD:
+			currentStyle = "Bold";
+			break;
+		case Font.ITALIC:
+			currentStyle = "Italic";
+			break;
+		case Font.BOLD | Font.ITALIC:
+			currentStyle = "Bold Italic";
+			break;
+		}// switch
+
+		myPrefs.put("fontFamily", currentFont.getFamily());
+		myPrefs.put("fontStyle", currentStyle);
+		myPrefs.put("fontSize", Integer.toString(currentFont.getSize()));
 
 		myPrefs = null;
 	}// appClose
@@ -63,21 +90,30 @@ public class ListDevice extends Device8080 {
 
 	private void loadProperties() {
 		Preferences myPrefs = Preferences.userNodeForPackage(ListDevice.class).node(this.getClass().getSimpleName());
-		setWideCarriage(myPrefs.getBoolean("setWideCarriage", false));
-		tabSize = myPrefs.getInt("tabSize", 9); // default for CP/M
-		linesPerPage = myPrefs.getInt("linesPerPage", 66);
 
+		tabSize = myPrefs.getInt("tabSize", 9); // default for CP/M
+
+		maxColumn = (myPrefs.getInt("maxColumns", 80));
+		limitColumns = myPrefs.getBoolean("limitColumns", false);
+		int style = FontChooser.getStyleFromText(myPrefs.get("fontFamily", "Plain"));
+
+		Font newFont = new Font(myPrefs.get("fontFamily", "Courier New"), style, myPrefs.getInt("fontSize", 13));
+		textArea.setFont(newFont);
 		myPrefs = null;
+
+		Font f = textArea.getFont();
+
+		System.out.printf("[loadProperties] Font family = %s, Font Size = %d%n", f.getFamily(), f.getSize());
 	}// loadProperties
 
-	private void setWideCarriage(boolean state) {
-		this.maxColumn = state ? COLUMN_120 : COLUMN_80;
-	}// setWideCarriage
-
-	private void setTabSize(int size) {
-		this.tabSize = Math.max(TAB_MIN, size);
-		this.tabSize = Math.min(TAB_MAX, size);
-	}// setTabWidth
+	// private void setMaxColumn(boolean state) {
+	// this.maxColumn = state ? COLUMN_120 : COLUMN_80;
+	// }// setWideCarriage
+	//
+	// private void setTabSize(int size) {
+	// this.tabSize = Math.max(TAB_MIN, size);
+	// this.tabSize = Math.min(TAB_MAX, size);
+	// }// setTabWidth
 
 	// public int getTabSize(){
 	// return this.tabSize;
@@ -103,43 +139,29 @@ public class ListDevice extends Device8080 {
 		clearDoc();
 	}// clear
 
-	public void setProperties() {
-		
-		SwingUtilities.getWindowAncestor(textArea);
+	public void showProperties() {
+		// SwingUtilities.getWindowAncestor(textArea);
 		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog(textArea);
-		listDevicePropertyDialog.setVisible(true);
-		loadProperties();
 
-		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog == null));
+		if (listDevicePropertyDialog.showDialog() == JOptionPane.OK_OPTION) {
+			loadProperties();
+		} // if
 		listDevicePropertyDialog = null;
-		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog == null));
 
-	}// setProperties
-	
-	public void showProperties(){
-//		SwingUtilities.getWindowAncestor(textArea);
-		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog(textArea);
-		int ans = listDevicePropertyDialog.showDialog();
-		System.out.printf("[showProperties] ans = %d%n", ans);
-		
-		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog == null));
-		listDevicePropertyDialog = null;
-		System.out.printf("listDevicePropertyDialog = %s%n", !(listDevicePropertyDialog == null));
-
-	}//showProperties
+	}// showProperties
 
 	public void print() {
+		String headerString = JOptionPane.showInputDialog("Input header (optional)\n Canel for no header");
 		Font originalFont = textArea.getFont();
-		String fontName = originalFont.getName();
-		int originalSize = originalFont.getSize();
-//		originalFont.d
-
 		try {
-			textArea.setFont(new Font(fontName, Font.PLAIN, (int)(originalSize * 0.6)));
-			MessageFormat header = new MessageFormat("name");
-			MessageFormat footer = new MessageFormat(new Date().toString() + "           Page - {0}");
-//			textArea.print(header, footer);
-			textArea.print();
+			textArea.setFont(originalFont.deriveFont(originalFont.getSize2D() * 0.75f));
+			if (headerString == null) {
+				textArea.print();
+			} else {
+				MessageFormat header = new MessageFormat(headerString);
+				MessageFormat footer = new MessageFormat(new Date().toString() + "           Page - {0}");
+				textArea.print(header, footer);
+			} // if
 			textArea.setFont(originalFont);
 		} catch (PrinterException e) {
 			e.printStackTrace();
@@ -159,7 +181,7 @@ public class ListDevice extends Device8080 {
 		String listingFile = fc.getSelectedFile().getAbsolutePath();
 		String completeSuffix = "." + FilePicker.LISTING_SUFFIX;
 		listingFile = listingFile.replaceFirst("\\" + completeSuffix + "$", "");
-		
+
 		ElementIterator elementIterator = new ElementIterator(doc.getDefaultRootElement());
 
 		try {
@@ -167,19 +189,19 @@ public class ListDevice extends Device8080 {
 			BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
 			Element aLine = elementIterator.next();
-			aLine = elementIterator.next();		// skip the rootElement
+			aLine = elementIterator.next(); // skip the rootElement
 			int start, end;
 			String theLine;
 			while (aLine != null) {
 				start = aLine.getStartOffset();
 				end = aLine.getEndOffset() - 1;
-				theLine = doc.getText(start, end - start ); // Strip LF
+				theLine = doc.getText(start, end - start); // Strip LF
 				bufferedWriter.write(theLine + System.lineSeparator());
 				System.out.printf("start = %d, end = %d, text = %s%n", start, end, doc.getText(start, end - start));
 				aLine = elementIterator.next();
 			} // while
 			bufferedWriter.close();
-	
+
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			return;
@@ -189,7 +211,6 @@ public class ListDevice extends Device8080 {
 
 	@Override
 	public byte byteToCPU(Byte address) {
-		// TODO Auto-generated method stub
 		return (byte) 0XFF;
 	}// byteToCPU
 
@@ -213,7 +234,7 @@ public class ListDevice extends Device8080 {
 				// try {
 				// System.out.printf("lastEmement = %s%n", doc.getText(start, end - start));
 				// } catch (BadLocationException e) {
-				// // TODO Auto-generated catch block
+				//
 				// e.printStackTrace();
 				// }
 				// System.out.printf("Start = %d, End =%d, size = %d%n%n", start, end, end - start);
@@ -248,8 +269,9 @@ public class ListDevice extends Device8080 {
 
 		Element lastElement = getLastElement();
 
-		// drop anything beyond the max column
-		if ((lastElement.getEndOffset() - lastElement.getStartOffset()) < this.maxColumn) {
+		if (!limitColumns) {// drop anything beyond the max column ??
+			display(s);
+		} else if ((lastElement.getEndOffset() - lastElement.getStartOffset()) < this.maxColumn) {
 			display(s);
 		} // if
 		textArea.setCaretPosition(doc.getDefaultRootElement().getEndOffset() - 1);
@@ -262,11 +284,10 @@ public class ListDevice extends Device8080 {
 	}// getLastElement
 
 	private void display(String s) {
-		Element[] elements = doc.getRootElements();
+		// Element[] elements = doc.getRootElements();
 		try {
 			doc.insertString(doc.getLength(), s, null);
 		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}// display
@@ -275,18 +296,14 @@ public class ListDevice extends Device8080 {
 		try {
 			doc.remove(0, doc.getLength());
 		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}// clearDoc
 
 	private static final String SPACE = " "; // Space
 
-	private static final int COLUMN_80 = 81;
-	private static final int COLUMN_120 = 121;
-
-	public static final int TAB_MIN = 1;
-	public static final int TAB_MAX = 40; // arbitrary for sure
+	// public static final int TAB_MIN = 1;
+	// public static final int TAB_MAX = 40; // arbitrary for sure
 
 	private static final byte LIST_OUT = 0X10;
 	private static final byte LIST_STATUS = 0X11;

@@ -46,25 +46,17 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 	private String initFamily;
 	private String initStyle;
 	private Integer initSize;
+	
+	private int dialogResultValue;
+
 
 	private Font selectedFont;
-
-	// public static void main(String[] args) {
-	// try {
-	// FontChooser dialog = new FontChooser();
-	// dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	// dialog.setVisible(true);
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// } // try
-	// }// main
 
 	public Font selectedFont() {
 		return selectedFont;
 	}// selectedFont
 
 	private void doBtnOK() {
-		// selectedFont = new Font(textFamily.getText(),2,Integer.valueOf(textSize.getText()));
 		dialogResultValue = JOptionPane.OK_OPTION;
 		dispose();
 	}// doBtnOK
@@ -73,10 +65,10 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 		dialogResultValue = JOptionPane.CANCEL_OPTION;
 		dispose();
 	}// doBtnCancel
-
-	private int getStyleFromTextDisplay() {
+	
+	public static int getStyleFromText(String textStyle){
 		int styleFromTextDisplay = Font.PLAIN;
-		switch (textStyle.getText()) {
+		switch (textStyle) {
 		case STYLE_PLAIN:
 			styleFromTextDisplay = Font.PLAIN;
 			break;
@@ -91,13 +83,14 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 			break;
 		}// switch
 		return styleFromTextDisplay;
-	}// getStyleFromTextDisplay
+	}//
+
 
 	private void doSelection() {
 		textFamily.setText((String) listFamily.getSelectedValue());
 		textStyle.setText((String) listStyle.getSelectedValue());
 		textSize.setText(Integer.toString(listSize.getSelectedValue()));
-		int style = getStyleFromTextDisplay();
+		int style = getStyleFromText(textStyle.getText());
 
 		selectedFont = new Font(textFamily.getText(), style, Integer.valueOf(textSize.getText()));
 		lblSelectedFont.setFont(selectedFont);
@@ -143,9 +136,9 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 
 	}// appClose
 
-	public void close() {
-
-	}// close
+//	public void close() {
+//
+//	}// close
 
 	public FontChooser(Font font) {
 		switch (font.getStyle()) {
@@ -184,10 +177,6 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 	}// Constructor
 
 	// -------------------------------------------------------------------------
-	private int dialogResultValue;
-//	public static final int DIALOG_ERROR = 0;
-//	public static final int DIALOG_OK = 1;
-//	public static final int DIALOG_CANCEL = 2;
 
 	public int showDialog() {
 		dialogResultValue = JOptionPane.NO_OPTION;
