@@ -49,7 +49,9 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 	private int dialogResultValue;
 
 	public int showDialog() {
-		dialogResultValue = JOptionPane.NO_OPTION;
+		dialogResultValue = JOptionPane.CANCEL_OPTION;
+		this.setLocationRelativeTo(this.getOwner());
+		
 		this.setVisible(true);
 		this.dispose();
 		return dialogResultValue;
@@ -105,7 +107,7 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 
 	private void doBtnNewFont() {
 
-		FontChooser fontChooser = new FontChooser(lblFontFamily.getText(), lblFontStyle.getText(),
+		FontChooser fontChooser = new FontChooser(this,lblFontFamily.getText(), lblFontStyle.getText(),
 				Integer.valueOf(lblFontSize.getText()));
 
 		if (fontChooser.showDialog() == JOptionPane.OK_OPTION) {
@@ -158,7 +160,7 @@ public class ListDevicePropertyDialog extends JDialog implements ActionListener 
 	 */
 	public ListDevicePropertyDialog(Component c) {
 		super(SwingUtilities.getWindowAncestor(c), "List Device Propert Dialog", Dialog.DEFAULT_MODALITY_TYPE);
-		this.c = c;
+		this.c = c;		// save if calling FontChooser ??
 		initialize();
 		appInit();
 	}// Constructor

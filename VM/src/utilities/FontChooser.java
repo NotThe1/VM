@@ -9,6 +9,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.SystemColor;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -140,31 +141,32 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 //
 //	}// close
 
-	public FontChooser(Font font) {
-		switch (font.getStyle()) {
-		case Font.PLAIN:
-			initStyle = "Plain";
-			break;
-		case Font.BOLD:
-			initStyle = "Bold";
-			break;
-		case Font.ITALIC:
-			initStyle = "Italic";
-			break;
-		case Font.BOLD | Font.ITALIC:
-			initStyle = "Bold Italic";
-			break;
-		default:
-			initStyle = DEFAULT_STYLE;
-		}// switch
+//	public FontChooser(Font font) {
+//		switch (font.getStyle()) {
+//		case Font.PLAIN:
+//			initStyle = "Plain";
+//			break;
+//		case Font.BOLD:
+//			initStyle = "Bold";
+//			break;
+//		case Font.ITALIC:
+//			initStyle = "Italic";
+//			break;
+//		case Font.BOLD | Font.ITALIC:
+//			initStyle = "Bold Italic";
+//			break;
+//		default:
+//			initStyle = DEFAULT_STYLE;
+//		}// switch
+//
+//		initFamily = font.getFamily();
+//		initSize = font.getSize();
+//		initialize();
+//		appInit();
+//	}// Constructor
 
-		initFamily = font.getFamily();
-		initSize = font.getSize();
-		initialize();
-		appInit();
-	}// Constructor
-
-	public FontChooser(String fontFamily, String fontStyle, Integer fontSize) {
+	public FontChooser(Window w,String fontFamily, String fontStyle, Integer fontSize) {
+		super(w,"Font Chooser",Dialog.DEFAULT_MODALITY_TYPE);
 		initFamily = fontFamily;
 		initStyle = fontStyle;
 		initSize = fontSize;
@@ -172,14 +174,16 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 		appInit();
 	}// Constructor
 
-	public FontChooser() {
-		this(DEFAULT_FAMILY, DEFAULT_STYLE, DEFAULT_SIZE);
-	}// Constructor
+//	public FontChooser() {
+//		this(DEFAULT_FAMILY, DEFAULT_STYLE, DEFAULT_SIZE);
+//	}// Constructor
 
 	// -------------------------------------------------------------------------
 
 	public int showDialog() {
 		dialogResultValue = JOptionPane.NO_OPTION;
+		this.setLocationRelativeTo(this.getOwner());
+		
 		this.setVisible(true);
 		this.dispose();
 		return dialogResultValue;
@@ -190,9 +194,10 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 	 * Create the dialog.
 	 */
 	private void initialize() {
-		setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
+	//	setModalityType(Dialog.DEFAULT_MODALITY_TYPE);
 		setTitle("Font chooser");
-		setBounds(100, 100, 494, 500);
+		setSize(494, 500);
+		//setBounds(100, 100, 494, 500);
 		getContentPane().setLayout(null);
 		contentPanel.setBounds(0, 0, 478, 428);
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));

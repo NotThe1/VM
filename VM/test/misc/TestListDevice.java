@@ -35,7 +35,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.text.JTextComponent;
 
 import ioSystem.listDevice.ListDevice;
-import utilities.FontChooser;
 
 public class TestListDevice {
 
@@ -111,15 +110,15 @@ public class TestListDevice {
 ;
 	private void doFileSave() {
 //		SwingUtilities.getWindowAncestor(txtLog);
-		FontChooser fontChooser = new FontChooser(txtLog.getFont());
-		int ans = fontChooser.showDialog();
-		Font font = fontChooser.selectedFont();
-		System.out.printf("[fontChooser.showDialog()] ans = %d%n",ans);
-		
-		System.out.printf("[fontChooser.showDialog()]%n\t Family = %s, Style = %d, Size = %d%n%n",
-				font.getFamily(),font.getStyle(),font.getSize());
-		
-		fontChooser = null;
+//		FontChooser fontChooser = new FontChooser(txtLog.getFont());
+//		int ans = fontChooser.showDialog();
+//		Font font = fontChooser.selectedFont();
+//		System.out.printf("[fontChooser.showDialog()] ans = %d%n",ans);
+//		
+//		System.out.printf("[fontChooser.showDialog()]%n\t Family = %s, Style = %d, Size = %d%n%n",
+//				font.getFamily(),font.getStyle(),font.getSize());
+//		
+//		fontChooser = null;
 
 	}// doFileSave
 

@@ -106,19 +106,6 @@ public class ListDevice extends Device8080 {
 		System.out.printf("[loadProperties] Font family = %s, Font Size = %d%n", f.getFamily(), f.getSize());
 	}// loadProperties
 
-	// private void setMaxColumn(boolean state) {
-	// this.maxColumn = state ? COLUMN_120 : COLUMN_80;
-	// }// setWideCarriage
-	//
-	// private void setTabSize(int size) {
-	// this.tabSize = Math.max(TAB_MIN, size);
-	// this.tabSize = Math.min(TAB_MAX, size);
-	// }// setTabWidth
-
-	// public int getTabSize(){
-	// return this.tabSize;
-	// }//getTabWidth
-
 	public void lineFeed() {
 		displayPrintable(Character.toString(ASCII_CODES.LF));
 	}// lineFeed
@@ -140,18 +127,18 @@ public class ListDevice extends Device8080 {
 	}// clear
 
 	public void showProperties() {
-		// SwingUtilities.getWindowAncestor(textArea);
 		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog(textArea);
 
 		if (listDevicePropertyDialog.showDialog() == JOptionPane.OK_OPTION) {
 			loadProperties();
 		} // if
+		
 		listDevicePropertyDialog = null;
 
 	}// showProperties
 
 	public void print() {
-		String headerString = JOptionPane.showInputDialog("Input header (optional)\n Canel for no header");
+		String headerString = JOptionPane.showInputDialog(SwingUtilities.getRoot(textArea),"Input header (optional)\n Canel for no header");
 		Font originalFont = textArea.getFont();
 		try {
 			textArea.setFont(originalFont.deriveFont(originalFont.getSize2D() * 0.75f));
@@ -301,9 +288,6 @@ public class ListDevice extends Device8080 {
 	}// clearDoc
 
 	private static final String SPACE = " "; // Space
-
-	// public static final int TAB_MIN = 1;
-	// public static final int TAB_MAX = 40; // arbitrary for sure
 
 	private static final byte LIST_OUT = 0X10;
 	private static final byte LIST_STATUS = 0X11;
