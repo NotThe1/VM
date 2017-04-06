@@ -6,6 +6,7 @@ import javax.swing.JTextArea;
 
 import ioSysem.console.Console;
 import ioSystem.listDevice.ListDevice;
+import ioSystem.tty.TTY;
 
 public class IOController {
 	private static IOController instance = new IOController();
@@ -16,12 +17,14 @@ public class IOController {
 	private Device8080 device;
 	private Console console;
 	private ListDevice listDevice;
+	private TTY tty;
 	
 	private String errMessage;
 	
 	
 	private IOController(){
 		addConsole();
+		addTTY();
 	}//constructor
 	
 	public static IOController getInstance(){
@@ -45,8 +48,17 @@ public class IOController {
 		devicesStatus.put(console.getAddressStatus(), console);
 	}//addConsole
 	
+	private void addTTY(){
+		tty = new TTY();	// default addresses EC,EC,ED
+		devicesInput.put(tty.getAddressIn(), tty);
+		devicesOutput.put(tty.getAddressOut(), tty);
+		devicesStatus.put(tty.getAddressStatus(), tty);
+		
+	}//addConsole
+	
 	public void close(){
 		console.close();
+		tty.close();
 	}//close
 	
 	public void setConsoleSerialSettings(){

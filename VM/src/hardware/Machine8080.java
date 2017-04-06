@@ -342,7 +342,8 @@ public class Machine8080 implements Observer {
 			trapManager = null;
 		} // if trapManager
 		if (ioController != null) {
-			ioController.closeConnection();
+//			ioController.closeConnection();
+			ioController.close();
 			ioController = null;
 		} // if ioController
 		if (trapManager != null) {
@@ -351,6 +352,7 @@ public class Machine8080 implements Observer {
 		if (showCode != null) {
 			showCode = null;
 		} // if showCode
+		
 	}// cleanupObjects
 
 	private void appInit() {
@@ -700,7 +702,6 @@ public class Machine8080 implements Observer {
 		panelList.add(panelListDisplay, gbc_panelListDisplay);
 
 		txtList = new JTextArea();
-		txtList.setEditable(false);
 		txtList.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
 

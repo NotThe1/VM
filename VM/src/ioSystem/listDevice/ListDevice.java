@@ -122,9 +122,6 @@ public class ListDevice extends Device8080 {
 		System.out.printf("lineCount = %d, lines to skip = %d%n", lineCount, linesToSkip);
 	}// formFeed
 
-	public void clear() {
-		clearDoc();
-	}// clear
 
 	public void showProperties() {
 		ListDevicePropertyDialog listDevicePropertyDialog = new ListDevicePropertyDialog(textArea);
@@ -278,6 +275,10 @@ public class ListDevice extends Device8080 {
 			e.printStackTrace();
 		}
 	}// display
+	
+	public void clear() {
+		clearDoc();
+	}// clear
 
 	private void clearDoc() {
 		try {
