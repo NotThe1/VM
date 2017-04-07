@@ -95,6 +95,8 @@ public class Machine8080 implements Observer {
 	private ShowCode showCode;
 
 	private Path pathMemLoad = null;
+	
+	private boolean addSerialTerminal;
 
 	/**
 	 * Launch the application.
@@ -381,7 +383,7 @@ public class Machine8080 implements Observer {
 		lblSerialConnection.setText(ioController.getConnectionString());
 
 		IOController.getInstance().addListDevice(txtList);
-
+		IOController.getInstance().addTTY();
 		cpuBuss.addObserver(this);
 	}// appInit
 

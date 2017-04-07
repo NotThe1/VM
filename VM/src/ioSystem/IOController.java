@@ -24,7 +24,7 @@ public class IOController {
 	
 	private IOController(){
 		addConsole();
-		addTTY();
+//		addTTY();
 	}//constructor
 	
 	public static IOController getInstance(){
@@ -41,14 +41,14 @@ public class IOController {
 		return listDevice==null?null:listDevice;
 	}//getListDevice
 	
-	private void addConsole(){
+	public void addConsole(){
 		console = new Console();	// default addresses 01,01,02
 		devicesInput.put(console.getAddressIn(), console);
 		devicesOutput.put(console.getAddressOut(), console);
 		devicesStatus.put(console.getAddressStatus(), console);
 	}//addConsole
 	
-	private void addTTY(){
+	public void addTTY(){
 		tty = new TTY();	// default addresses EC,EC,ED
 		devicesInput.put(tty.getAddressIn(), tty);
 		devicesOutput.put(tty.getAddressOut(), tty);
