@@ -95,7 +95,7 @@ public class Machine8080 implements Observer {
 	private ShowCode showCode;
 
 	private Path pathMemLoad = null;
-	
+
 	private boolean addSerialTerminal;
 
 	/**
@@ -168,42 +168,43 @@ public class Machine8080 implements Observer {
 			updateView();
 		} // if
 	}// doBoot
-	
-	private void doListLineFeed(){
-		if (!(IOController.getInstance().getListDevice()==null)){
+
+	private void doListLineFeed() {
+		if (!(IOController.getInstance().getListDevice() == null)) {
 			IOController.getInstance().getListDevice().lineFeed();
-		}//if
-	}//doListLineFeed
-	
-	private void doListFormFeed(){
-		if (!(IOController.getInstance().getListDevice()==null)){
+		} // if
+	}// doListLineFeed
+
+	private void doListFormFeed() {
+		if (!(IOController.getInstance().getListDevice() == null)) {
 			IOController.getInstance().getListDevice().formFeed();
-		}//if
-	}//doListFrmFeed
-	
-	private void doListSaveToFile(){
-		if (!(IOController.getInstance().getListDevice()==null)){
-			IOController.getInstance().getListDevice().saveToFile();;
-		}//if
-	}//doListSaveToFile
-	
-	private void doListPrint(){
-		if (!(IOController.getInstance().getListDevice()==null)){
+		} // if
+	}// doListFrmFeed
+
+	private void doListSaveToFile() {
+		if (!(IOController.getInstance().getListDevice() == null)) {
+			IOController.getInstance().getListDevice().saveToFile();
+			;
+		} // if
+	}// doListSaveToFile
+
+	private void doListPrint() {
+		if (!(IOController.getInstance().getListDevice() == null)) {
 			IOController.getInstance().getListDevice().print();
-		}//if
-	}//doListPrint
-	
-	private void doListProperties(){
-		if (!(IOController.getInstance().getListDevice()==null)){
+		} // if
+	}// doListPrint
+
+	private void doListProperties() {
+		if (!(IOController.getInstance().getListDevice() == null)) {
 			IOController.getInstance().getListDevice().showProperties();
-		}//if
-	}//doListProperties
-	
-	private void doListClear(){
-		if (!(IOController.getInstance().getListDevice()==null)){
+		} // if
+	}// doListProperties
+
+	private void doListClear() {
+		if (!(IOController.getInstance().getListDevice() == null)) {
 			IOController.getInstance().getListDevice().clear();
-		}//if
-	}//doListClear
+		} // if
+	}// doListClear
 
 	private void updateView() {
 		stateDisplay.updateDisplayAll();
@@ -231,8 +232,8 @@ public class Machine8080 implements Observer {
 		if (diskControlUnit.addDiskDrive(diskNumber, fc.getSelectedFile().getAbsolutePath())) {
 			source.setText(fc.getSelectedFile().getName());
 			source.setToolTipText(fc.getSelectedFile().getAbsolutePath());
-//			source.setForeground(new Color(128,0,0));
-			source.setForeground(new Color(0,64,0));
+			// source.setForeground(new Color(128,0,0));
+			source.setForeground(new Color(0, 64, 0));
 		} // if added
 	}// addDisk
 
@@ -287,7 +288,7 @@ public class Machine8080 implements Observer {
 
 	private void removeDisk(JTextField source, int diskNumber) {
 		diskControlUnit.removeDiskDrive(diskNumber);
-		source.setForeground(new Color(255,127,80));
+		source.setForeground(new Color(255, 127, 80));
 		source.setText(DiskPanel.NO_DISK);
 		source.setToolTipText(DiskPanel.NO_DISK_HELP);
 	}// remove disk
@@ -344,7 +345,7 @@ public class Machine8080 implements Observer {
 			trapManager = null;
 		} // if trapManager
 		if (ioController != null) {
-//			ioController.closeConnection();
+			// ioController.closeConnection();
 			ioController.close();
 			ioController = null;
 		} // if ioController
@@ -354,7 +355,7 @@ public class Machine8080 implements Observer {
 		if (showCode != null) {
 			showCode = null;
 		} // if showCode
-		
+
 	}// cleanupObjects
 
 	private void appInit() {
@@ -379,13 +380,23 @@ public class Machine8080 implements Observer {
 		btnRun1.setSelectedIcon(
 				new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
 		loadROM();
+
+		addSerialTerminal = false;
 		lblSerialConnection.setText(NO_CONNECTION);
-		lblSerialConnection.setText(ioController.getConnectionString());
+		if (addSerialTerminal) {
+			installSerialTerminal();
+		}//if
 
 		IOController.getInstance().addListDevice(txtList);
 		IOController.getInstance().addTTY();
+
 		cpuBuss.addObserver(this);
 	}// appInit
+	
+	private void installSerialTerminal(){
+		IOController.getInstance().addSerialTerminal();
+		lblSerialConnection.setText(ioController.getConnectionString());
+	}//installSerialTerminal
 
 	/**
 	 * Create the application.

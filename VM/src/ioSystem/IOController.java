@@ -1,10 +1,12 @@
 package ioSystem;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JTextArea;
 
-import ioSysem.console.Console;
+import ioSysem.serialTerminal.SerialTerminal;
 import ioSystem.listDevice.ListDevice;
 import ioSystem.tty.TTY;
 
@@ -14,16 +16,19 @@ public class IOController {
 	private HashMap<Byte,Device8080> devicesInput = new HashMap<Byte,Device8080>();
 	private HashMap<Byte,Device8080> devicesOutput = new HashMap<Byte,Device8080>();
 	private HashMap<Byte,Device8080> devicesStatus = new HashMap<Byte,Device8080>();
+	
+	private Set<Device8080> devicePopulation = new HashSet<Device8080>();
+	
 	private Device8080 device;
-	private Console console;
+	private SerialTerminal serialTerminal;
 	private ListDevice listDevice;
 	private TTY tty;
 	
-	private String errMessage;
+//	private String errMessage;
 	
 	
 	private IOController(){
-		addConsole();
+//		addSerialTerminal();
 //		addTTY();
 	}//constructor
 	
@@ -35,17 +40,21 @@ public class IOController {
 		listDevice = new ListDevice(textArea);
 		devicesOutput.put(listDevice.getAddressOut(), listDevice);
 		devicesStatus.put(listDevice.getAddressStatus(),listDevice);
+		
+		devicePopulation.add(listDevice);
 	}//addListDevice
 	
 	public ListDevice getListDevice(){
 		return listDevice==null?null:listDevice;
 	}//getListDevice
 	
-	public void addConsole(){
-		console = new Console();	// default addresses 01,01,02
-		devicesInput.put(console.getAddressIn(), console);
-		devicesOutput.put(console.getAddressOut(), console);
-		devicesStatus.put(console.getAddressStatus(), console);
+	public void addSerialTerminal(){
+		serialTerminal = new SerialTerminal();	// default addresses 01,01,02
+		devicesInput.put(serialTerminal.getAddressIn(), serialTerminal);
+		devicesOutput.put(serialTerminal.getAddressOut(), serialTerminal);
+		devicesStatus.put(serialTerminal.getAddressStatus(), serialTerminal);
+		
+		devicePopulation.add(serialTerminal);
 	}//addConsole
 	
 	public void addTTY(){
@@ -54,23 +63,30 @@ public class IOController {
 		devicesOutput.put(tty.getAddressOut(), tty);
 		devicesStatus.put(tty.getAddressStatus(), tty);
 		
+		devicePopulation.add(tty);		
 	}//addConsole
 	
 	public void close(){
-		console.close();
-		tty.close();
+		for(Device8080 d:devicePopulation){
+			if(d!=null){
+				d.close();
+				d = null;
+			}//if
+		}//
+//		serialTerminal.close();
+//		tty.close();
 	}//close
 	
-	public void setConsoleSerialSettings(){
-		console.setSerialPortSettings();
-	}//setConsoleSerialSettings
+//	public void setConsoleSerialSettings(){
+//		serialTerminal.setSerialPortSettings();
+//	}//setConsoleSerialSettings
 	
 	public String getConnectionString(){
-		return console.getConnectionString();
+		return serialTerminal.getConnectionString();
 	}//getConnectionString
 	
 	public void closeConnection(){
-		console.close();
+		serialTerminal.close();
 	}//closeConnection
 	
 	public void byteToDevice(Byte address,Byte value){

@@ -110,5 +110,7 @@ abstract public class Device8080 {
 	abstract public void byteFromCPU(Byte address, Byte value);
 
 	abstract public byte byteToCPU(Byte address);
+	
+	abstract public void close();
 
 }// class DeviceController

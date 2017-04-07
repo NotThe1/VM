@@ -27,8 +27,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.SoftBevelBorder;
@@ -46,7 +50,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 	private int maxColumn;
 	private boolean limitColumns;
 	private int tabSize; // default for CP/M is 9
-	
+
 	private char lastKey;
 
 	Queue<Byte> keyboardBuffer;
@@ -74,7 +78,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 				ans = keyboardBuffer.poll();
 			} // if
 		} else if (address.equals(TTY_STATUS)) {
-			ans = (byte) ((byte) keyboardBuffer.size()+1);
+			ans = (byte) ((byte) keyboardBuffer.size() + 1);
 		} else {
 			ans = (byte) 0XFF;
 		} // if
@@ -85,11 +89,10 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		// place to call key mapping
 
 		lastKey = keyEvent.getKeyChar();
-	
+
 		byte keyByte = (byte) keyEvent.getKeyChar();
 		keyboardBuffer.add((byte) keyByte);
-		
-		 
+
 		showStatus();
 
 	}// doKeyTyped
@@ -102,6 +105,9 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 
 		if (c < 0X20) {
 			switch (c) {
+			case ASCII_CODES.BS:
+				doBackSpace();
+				break;
 			case ASCII_CODES.TAB:
 				doTab();
 				break;
@@ -147,6 +153,34 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		showStatus();
 	}// doBtnClearScreen
 
+	private void doTruncate() {
+		System.err.printf("%s NOT IMPLEMENTED%n", "doTruncate");
+	}//
+
+	private void doExtend() {
+		System.err.printf("%s NOT IMPLEMENTED%n", "doExtend");
+	}//
+
+	private void doWrap() {
+		System.err.printf("%s NOT IMPLEMENTED%n", "doWrap");
+	}//
+
+	private void doColorCaret() {
+		System.err.printf("%s NOT IMPLEMENTED%n", "doColorCaret");
+	}//
+
+	private void doColorText() {
+		System.err.printf("%s NOT IMPLEMENTED%n", "doColorText");
+	}//
+
+	private void doColorBackground() {
+		System.err.printf("%s NOT IMPLEMENTED%n", "doColorBackground");
+	}//
+
+	private void doFont() {
+		System.err.printf("%s NOT IMPLEMENTED%n", "doFont");
+	}//
+
 	private void displayPrintable(String s) {
 
 		Element lastElement = getLastElement();
@@ -181,15 +215,28 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		for (int i = 0; i < numberOfSpaces; i++) {
 			displayPrintable(SPACE);
 		} // for
-
 	}// doTab
+
+	private void doBackSpace() {
+		int currentPosition = screen.getLength();
+		Element lastElement = getLastElement();
+		System.out.printf("currentPosition = %d, getStartOffset = %d,getEndOffset= %d %n", currentPosition,
+				lastElement.getStartOffset(), lastElement.getEndOffset());
+		if (currentPosition > lastElement.getStartOffset()) {
+			try {
+				screen.remove(currentPosition - 1, 1);
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} // try
+		} // if
+	}// doBackSpace
 
 	public void clear() {
 		clearDoc();
 	}// clear
 
 	private void clearDoc() {
-
 		try {
 			screen.remove(0, screen.getLength());
 		} catch (BadLocationException e) {
@@ -200,12 +247,12 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 	public void close() {
 		appClose();
 	}// close
-	
-	private void showStatus(){
-		
+
+	private void showStatus() {
+
 		lblKeyChar.setText(String.format("Last Char = %s", lastKey));
 		lblKeyText.setText(String.format("Keyboard buffer size = %d", keyboardBuffer.size()));
-	}//showStatus
+	}// showStatus
 
 	// ----------------------------------------------------------
 
@@ -229,10 +276,13 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		maxColumn = 80;
 		tabSize = 9;
 		myPrefs = null;
+
+		// textScreen.setCaret(new FancyCaret());
+		textScreen.setCaretColor(Color.RED);
 		textScreen.setEditable(false);
+		textScreen.getCaret().setVisible(true);
 		textScreen.addKeyListener(this);
 		keyboardBuffer = new LinkedList<Byte>();
-	
 
 		screen = textScreen.getDocument();
 		clearDoc();
@@ -279,15 +329,16 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		GridBagLayout gbl_panelForButtons = new GridBagLayout();
 		gbl_panelForButtons.columnWidths = new int[] { 0, 0, 0 };
 		gbl_panelForButtons.rowHeights = new int[] { 0, 0 };
-		gbl_panelForButtons.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		gbl_panelForButtons.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
 		gbl_panelForButtons.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		panelForButtons.setLayout(gbl_panelForButtons);
 
 		panelClear = new JPanel();
-		panelClear.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "Clear", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panelClear.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "Clear", TitledBorder.CENTER,
+				TitledBorder.TOP, null, new Color(0, 0, 0)));
 		GridBagConstraints gbc_panelClear = new GridBagConstraints();
 		gbc_panelClear.insets = new Insets(0, 0, 0, 5);
-		gbc_panelClear.fill = GridBagConstraints.BOTH;
+		gbc_panelClear.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panelClear.gridx = 0;
 		gbc_panelClear.gridy = 0;
 		panelForButtons.add(panelClear, gbc_panelClear);
@@ -325,6 +376,30 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		btnClearKeyboardBuffer.setMaximumSize(new Dimension(0, 0));
 		btnClearKeyboardBuffer.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		btnClearKeyboardBuffer.setAlignmentX(1.0f);
+
+		panelColumns = new JPanel();
+		panelColumns.setPreferredSize(new Dimension(90, 40));
+		panelColumns.setBorder(new TitledBorder(new LineBorder(new Color(0, 0, 0), 1, true), "Columns",
+				TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		GridBagConstraints gbc_panelColumns = new GridBagConstraints();
+		gbc_panelColumns.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panelColumns.gridx = 1;
+		gbc_panelColumns.gridy = 0;
+		panelForButtons.add(panelColumns, gbc_panelColumns);
+		GridBagLayout gbl_panelColumns = new GridBagLayout();
+		gbl_panelColumns.columnWidths = new int[] { 0, 0, 0 };
+		gbl_panelColumns.rowHeights = new int[] { 0, 0 };
+		gbl_panelColumns.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
+		gbl_panelColumns.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		panelColumns.setLayout(gbl_panelColumns);
+
+		spinnerColumns = new JSpinner();
+		spinnerColumns.setModel(new SpinnerNumberModel(new Integer(132), new Integer(20), null, new Integer(1)));
+		GridBagConstraints gbc_spinnerColumns = new GridBagConstraints();
+		gbc_spinnerColumns.fill = GridBagConstraints.VERTICAL;
+		gbc_spinnerColumns.gridx = 1;
+		gbc_spinnerColumns.gridy = 0;
+		panelColumns.add(spinnerColumns, gbc_spinnerColumns);
 
 		panelScreen = new JPanel();
 		GridBagConstraints gbc_panelScreen = new GridBagConstraints();
@@ -374,14 +449,49 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		menuBar = new JMenuBar();
 		frmTemplate.setJMenuBar(menuBar);
 
-		mnProperties = new JMenu("Properties");
-		menuBar.add(mnProperties);
+		mnuBehavior = new JMenu("Behavior");
+		menuBar.add(mnuBehavior); // Behavior
 
-		mnuPropertiesColors = new JMenuItem("Colors...");
-		mnProperties.add(mnuPropertiesColors);
+		mnuBehaviorTruncate = new JRadioButtonMenuItem("Truncate");
+		mnuBehaviorTruncate.setName(MNU_BEHAVIOR_TRUNCATE);
+		mnuBehaviorTruncate.addActionListener(this);
+		mnuBehavior.add(mnuBehaviorTruncate);
 
-		mnuPropertiesFont = new JMenuItem("Font...");
-		mnProperties.add(mnuPropertiesFont);
+		mnuBehaviorWrap = new JRadioButtonMenuItem("Wrap");
+		mnuBehaviorWrap.setName(MNU_BEHAVIOR_WRAP);
+		mnuBehaviorWrap.addActionListener(this);
+		mnuBehavior.add(mnuBehaviorWrap);
+
+		mnuBehaviorExtend = new JRadioButtonMenuItem("Extend");
+		mnuBehaviorExtend.setName(MNU_BEHAVIOR_EXTEND);
+		mnuBehaviorExtend.addActionListener(this);
+		mnuBehavior.add(mnuBehaviorExtend);
+
+		mnuProperties = new JMenu("Properties");
+		menuBar.add(mnuProperties);
+
+		mnuPropertiesColorsText = new JMenuItem("Text Color...");
+		mnuPropertiesColorsText.setName(MNU_PROP_COLOR_TEXT);
+		mnuPropertiesColorsText.addActionListener(this);
+		
+				mnuPropertiesFont = new JMenuItem("Font...");
+				mnuPropertiesFont.setName(MNU_PROP_COLOR_TEXT);
+				mnuPropertiesFont.addActionListener(this);
+				mnuProperties.add(mnuPropertiesFont);
+		
+		separator = new JSeparator();
+		mnuProperties.add(separator);
+		mnuProperties.add(mnuPropertiesColorsText);
+		
+				mnuPropertiesColorsBack = new JMenuItem("Background Color...");
+				mnuPropertiesColorsBack.setName(MNU_PROP_COLOR_BACK);
+				mnuPropertiesColorsBack.addActionListener(this);
+				mnuProperties.add(mnuPropertiesColorsBack);
+
+		mnuPropertiesColorsCaret = new JMenuItem("Caret Color...");
+		mnuPropertiesColorsCaret.setName(MNU_PROP_COLOR_CARET);
+		mnuPropertiesColorsCaret.addActionListener(this);
+		mnuProperties.add(mnuPropertiesColorsCaret);
 
 	}// initialize
 
@@ -395,18 +505,39 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 			doBtnClearKeyboardBuffer();
 			break;
 
+		case MNU_BEHAVIOR_TRUNCATE:
+			doTruncate();
+			break;
+		case MNU_BEHAVIOR_EXTEND:
+			doExtend();
+			break;
+
+		case MNU_BEHAVIOR_WRAP:
+			doWrap();
+			break;
+
+		case MNU_PROP_COLOR_CARET:
+			doColorCaret();
+			break;
+
+		case MNU_PROP_COLOR_TEXT:
+			doColorText();
+			break;
+
+		case MNU_PROP_COLOR_BACK:
+			doColorBackground();
+			break;
+
+		case MNU_PROP_FONT:
+			doFont();
+			break;
+
 		}//
 
 	}// actionPerformed
 
 	@Override
 	public void keyTyped(KeyEvent keyEvent) {
-		int getExtendedKeyCode = keyEvent.getExtendedKeyCode();
-		char getKeyChar = keyEvent.getKeyChar();
-		int getKeyCode = keyEvent.getKeyCode();
-		int getKeyLocation = keyEvent.getKeyLocation();
-		boolean isActionKey = keyEvent.isActionKey();
-		String paramString = keyEvent.paramString();
 		processKeyTyped(keyEvent);
 	}// keyTyped
 
@@ -414,8 +545,8 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 	private JButton btnClearScreen;
 	private JPanel panelScreen;
 	private JMenuBar menuBar;
-	private JMenu mnProperties;
-	private JMenuItem mnuPropertiesColors;
+	private JMenu mnuProperties;
+	private JMenuItem mnuPropertiesColorsText;
 	private JMenuItem mnuPropertiesFont;
 	private JTextArea textScreen;
 	private JButton btnClearKeyboardBuffer;
@@ -428,27 +559,35 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 	private static final String BTN_CLEAR_SCREEN = "btnClearScreen";
 	private static final String BTN_CLEAR_KEYBOARD_BUFFER = "btnClearKeyboardBuffer";
 
+	private static final String MNU_BEHAVIOR_TRUNCATE = "mnuBehaviorTruncate";
+	private static final String MNU_BEHAVIOR_EXTEND = "mnuBehaviorExtend";
+	private static final String MNU_BEHAVIOR_WRAP = "mnuBehaviorWrap";
+
+	private static final String MNU_PROP_COLOR_CARET = "mnuPropertiesColorCaret";
+	private static final String MNU_PROP_COLOR_TEXT = "mnuPropertiesColorText";
+	private static final String MNU_PROP_COLOR_BACK = "mnuPropertiesColorsBack";
+	private static final String MNU_PROP_FONT = "mnuPropertiesFont";
+
 	private static final String SPACE = " "; // Space
 	private JLabel lblKeyChar;
 	private JLabel lblKeyText;
 	private JLabel lblReleased;
+	private JMenu mnuBehavior;
+	private JRadioButtonMenuItem mnuBehaviorWrap;
+	private JRadioButtonMenuItem mnuBehaviorTruncate;
+	private JRadioButtonMenuItem mnuBehaviorExtend;
+	private JPanel panelColumns;
+	private JSpinner spinnerColumns;
+	private JMenuItem mnuPropertiesColorsBack;
+	private JMenuItem mnuPropertiesColorsCaret;
+	private JSeparator separator;
 
 	@Override
 	public void keyPressed(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
+	}// keyPressed
 
 	@Override
 	public void keyReleased(KeyEvent keyEvent) {
-//		int getExtendedKeyCode = keyEvent.getExtendedKeyCode();
-//		char getKeyChar = keyEvent.getKeyChar();
-//		int getKeyCode = keyEvent.getKeyCode();
-//		int getKeyLocation = keyEvent.getKeyLocation();
-//		boolean isActionKey = keyEvent.isActionKey();
-//		String paramString = keyEvent.paramString();
-
-
-	}//keyReleased
+	}// keyReleased
 
 }// class GUItemplate

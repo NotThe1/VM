@@ -24,14 +24,14 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.MaskFormatter;
 
-import ioSysem.console.Console;
+import ioSysem.serialTerminal.SerialTerminal;
 import ioSystem.serialPort.SerialPortSettings;
 
 public class TestConsole {
 
 	private JFrame frmTestConsole;
 	JTextArea txtLog;
-	Console console;
+	SerialTerminal console;
 	SerialPortSettings serialPortSettings;
 	
 	private JFormattedTextField ftfByteToSend;
@@ -68,7 +68,7 @@ public class TestConsole {
 
 	private void initApplication() {
 //		console = new Console((byte) 01, (byte) 01, (byte) 02);
-		console = new Console();
+		console = new SerialTerminal();
 		showConnectionString();
 
 	}// initApplication
@@ -163,7 +163,7 @@ public class TestConsole {
 		btnGetByte.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Byte b = console.byteToCPU((byte) 02);
-				if ((b & Console.CONSOLE_INPUT_STATUS_MASK) == 0) {
+				if ((b & SerialTerminal.CONSOLE_INPUT_STATUS_MASK) == 0) {
 					// txtLog.append("There is nothing to read");
 					ftfStatusReceived.setText(String.format("%02X", b));
 
@@ -201,13 +201,13 @@ public class TestConsole {
 		btnGetAllBytes.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Byte b = console.byteToCPU((byte) 02);
-				if ((b & Console.CONSOLE_OUTPUT_STATUS_MASK) == 0) {
+				if ((b & SerialTerminal.CONSOLE_OUTPUT_STATUS_MASK) == 0) {
 					// txtLog.append("There is nothing to read");
 					ftfStatusReceived.setText(String.format("%02X", b));
 
 				} else {
 					StringBuilder sb = new StringBuilder();
-					while ((console.byteToCPU((byte) 02) & Console.CONSOLE_INPUT_STATUS_MASK) >= 1) {
+					while ((console.byteToCPU((byte) 02) & SerialTerminal.CONSOLE_INPUT_STATUS_MASK) >= 1) {
 						Byte byteToCPU = console.byteToCPU((byte) 01);
 						String stringFromCPU = new String(
 								new byte[] { byteToCPU });

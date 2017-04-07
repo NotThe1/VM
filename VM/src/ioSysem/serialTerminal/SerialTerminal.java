@@ -1,4 +1,4 @@
-package ioSysem.console;
+package ioSysem.serialTerminal;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -14,7 +14,7 @@ import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 
-public class Console extends Device8080 {
+public class SerialTerminal extends Device8080 {
 
 	private SerialPort serialPort;
 	private SerialPortSettings serialPortSettings = new SerialPortSettings();
@@ -39,20 +39,20 @@ public class Console extends Device8080 {
 	 *            - address of status if different from in/out
 	 */
 
-	public Console(String name, String type, boolean input, Byte addressIn, boolean output, Byte addressOut,
+	public SerialTerminal(String name, String type, boolean input, Byte addressIn, boolean output, Byte addressOut,
 			Byte addressStatus) {
 		super(name, type, input, addressIn, output, addressOut, addressStatus);
 		restoreSerialPortSettings();
 	}// Constructor
 
-	public Console(Byte addressIn, Byte addressOut, Byte addressStatus) {
+	public SerialTerminal(Byte addressIn, Byte addressOut, Byte addressStatus) {
 		super("tty", "Serial", true, addressIn, true, addressOut, addressStatus);
 		restoreSerialPortSettings();
 		openSerialConnection();
 		inputBuffer = new LinkedList<Byte>();
 	}// Constructor
 	
-	public Console(){
+	public SerialTerminal(){
 		this(CONSOLE_IN,CONSOLE_OUT,CONSOLE_STATUS);
 	}
 
@@ -103,7 +103,7 @@ public class Console extends Device8080 {
 			serialPort.openPort();// Open serial port
 			serialPort.setParams(serialPortSettings.getBaudRate(), serialPortSettings.getDataBits(),
 					serialPortSettings.getStopBits(), serialPortSettings.getParity());
-			serialPort.addEventListener(new ConsoleAdapter());
+			serialPort.addEventListener(new SerialTerminalAdapter());
 		} catch (SerialPortException ex) {
 			System.out.println(ex);
 		} // try
@@ -111,7 +111,7 @@ public class Console extends Device8080 {
 
 	// -----------------------------------------------------------------
 	private void restoreSerialPortSettings() {
-		Preferences myPrefs = Preferences.userNodeForPackage(Console.class).node(this.getClass().getSimpleName());
+		Preferences myPrefs = Preferences.userNodeForPackage(SerialTerminal.class).node(this.getClass().getSimpleName());
 		serialPortSettings.setPortName(myPrefs.get("PortName", SerialPortSettings.DEFAULT_PORT_NAME));
 		serialPortSettings.setBaudRate(myPrefs.getInt("BaudRate", SerialPortSettings.DEFAULT_BAUD_RATE));
 		serialPortSettings.setDataBits(myPrefs.getInt("DataBits", SerialPortSettings.DEFAULT_DATA_BITS));
@@ -140,7 +140,7 @@ public class Console extends Device8080 {
 	}// closeConnection
 
 	private void saveSerialPortSettings() {
-		Preferences myPrefs = Preferences.userNodeForPackage(Console.class).node(this.getClass().getSimpleName());
+		Preferences myPrefs = Preferences.userNodeForPackage(SerialTerminal.class).node(this.getClass().getSimpleName());
 		myPrefs.put("PortName", serialPortSettings.getPortName());
 		myPrefs.putInt("BaudRate", serialPortSettings.getBaudRate());
 		myPrefs.putInt("DataBits", serialPortSettings.getDataBits());
@@ -174,7 +174,7 @@ public class Console extends Device8080 {
 	//...........................................................................................
 	//........................................................................................
 
-	public class ConsoleAdapter implements SerialPortEventListener {
+	public class SerialTerminalAdapter implements SerialPortEventListener {
 
 		@Override
 		public void serialEvent(SerialPortEvent spe) {
