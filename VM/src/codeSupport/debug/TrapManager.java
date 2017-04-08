@@ -50,8 +50,8 @@ public class TrapManager extends JDialog {
 	public static void main(String[] args) {
 		try {
 			// TrapManager dialog = new TrapManager();
-			TrapManager dialog = TrapManager.getInstance();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			TrapManager trapManager = TrapManager.getInstance();
+			trapManager.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			// dialog.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -35,9 +35,9 @@ public class FontChooser extends JDialog implements ListSelectionListener, Actio
 
 	private static final long serialVersionUID = 1L;
 
-	private final static Integer DEFAULT_SIZE = 13;
-	private final static String DEFAULT_STYLE = "Plain";
-	private final static String DEFAULT_FAMILY = "Tahoma";
+//	private final static Integer DEFAULT_SIZE = 13;
+//	private final static String DEFAULT_STYLE = "Plain";
+//	private final static String DEFAULT_FAMILY = "Tahoma";
 
 	private final static String STYLE_PLAIN = "Plain";
 	private final static String STYLE_BOLD = "Bold";

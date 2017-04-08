@@ -20,12 +20,15 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.prefs.Preferences;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -37,18 +40,21 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 
 import codeSupport.ASCII_CODES;
 import ioSystem.Device8080;
+import utilities.FontChooser;
 
 public class TTY extends Device8080 implements ActionListener, KeyListener {
 
 	private Document screen;
 	private int maxColumn;
-	private boolean limitColumns;
+	private boolean truncateColumns;
 	private int tabSize; // default for CP/M is 9
 
 	private char lastKey;
@@ -60,7 +66,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 			public void run() {
 				try {
 					TTY window = new TTY();
-					window.frmTemplate.setVisible(true);
+					window.frmTTY.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} // try
@@ -153,39 +159,93 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		showStatus();
 	}// doBtnClearScreen
 
-	private void doTruncate() {
-		System.err.printf("%s NOT IMPLEMENTED%n", "doTruncate");
-	}//
+	private void doColumnBehavior() {
+		if (mnuBehaviorTruncate.isSelected()) {
+			truncateColumns = true;
+			textScreen.setLineWrap(false);
+		} else if (mnuBehaviorWrap.isSelected()) {
+			truncateColumns = false;
+			textScreen.setLineWrap(true);
+		} else if (mnuBehaviorExtend.isSelected()) {
+			truncateColumns = false;
+			textScreen.setLineWrap(false);
+		} else {
+			System.err.print("[TTY] doColumnBehavior Error");
+		} // if
 
-	private void doExtend() {
-		System.err.printf("%s NOT IMPLEMENTED%n", "doExtend");
-	}//
+		// only want max column if truncating
+		panelColumns.setEnabled(truncateColumns);
+		spinnerColumns.setEnabled(truncateColumns);
 
-	private void doWrap() {
-		System.err.printf("%s NOT IMPLEMENTED%n", "doWrap");
-	}//
+		textScreen.getCaret().setVisible(true); // loses visibility - turn back on
+	}// doColumnBehavior
 
 	private void doColorCaret() {
-		System.err.printf("%s NOT IMPLEMENTED%n", "doColorCaret");
+		Color newColor = JColorChooser.showDialog(frmTTY, "Font Color", textScreen.getCaretColor());
+		if (newColor == null) {
+			return;
+		} else {
+			textScreen.setCaretColor(newColor);
+		} // if
+
+		textScreen.getCaret().setVisible(true);
 	}//
 
 	private void doColorText() {
-		System.err.printf("%s NOT IMPLEMENTED%n", "doColorText");
+		Color newColor = JColorChooser.showDialog(frmTTY, "Font Color", textScreen.getForeground());
+		if (newColor == null) {
+			return;
+		} else {
+			textScreen.setForeground(newColor);
+		} // if
+
+		textScreen.getCaret().setVisible(true);
 	}//
 
 	private void doColorBackground() {
-		System.err.printf("%s NOT IMPLEMENTED%n", "doColorBackground");
+		Color newColor = JColorChooser.showDialog(frmTTY, "Background Color", textScreen.getBackground());
+		if (newColor == null) {
+			return;
+		} else {
+			textScreen.setBackground(newColor);
+		} // if
+
+		textScreen.getCaret().setVisible(true);
+
 	}//
 
 	private void doFont() {
-		System.err.printf("%s NOT IMPLEMENTED%n", "doFont");
+		Font cf = textScreen.getFont();
+		String style;
+		switch (cf.getStyle()) {
+		case Font.PLAIN:
+			style = "Plain";
+			break;
+		case Font.BOLD:
+			style = "Bold";
+			break;
+		case Font.ITALIC:
+			style = "Italic";
+			break;
+		case Font.BOLD | Font.ITALIC:
+			style = "Bold Italic";
+			break;
+		default:
+			style = "Plain";
+		}// switch
+		FontChooser fontChooser = new FontChooser(frmTTY, cf.getFamily(), style, cf.getSize());
+		if (fontChooser.showDialog() == JOptionPane.OK_OPTION) {
+			textScreen.setFont(fontChooser.selectedFont());
+		} // if
+		fontChooser = null;
+		textScreen.getCaret().setVisible(true);
 	}//
 
 	private void displayPrintable(String s) {
 
 		Element lastElement = getLastElement();
 
-		if (!limitColumns) {// drop anything beyond the max column ??
+		if (!truncateColumns) {// drop anything beyond the max column ??
 			display(s);
 		} else if ((lastElement.getEndOffset() - lastElement.getStartOffset()) < this.maxColumn) {
 			display(s);
@@ -220,8 +280,8 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 	private void doBackSpace() {
 		int currentPosition = screen.getLength();
 		Element lastElement = getLastElement();
-		System.out.printf("currentPosition = %d, getStartOffset = %d,getEndOffset= %d %n", currentPosition,
-				lastElement.getStartOffset(), lastElement.getEndOffset());
+//		System.out.printf("currentPosition = %d, getStartOffset = %d,getEndOffset= %d %n", currentPosition,
+//				lastElement.getStartOffset(), lastElement.getEndOffset());
 		if (currentPosition > lastElement.getStartOffset()) {
 			try {
 				screen.remove(currentPosition - 1, 1);
@@ -258,27 +318,67 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 
 	private void appClose() {
 		Preferences myPrefs = Preferences.userNodeForPackage(TTY.class).node(this.getClass().getSimpleName());
-		Dimension dim = frmTemplate.getSize();
+		Dimension dim = frmTTY.getSize();
 		myPrefs.putInt("Height", dim.height);
 		myPrefs.putInt("Width", dim.width);
-		Point point = frmTemplate.getLocation();
+		Point point = frmTTY.getLocation();
 		myPrefs.putInt("LocX", point.x);
 		myPrefs.putInt("LocY", point.y);
+
+		myPrefs.putBoolean("TruncateColumns", truncateColumns);
+		myPrefs.putInt("MaxColumn", maxColumn);
+
+		myPrefs.putBoolean("Extended", mnuBehaviorExtend.isSelected());
+		myPrefs.putBoolean("Wrap", mnuBehaviorWrap.isSelected());
+		myPrefs.putBoolean("Truncate", mnuBehaviorTruncate.isSelected());
+
+		myPrefs.putInt("CaretColor", textScreen.getCaretColor().getRGB());
+		myPrefs.putInt("BackgroundColor", textScreen.getBackground().getRGB());
+		myPrefs.putInt("ForegroundColor", textScreen.getForeground().getRGB());
+
+		myPrefs.put("FontFamily", textScreen.getFont().getFamily());
+		myPrefs.putInt("FontStyle", textScreen.getFont().getStyle());
+		myPrefs.putInt("FontSize", textScreen.getFont().getSize());
+
 		myPrefs = null;
 
 	}// appClose
 
 	private void appInit() {
 		Preferences myPrefs = Preferences.userNodeForPackage(TTY.class).node(this.getClass().getSimpleName());
-		frmTemplate.setSize(myPrefs.getInt("Width", 761), myPrefs.getInt("Height", 693));
-		frmTemplate.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
-		limitColumns = false;
-		maxColumn = 80;
-		tabSize = 9;
+		frmTTY.setSize(myPrefs.getInt("Width", 761), myPrefs.getInt("Height", 693));
+		frmTTY.setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
+
+		truncateColumns = myPrefs.getBoolean("TruncateColumns", false);
+		maxColumn = myPrefs.getInt("MaxColumn", 80);
+
+		mnuBehaviorExtend.setSelected(myPrefs.getBoolean("Extended", true));
+		mnuBehaviorWrap.setSelected(myPrefs.getBoolean("Wrap", false));
+		mnuBehaviorTruncate.setSelected(myPrefs.getBoolean("Truncate", false));
+
+		textScreen.setCaretColor(new Color(myPrefs.getInt("CaretColor", Color.RED.getRGB())));
+		textScreen.setBackground(new Color(myPrefs.getInt("BackgroundColor", Color.BLACK.getRGB())));
+		textScreen.setForeground(new Color(myPrefs.getInt("ForegroundColor", Color.GREEN.getRGB())));
+
+		Font screenFont = new Font(myPrefs.get("FontFamily", "Courier New"), myPrefs.getInt("FontStyle", Font.PLAIN),
+				myPrefs.getInt("FontSize", 13));
+		textScreen.setFont(screenFont);
+
 		myPrefs = null;
+		tabSize = 9;
+
+		doColumnBehavior();
+		spinnerColumns.setValue(maxColumn);
+
+		spinnerColumns.getModel().addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent changeEvent) {
+				maxColumn = (int) spinnerColumns.getValue();
+			}// stateChanged
+		});
 
 		// textScreen.setCaret(new FancyCaret());
-		textScreen.setCaretColor(Color.RED);
+
 		textScreen.setEditable(false);
 		textScreen.getCaret().setVisible(true);
 		textScreen.addKeyListener(this);
@@ -286,7 +386,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 
 		screen = textScreen.getDocument();
 		clearDoc();
-		frmTemplate.setVisible(true);
+		frmTTY.setVisible(true);
 
 	}// appInit
 
@@ -301,11 +401,11 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frmTemplate = new JFrame();
-		frmTemplate.setTitle("TTY");
-		frmTemplate.setBounds(100, 100, 450, 300);
+		frmTTY = new JFrame();
+		frmTTY.setTitle("TTY");
+		frmTTY.setBounds(100, 100, 450, 300);
 		// frmTemplate.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmTemplate.addWindowListener(new WindowAdapter() {
+		frmTTY.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
 				appClose();
@@ -316,7 +416,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		gridBagLayout.rowHeights = new int[] { 0, 0, 25, 0 };
 		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 1.0, 0.0, Double.MIN_VALUE };
-		frmTemplate.getContentPane().setLayout(gridBagLayout);
+		frmTTY.getContentPane().setLayout(gridBagLayout);
 
 		JPanel panelForButtons = new JPanel();
 		GridBagConstraints gbc_panelForButtons = new GridBagConstraints();
@@ -325,7 +425,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		gbc_panelForButtons.fill = GridBagConstraints.HORIZONTAL;
 		gbc_panelForButtons.gridx = 0;
 		gbc_panelForButtons.gridy = 0;
-		frmTemplate.getContentPane().add(panelForButtons, gbc_panelForButtons);
+		frmTTY.getContentPane().add(panelForButtons, gbc_panelForButtons);
 		GridBagLayout gbl_panelForButtons = new GridBagLayout();
 		gbl_panelForButtons.columnWidths = new int[] { 0, 0, 0 };
 		gbl_panelForButtons.rowHeights = new int[] { 0, 0 };
@@ -407,7 +507,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		gbc_panelScreen.fill = GridBagConstraints.BOTH;
 		gbc_panelScreen.gridx = 0;
 		gbc_panelScreen.gridy = 1;
-		frmTemplate.getContentPane().add(panelScreen, gbc_panelScreen);
+		frmTTY.getContentPane().add(panelScreen, gbc_panelScreen);
 		GridBagLayout gbl_panelScreen = new GridBagLayout();
 		gbl_panelScreen.columnWidths = new int[] { 371, 0 };
 		gbl_panelScreen.rowHeights = new int[] { 2, 0 };
@@ -434,7 +534,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		gbc_panelStatus.fill = GridBagConstraints.BOTH;
 		gbc_panelStatus.gridx = 0;
 		gbc_panelStatus.gridy = 2;
-		frmTemplate.getContentPane().add(panelStatus, gbc_panelStatus);
+		frmTTY.getContentPane().add(panelStatus, gbc_panelStatus);
 		panelStatus.setLayout(new GridLayout(0, 4, 0, 0));
 
 		lblKeyChar = new JLabel("char = ");
@@ -447,7 +547,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		panelStatus.add(lblReleased);
 
 		menuBar = new JMenuBar();
-		frmTemplate.setJMenuBar(menuBar);
+		frmTTY.setJMenuBar(menuBar);
 
 		mnuBehavior = new JMenu("Behavior");
 		menuBar.add(mnuBehavior); // Behavior
@@ -467,26 +567,31 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		mnuBehaviorExtend.addActionListener(this);
 		mnuBehavior.add(mnuBehaviorExtend);
 
+		ButtonGroup bgBehavior = new ButtonGroup();
+		bgBehavior.add(mnuBehaviorExtend);
+		bgBehavior.add(mnuBehaviorWrap);
+		bgBehavior.add(mnuBehaviorTruncate);
+
 		mnuProperties = new JMenu("Properties");
 		menuBar.add(mnuProperties);
 
 		mnuPropertiesColorsText = new JMenuItem("Text Color...");
 		mnuPropertiesColorsText.setName(MNU_PROP_COLOR_TEXT);
 		mnuPropertiesColorsText.addActionListener(this);
-		
-				mnuPropertiesFont = new JMenuItem("Font...");
-				mnuPropertiesFont.setName(MNU_PROP_COLOR_TEXT);
-				mnuPropertiesFont.addActionListener(this);
-				mnuProperties.add(mnuPropertiesFont);
-		
+
+		mnuPropertiesFont = new JMenuItem("Font...");
+		mnuPropertiesFont.setName(MNU_PROP_FONT);
+		mnuPropertiesFont.addActionListener(this);
+		mnuProperties.add(mnuPropertiesFont);
+
 		separator = new JSeparator();
 		mnuProperties.add(separator);
 		mnuProperties.add(mnuPropertiesColorsText);
-		
-				mnuPropertiesColorsBack = new JMenuItem("Background Color...");
-				mnuPropertiesColorsBack.setName(MNU_PROP_COLOR_BACK);
-				mnuPropertiesColorsBack.addActionListener(this);
-				mnuProperties.add(mnuPropertiesColorsBack);
+
+		mnuPropertiesColorsBack = new JMenuItem("Background Color...");
+		mnuPropertiesColorsBack.setName(MNU_PROP_COLOR_BACK);
+		mnuPropertiesColorsBack.addActionListener(this);
+		mnuProperties.add(mnuPropertiesColorsBack);
 
 		mnuPropertiesColorsCaret = new JMenuItem("Caret Color...");
 		mnuPropertiesColorsCaret.setName(MNU_PROP_COLOR_CARET);
@@ -506,14 +611,13 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 			break;
 
 		case MNU_BEHAVIOR_TRUNCATE:
-			doTruncate();
+			doColumnBehavior();
 			break;
 		case MNU_BEHAVIOR_EXTEND:
-			doExtend();
+			doColumnBehavior();
 			break;
-
 		case MNU_BEHAVIOR_WRAP:
-			doWrap();
+			doColumnBehavior();
 			break;
 
 		case MNU_PROP_COLOR_CARET:
@@ -541,7 +645,7 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		processKeyTyped(keyEvent);
 	}// keyTyped
 
-	private JFrame frmTemplate;
+	private JFrame frmTTY;
 	private JButton btnClearScreen;
 	private JPanel panelScreen;
 	private JMenuBar menuBar;

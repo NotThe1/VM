@@ -78,9 +78,9 @@ public class ShowCode extends JDialog implements Runnable {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ShowCode dialog = new ShowCode();
-					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					dialog.setVisible(true);
+					ShowCode showCode = new ShowCode();
+					showCode.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+					showCode.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} // try
