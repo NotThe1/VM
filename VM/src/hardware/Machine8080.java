@@ -78,29 +78,8 @@ import utilities.menus.MenuUtility;
 
 public class Machine8080 implements Observer {
 
-	private Machine8080MenuAdapter menuAdapter = new Machine8080MenuAdapter();
-	private Machine8080ActionAdapter actionAdapter = new Machine8080ActionAdapter();
-	private DiskPanelAdapter diskPanelAdapter = new DiskPanelAdapter();
-	private DiskPanel diskPanel;
-	private StateDisplay stateDisplay;
-	// private Core core = Core.getInstance();
-	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
-	private DiskControlUnit diskControlUnit = DiskControlUnit.getgetInstance();
-	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
-	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
-	private IOController ioController = IOController.getInstance();
-	private CpuBuss cpuBuss = CpuBuss.getInstance();
 
-	private TrapManager trapManager;
-	private ShowCode showCode;
-
-	private Path pathMemLoad = null;
-
-	private boolean addSerialTerminal;
-
-	/**
-	 * Launch the application.
-	 */
+	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -1160,4 +1139,26 @@ public class Machine8080 implements Observer {
 	private JButton btnListPrint;
 	private JButton btnListProperties;
 	private JButton btnListClear;
+	
+	
+	private Machine8080MenuAdapter menuAdapter = new Machine8080MenuAdapter();
+	private Machine8080ActionAdapter actionAdapter = new Machine8080ActionAdapter();
+	private DiskPanelAdapter diskPanelAdapter = new DiskPanelAdapter();
+	private DiskPanel diskPanel;
+	private StateDisplay stateDisplay;
+	// private Core core = Core.getInstance();
+	private CentralProcessingUnit cpu = CentralProcessingUnit.getInstance();
+	private DiskControlUnit diskControlUnit = DiskControlUnit.getgetInstance();
+	private InLineDisassembler disassembler = InLineDisassembler.getInstance();
+	private HexEditPanelConcurrent hexEditPanelConcurrent = new HexEditPanelConcurrent();
+	private IOController ioController = IOController.getInstance();
+	private CpuBuss cpuBuss = CpuBuss.getInstance();
+
+	private TrapManager trapManager;
+	private ShowCode showCode;
+
+	private Path pathMemLoad = null;
+
+	private boolean addSerialTerminal;
+
 }// class Machine8080
