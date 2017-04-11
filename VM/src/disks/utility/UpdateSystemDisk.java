@@ -1,9 +1,11 @@
 package disks.utility;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.net.URL;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -30,22 +32,59 @@ public class UpdateSystemDisk {
 			/** set up as system disk **/
 			Class<Machine8080> thisClass = Machine8080.class;
 			/* Boot Sector */
-			URL rom = thisClass.getResource("/disks/resources/BootSector.mem");
-			byte[] dataBoot = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0200);
+//			URL rom = thisClass.getResource("/disks/resources/BootSector.mem");
+			
+			InputStream in = thisClass.getClass().getResourceAsStream("/BootSector.mem"); 
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+			byte[] dataBoot = MemoryLoaderFromFile.loadMemoryImage(reader, 0x0200);
 			disk.position(0);
 			disk.put(dataBoot);
+			
+			
+			 in = thisClass.getClass().getResourceAsStream("/CCP.mem"); 
+			 reader = new BufferedReader(new InputStreamReader(in));
+				byte[] dataCCP = MemoryLoaderFromFile.loadMemoryImage(reader, 0x0800);
+				disk.put(dataCCP);
+
+			
+			 in = thisClass.getClass().getResourceAsStream("/BDOS.mem"); 
+			 reader = new BufferedReader(new InputStreamReader(in));
+				byte[] dataBDOS = MemoryLoaderFromFile.loadMemoryImage(reader, 0x0E00);
+				disk.put(dataBDOS);
+
+			
+			 in = thisClass.getClass().getResourceAsStream("/BIOS.mem"); 
+			 reader = new BufferedReader(new InputStreamReader(in));
+				byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(reader, 0x0A00);
+				disk.put(dataBIOS);
+
+			
+			
+			
+			
+			
+			
+			
+//			URL rom;
+//			 rom = thisClass.getClassLoader().getResource("BootSector.mem");
+//			byte[] dataBoot = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0200);
+//			disk.position(0);
+//			disk.put(dataBoot);
+			
+			
 			/* CCP */
-			rom = thisClass.getResource("/disks/resources/CCP.mem");
-			byte[] dataCCP = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0800);
-			disk.put(dataCCP);
+//			rom = thisClass.getResource("/CCP.mem");
+//			byte[] dataCCP = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0800);
+//			disk.put(dataCCP);
 			/* BDOS */
-			rom = thisClass.getResource("/disks/resources/BDOS.mem");
-			byte[] dataBDOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0E00);
-			disk.put(dataBDOS);
+//			rom = thisClass.getResource("/BDOS.mem");
+//			byte[] dataBDOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0E00);
+//			disk.put(dataBDOS);
 			/* BIOS */
-			rom = thisClass.getResource("/disks/resources/BIOS.mem");
-			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0A00);
-			disk.put(dataBIOS);
+//			rom = thisClass.getResource("/BIOS.mem");
+//			byte[] dataBIOS = MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()), 0x0A00);
+//			disk.put(dataBIOS);
 
 			fileChannel.force(true);
 			fileChannel.close();

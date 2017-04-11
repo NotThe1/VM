@@ -24,7 +24,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -78,8 +79,6 @@ import utilities.menus.MenuUtility;
 
 public class Machine8080 implements Observer {
 
-
-	
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -277,9 +276,13 @@ public class Machine8080 implements Observer {
 	}// removeAllDisks
 
 	private void loadROM() {
-		Class<Machine8080> thisClass = Machine8080.class;
-		URL rom = thisClass.getResource("/hardware/resources/ROM.mem");
-		MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
+		InputStream in = this.getClass().getResourceAsStream("/ROM.mem");
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+		MemoryLoaderFromFile.loadMemoryImage(reader);
+
+//		Class<Machine8080> thisClass = Machine8080.class;
+//		URL rom = thisClass.getResource("/hardware/resources/ROM.mem");
+//		MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
 
 		hexEditPanelConcurrent.loadData(Core.getInstance().getStorage());
 		InLineDisassembler.getInstance().refreshDisplay();
@@ -364,18 +367,18 @@ public class Machine8080 implements Observer {
 		lblSerialConnection.setText(NO_CONNECTION);
 		if (addSerialTerminal) {
 			installSerialTerminal();
-		}//if
+		} // if
 
 		IOController.getInstance().addListDevice(txtList);
 		IOController.getInstance().addTTY();
 
 		cpuBuss.addObserver(this);
 	}// appInit
-	
-	private void installSerialTerminal(){
+
+	private void installSerialTerminal() {
 		IOController.getInstance().addSerialTerminal();
 		lblSerialConnection.setText(ioController.getConnectionString());
-	}//installSerialTerminal
+	}// installSerialTerminal
 
 	/**
 	 * Create the application.
@@ -1139,8 +1142,7 @@ public class Machine8080 implements Observer {
 	private JButton btnListPrint;
 	private JButton btnListProperties;
 	private JButton btnListClear;
-	
-	
+
 	private Machine8080MenuAdapter menuAdapter = new Machine8080MenuAdapter();
 	private Machine8080ActionAdapter actionAdapter = new Machine8080ActionAdapter();
 	private DiskPanelAdapter diskPanelAdapter = new DiskPanelAdapter();

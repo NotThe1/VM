@@ -1,5 +1,6 @@
 package memory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -18,12 +19,12 @@ public class MemoryLoaderFromFile {
 	static private IoBuss ioBuss = IoBuss.getInstance();
 	static final private int memorySize = ioBuss.getSize();
 	static private byte[] result;
-	
-	static public byte[] loadMemoryImage(File sourceFile,int size){
-		result = new byte[size]; 
-		loadMemoryImage( sourceFile);
+
+	static public byte[] loadMemoryImage(File sourceFile, int size) {
+		result = new byte[size];
+		loadMemoryImage(sourceFile);
 		return result;
-		
+
 	}
 
 	/**
@@ -35,18 +36,93 @@ public class MemoryLoaderFromFile {
 	 * @return The name of the file loaded into memory
 	 */
 
+	static public byte[] loadMemoryImage(BufferedReader bufferedReader, int size) {
+		result = new byte[size];
+		loadMemoryImage(bufferedReader);
+		return result;
+	}
+
+	static public void loadMemoryImage(BufferedReader bufferedReader) {
+		parseAndLoadImageMem(new Scanner(bufferedReader));
+
+////		try {
+////			bufferedReader.mark(150);
+////		} catch (IOException e) {
+////			// TODO Auto-generated catch block
+////			e.printStackTrace();
+////		}
+//		Pattern memPattern = Pattern.compile("^[a-fA-F0-9]{4}:");
+//		Pattern hexPattern = Pattern.compile("^:[a-fA-F0-9]{6}[00|01|02|03|04|05]");
+//		Scanner scanner = new Scanner(bufferedReader);
+//		Scanner sc =  new Scanner(bufferedReader);
+//		String firstLine = scanner.nextLine(); // read the first line
+//		Matcher mem = memPattern.matcher(firstLine);
+//		Matcher hex = hexPattern.matcher(firstLine);
+////		try {
+////			bufferedReader.reset();
+////		} catch (IOException e) {
+////			// TODO Auto-generated catch block
+////			e.printStackTrace();
+////		}
+////		scanner.close();
+//		if (mem.find()) {
+//			parseAndLoadImageMem(scanner);
+//		} else if (hex.find()) {
+//			// parse as "HEX" file
+//		} else {
+//			JOptionPane.showMessageDialog(null, "File type is not either MEM or HEX :  ", "Illegal Data",
+//					JOptionPane.ERROR_MESSAGE);
+//		} // if
+	}// loadMemoryImage - BufferedReader
+
+	private static void parseAndLoadImageMem(Scanner scanner) {
+		int byteIndex = 0;
+		String strAddress;
+		int address;
+		byte[] values = new byte[SIXTEEN];
+
+		while (scanner.hasNextLine()) {
+			strAddress = scanner.next();
+			strAddress = strAddress.replace(":", "");
+			address = Integer.valueOf(strAddress, 16);
+
+			if ((address + 0X0F) >= memorySize) {
+				JOptionPane.showMessageDialog(null, "Address out of current memory on address line: " + strAddress,
+						"Out of bounds", JOptionPane.ERROR_MESSAGE);
+				scanner.close();
+				return;
+			} // if max memory test
+
+			for (int i = 0; i < SIXTEEN; i++) {
+				values[i] = (byte) ((int) Integer.valueOf(scanner.next(), 16));
+			} // for values
+			if (result == null) {
+				ioBuss.writeDMA(address, values); // avoid setting off memory traps
+			} else {
+				for (int i = 0; i < SIXTEEN; i++) {
+					result[byteIndex++] = values[i];
+				} // for values
+			} // if memory or array
+			scanner.nextLine();
+		} // while - next line
+		scanner.close();
+
+		return;
+
+	}// parseAndloadImageMem - Scanner
+
 	static public void loadMemoryImage(File sourceFile) {
 		String[] nameParts = sourceFile.getName().split("\\.");
 		String memoryFileType = nameParts.length > 1 ? nameParts[1] : "No File Type";
-		String thisFileName = null;
+		// String thisFileName = null;
 		switch (memoryFileType) {
 		case MEMORY_SUFFIX:
 			parseAndLoadImageMem(sourceFile);
-			thisFileName = sourceFile.getName();
+			// thisFileName = sourceFile.getName();
 			break;
 		case MEMORY_SUFFIX1:
 			parseAndLoadImageHex(sourceFile);
-			thisFileName = sourceFile.getName();
+			// thisFileName = sourceFile.getName();
 			break;
 		default:
 			JOptionPane.showMessageDialog(null,
@@ -79,13 +155,13 @@ public class MemoryLoaderFromFile {
 				for (int i = 0; i < SIXTEEN; i++) {
 					values[i] = (byte) ((int) Integer.valueOf(scanner.next(), 16));
 				} // for values
-				if (result==null) {
+				if (result == null) {
 					ioBuss.writeDMA(address, values); // avoid setting off memory traps
-				}else{
+				} else {
 					for (int i = 0; i < SIXTEEN; i++) {
 						result[byteIndex++] = values[i];
-					}// for values
-				}//if memory or array
+					} // for values
+				} // if memory or array
 				scanner.nextLine();
 			} // while - next line
 			scanner.close();
@@ -156,8 +232,8 @@ public class MemoryLoaderFromFile {
 						JOptionPane.showMessageDialog(null, msg, "CheckSum error", JOptionPane.ERROR_MESSAGE);
 						return;
 					} // if - checksum test
-					
-					if (result==null) {
+
+					if (result == null) {
 						ioBuss.writeDMA(address, values); // avoid setting off memory traps
 					} // if Memory
 

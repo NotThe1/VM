@@ -6,7 +6,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.text.ParseException;
 
 import javax.swing.InputVerifier;
@@ -172,9 +172,18 @@ public class StateDisplay extends JPanel implements IStateDisplay, Runnable {
 	public StateDisplay() {
 
 		Font fontDigital = null;
-		URL fontUrl = StateDisplay.class.getResource("/hardware/resources/Digit.ttf");
+//		URL fontUrl = StateDisplay.class.getResource("/Digit.ttf");
+//		System.out.println("File: " + fontUrl.getFile());
+//		System.out.println("Path: " + fontUrl.getPath());
+
+		InputStream in0 = StateDisplay.class.getClass().getResourceAsStream("/Digit.TTF");
+		InputStream in1 = this.getClass().getResourceAsStream("/Digit.TTF");
+		
+
 		try {
-			fontDigital = Font.createFont(Font.TRUETYPE_FONT, fontUrl.openStream());
+			System.out.println("in1.available() =" + in1.available());
+
+			fontDigital = Font.createFont(Font.TRUETYPE_FONT, in1);
 			fontDigital = fontDigital.deriveFont(Font.BOLD, DIGITAL_FONT_SIZE);
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			ge.registerFont(fontDigital);
