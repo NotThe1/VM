@@ -280,9 +280,9 @@ public class Machine8080 implements Observer {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 		MemoryLoaderFromFile.loadMemoryImage(reader);
 
-//		Class<Machine8080> thisClass = Machine8080.class;
-//		URL rom = thisClass.getResource("/hardware/resources/ROM.mem");
-//		MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
+		// Class<Machine8080> thisClass = Machine8080.class;
+		// URL rom = thisClass.getResource("/hardware/resources/ROM.mem");
+		// MemoryLoaderFromFile.loadMemoryImage(new File(rom.getFile()));
 
 		hexEditPanelConcurrent.loadData(Core.getInstance().getStorage());
 		InLineDisassembler.getInstance().refreshDisplay();
@@ -357,10 +357,11 @@ public class Machine8080 implements Observer {
 
 		/* get resources */
 		Class<Machine8080> thisClass = Machine8080.class;
-		btnStep.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Next-icon-48.png")));
-		btnRun1.setIcon(new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
+		btnStep.setIcon(new ImageIcon(thisClass.getResource("/Button-Next-icon-48.png")));
+		btnRun1.setIcon(new ImageIcon(thisClass.getResource("/Button-Turn-On-icon-64.png")));
 		btnRun1.setSelectedIcon(
-				new ImageIcon(thisClass.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
+				new ImageIcon(thisClass.getResource("/Button-Turn-Off-icon-64.png")));
+		
 		loadROM();
 
 		addSerialTerminal = false;
