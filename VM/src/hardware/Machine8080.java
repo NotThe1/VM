@@ -10,6 +10,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -394,6 +395,9 @@ public class Machine8080 implements Observer {
 	 */
 	private void initialize() {
 		frmMachine = new JFrame();
+		frmMachine.setIconImage(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/Processor-48.png")));
+
+		
 		frmMachine.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
