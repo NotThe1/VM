@@ -309,8 +309,11 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 	}// close
 
 	private void showStatus() {
+		String k = String.format("%s",lastKey);
+		byte[] kb = k.getBytes();
+		
 
-		lblKeyChar.setText(String.format("Last Char = %s", lastKey));
+		lblKeyChar.setText(String.format("Last Char = %s (%02X)", lastKey, kb[0]));
 		lblKeyText.setText(String.format("Keyboard buffer size = %d", keyboardBuffer.size()));
 	}// showStatus
 
@@ -537,13 +540,13 @@ public class TTY extends Device8080 implements ActionListener, KeyListener {
 		frmTTY.getContentPane().add(panelStatus, gbc_panelStatus);
 		panelStatus.setLayout(new GridLayout(0, 4, 0, 0));
 
-		lblKeyChar = new JLabel("char = ");
+		lblKeyChar = new JLabel("");
 		panelStatus.add(lblKeyChar);
 
-		lblKeyText = new JLabel("keyText = ");
+		lblKeyText = new JLabel("");
 		panelStatus.add(lblKeyText);
 
-		lblReleased = new JLabel("New label");
+		lblReleased = new JLabel("");
 		panelStatus.add(lblReleased);
 
 		menuBar = new JMenuBar();

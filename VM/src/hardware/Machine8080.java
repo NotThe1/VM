@@ -115,7 +115,7 @@ public class Machine8080 implements Observer {
 	}// doRunTimeError
 
 	private void doRun() {
-		if (btnRun1.isSelected()) {
+		if (btnRun.isSelected()) {
 			cpu.setError(ErrorType.NONE);
 			System.out.println("actionPerformed: doRun");
 			Thread t = new Thread(cpu);
@@ -138,7 +138,7 @@ public class Machine8080 implements Observer {
 		MenuUtility.clearList(mnuMemory);
 		WorkingRegisterSet.getInstance().setProgramCounter(0);
 		if (DiskControlUnit.getgetInstance().isBootDiskLoaded()) {
-			btnRun1.setSelected(true);
+			btnRun.setSelected(true);
 			doRun();
 		} else {
 			JOptionPane.showMessageDialog(frmMachine, "There is no disk in drive A", "Boot attempt",
@@ -298,7 +298,7 @@ public class Machine8080 implements Observer {
 		if (((MemoryTrapEvent) mte).getTrap().equals(Trap.DEBUG)) {
 			System.out.printf("[update - DEBUG]  Location %04X%n", ((MemoryTrapEvent) mte).getLocation());
 			stateDisplay.setDisplayComponentsEnabled(true);
-			btnRun1.setSelected(false);
+			btnRun.setSelected(false);
 			cpu.setError(ErrorType.STOP);
 			updateView();
 		} // if - debug
@@ -358,8 +358,8 @@ public class Machine8080 implements Observer {
 		/* get resources */
 		Class<Machine8080> thisClass = Machine8080.class;
 		btnStep.setIcon(new ImageIcon(thisClass.getResource("/Button-Next-icon-48.png")));
-		btnRun1.setIcon(new ImageIcon(thisClass.getResource("/Button-Turn-On-icon-64.png")));
-		btnRun1.setSelectedIcon(
+		btnRun.setIcon(new ImageIcon(thisClass.getResource("/Button-Turn-On-icon-64.png")));
+		btnRun.setSelectedIcon(
 				new ImageIcon(thisClass.getResource("/Button-Turn-Off-icon-64.png")));
 		
 		loadROM();
@@ -606,17 +606,17 @@ public class Machine8080 implements Observer {
 		btnStep.setBounds(24, 169, 71, 63);
 		panel.add(btnStep);
 
-		btnRun1 = new JToggleButton();
-		btnRun1.setName(BTN_RUN);
-		btnRun1.addActionListener(actionAdapter);
-		btnRun1.setContentAreaFilled(false);
-		btnRun1.setBorder(null);
+		btnRun = new JToggleButton();
+		btnRun.setName(BTN_RUN);
+		btnRun.addActionListener(actionAdapter);
+		btnRun.setContentAreaFilled(false);
+		btnRun.setBorder(null);
 		// btnRun1.setIcon(new
 		// ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-On-icon-64.png")));
 		// btnRun1.setSelectedIcon(
 		// new ImageIcon(Machine8080.class.getResource("/hardware/resources/Button-Turn-Off-icon-64.png")));
-		btnRun1.setBounds(24, 54, 71, 71);
-		panel.add(btnRun1);
+		btnRun.setBounds(24, 54, 71, 71);
+		panel.add(btnRun);
 
 		panelBottom = new JPanel();
 		panelBottom.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
@@ -1127,7 +1127,7 @@ public class Machine8080 implements Observer {
 	// private InLineDisassembler disassembler;
 	private JPanel panelBottomLeft;
 	private JSpinner spinnerStepCount;
-	private JToggleButton btnRun1;
+	private JToggleButton btnRun;
 	private JLabel lblSerialConnection;
 	private JSeparator mnuMemorySeparatorFileStart;
 	private JSeparator mnuMemorySeparatorFileEnd;
