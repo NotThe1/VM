@@ -440,7 +440,6 @@ public class DiskUtility extends JDialog {
 		DirEntry de = (DirEntry) cbFileNames.getSelectedItem();
 		String fileName = de.fileName;
 		cpmFile = CPMFile.getCPMFile(diskDrive, directory, fileName);
-
 		lblRecordCount.setText(String.format(radixFormat, cpmFile.getRecordCount()));
 		lblReadOnly.setVisible(cpmFile.isReadOnly());
 		lblSystemFile.setVisible(cpmFile.isSystemFile());
