@@ -396,8 +396,7 @@ public class Machine8080 implements Observer {
 	private void initialize() {
 		frmMachine = new JFrame();
 		frmMachine.setIconImage(Toolkit.getDefaultToolkit().getImage(this.getClass().getResource("/Processor-48.png")));
-
-		
+	
 		frmMachine.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
