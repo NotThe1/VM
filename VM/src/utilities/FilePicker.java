@@ -171,6 +171,7 @@ public class FilePicker {
 		return customizeChooser(asmPath,  "Listing Files ", "list");
 	}// getDiskPicker customize
 	
+
 	public static JFileChooser getAsmPicker(Path newMemoryPath) {
 		asmPath = newMemoryPath;
 		return customizeChooser(asmPath, "Listing Files ", "list");

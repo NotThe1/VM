@@ -364,9 +364,7 @@ public class ShowCode extends JDialog implements Runnable {
 		setLocation(myPrefs.getInt("LocX", 100), myPrefs.getInt("LocY", 100));
 		myPrefs = null;
 		this.setVisible(true);
-		// addFile1("C:\\Users\\admin\\git\\assembler8080\\assembler8080\\Code\\currentOS\\ROM.list");
 		taDisplay.setSelectedTextColor(Color.BLUE);
-		//Highlighter h = new Highlighter();
 		clearCurrentIndicaters();
 	}// appInit
 
